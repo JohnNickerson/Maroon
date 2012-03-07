@@ -1,0 +1,11 @@
+ICommand
+	Guid CommandID
+	Guid ObjectID
+	DateTime TimeStamp
+
+Use SharpSerializer to store individual ICommand objects. Allow them to be synchronised by external file sync processes.
+Run a single-instance service to pick up command files and include them in a central command log.
+	- This is the one part that feels off to me, but creating a single file should make some actions easier.
+	- I could, theoretically, just process a directory of single command files as an API action.
+Run many services to keep re-processing that command log to produce query data stores.
+Need separate command IDs and object IDs to individually identify each command as well as the object record it relates to (if any).
