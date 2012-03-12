@@ -40,22 +40,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
-    <Compile Include="Notes\AddNote.cs" />
-    <Compile Include="Notes\DeleteNote.cs" />
-    <Compile Include="Notes\DownVoteNote.cs" />
-    <Compile Include="Notes\EditNote.cs" />
-    <Compile Include="Notes\MergeNotes.cs" />
-    <Compile Include="Notes\Note.cs" />
-    <Compile Include="Notes\TagNote.cs" />
-    <Compile Include="Notes\UpVoteNote.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\Notes\AddNote.cs" />
+    <Compile Include="Commands\Notes\DeleteNote.cs" />
+    <Compile Include="Commands\Notes\DownVoteNote.cs" />
+    <Compile Include="Commands\Notes\EditNote.cs" />
+    <Compile Include="Commands\Notes\MergeNotes.cs" />
+    <Compile Include="Objects\Note.cs" />
+    <Compile Include="Commands\Notes\TagNote.cs" />
+    <Compile Include="Commands\Notes\UpVoteNote.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TimeLogging\ChargeTime.cs" />
-    <Compile Include="TimeLogging\CompTime.cs" />
-    <Compile Include="TimeLogging\LogTime.cs" />
-    <Compile Include="TimeLogging\MergeTime.cs" />
-    <Compile Include="TimeLogging\ReTagTime.cs" />
-    <Compile Include="TimeLogging\TimeLogEntry.cs" />
+    <Compile Include="Commands\TimeLogging\ChargeTime.cs" />
+    <Compile Include="Commands\TimeLogging\CompTime.cs" />
+    <Compile Include="Commands\TimeLogging\LogTime.cs" />
+    <Compile Include="Commands\TimeLogging\MergeTime.cs" />
+    <Compile Include="Commands\TimeLogging\ReTagTime.cs" />
+    <Compile Include="Objects\TimeLogEntry.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Events\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
