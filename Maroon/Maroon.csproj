@@ -46,6 +46,13 @@
     <Compile Include="Commands\Notes\DownVoteNote.cs" />
     <Compile Include="Commands\Notes\EditNote.cs" />
     <Compile Include="Commands\Notes\MergeNotes.cs" />
+    <Compile Include="Events\Event.cs" />
+    <Compile Include="Events\Notes\NoteCreated.cs" />
+    <Compile Include="Events\Notes\NoteDeleted.cs" />
+    <Compile Include="Events\Notes\NoteUpdated.cs" />
+    <Compile Include="Events\TimeLogging\TimeLogCreated.cs" />
+    <Compile Include="Events\TimeLogging\TimeLogDeleted.cs" />
+    <Compile Include="Events\TimeLogging\TimeLogUpdated.cs" />
     <Compile Include="Objects\Note.cs" />
     <Compile Include="Commands\Notes\TagNote.cs" />
     <Compile Include="Commands\Notes\UpVoteNote.cs" />
@@ -57,9 +64,7 @@
     <Compile Include="Commands\TimeLogging\ReTagTime.cs" />
     <Compile Include="Objects\TimeLogEntry.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Events\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
