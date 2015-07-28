@@ -11,6 +11,7 @@ namespace AssimilationSoftware.Maroon.Notes
         public string Text { get; set; }
         public List<string> Tags { get; set; }
         public DateTime Timestamp { get; set; }
-        public int Rank { get; set; }
+        public Guid ParentId { get; set; }
+        public int Revision { get; set; }
     }
 }

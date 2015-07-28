@@ -7,7 +7,9 @@ namespace AssimilationSoftware.Maroon
 {
     public abstract class Command
     {
-        Guid CommandID { get; set; }
-        DateTime Timestamp { get; set; }
+        public Guid CommandID { get; set; }
+        public DateTime Timestamp { get; set; }
+        public int SourceRevision { get; set; }
+        public bool Accepted { get; set; }
     }
 }

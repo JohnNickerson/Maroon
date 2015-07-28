@@ -7,6 +7,7 @@ namespace AssimilationSoftware.Maroon.Notes
 {
     public class MergeNotes : Command
     {
-        public List<Guid> NoteIDs { get; set; }
+        public Guid MergeWinnerId { get; set; }
+        public Guid MergeLoserId { get; set; }
     }
 }

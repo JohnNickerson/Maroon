@@ -2,6 +2,12 @@ ICommand
 	Guid CommandID
 	Guid ObjectID
 	DateTime TimeStamp
+ICommandQueue
+	SendCommand
+	OnCommandReceived
+IQuery
+	Update
+	OnUpdated
 
 Use SharpSerializer to store individual ICommand objects. Allow them to be synchronised by external file sync processes.
 Alternatively access the Dropbox datastore API, which has the advantage of being supported on Android.
@@ -14,7 +20,9 @@ Need separate command IDs and object IDs to individually identify each command a
 Challenges:
 	- Peer discovery
 	- Data storage and sync
+		- Delegated to command queue objects.
 	- Responsiveness while offline
+		- Ability to assume effects of commands until queries are refreshed?
 	- Fetch queries registry
 	- Master data processor node: necessary, arbitrary, fragile
 	

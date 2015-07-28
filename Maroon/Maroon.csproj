@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Polenter.SharpSerializer">
+      <HintPath>..\..\WorkDiary\release\Resources\Polenter.SharpSerializer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -40,10 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandQueue.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\Notes\AddNote.cs" />
     <Compile Include="Commands\Notes\DeleteNote.cs" />
-    <Compile Include="Commands\Notes\DownVoteNote.cs" />
     <Compile Include="Commands\Notes\EditNote.cs" />
     <Compile Include="Commands\Notes\MergeNotes.cs" />
     <Compile Include="Events\Event.cs" />
@@ -53,9 +56,11 @@
     <Compile Include="Events\TimeLogging\TimeLogCreated.cs" />
     <Compile Include="Events\TimeLogging\TimeLogDeleted.cs" />
     <Compile Include="Events\TimeLogging\TimeLogUpdated.cs" />
+    <Compile Include="Objects\Aggregate.cs" />
     <Compile Include="Objects\Note.cs" />
     <Compile Include="Commands\Notes\TagNote.cs" />
     <Compile Include="Commands\Notes\UpVoteNote.cs" />
+    <Compile Include="Objects\Notebook.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Commands\TimeLogging\ChargeTime.cs" />
     <Compile Include="Commands\TimeLogging\CompTime.cs" />
@@ -63,6 +68,13 @@
     <Compile Include="Commands\TimeLogging\MergeTime.cs" />
     <Compile Include="Commands\TimeLogging\ReTagTime.cs" />
     <Compile Include="Objects\TimeLogEntry.cs" />
+    <Compile Include="Search\AndSpecification.cs" />
+    <Compile Include="Search\ISearchSpecification.cs" />
+    <Compile Include="Search\NoteDateSpecification.cs" />
+    <Compile Include="Search\NotSpecification.cs" />
+    <Compile Include="Search\OrSpecification.cs" />
+    <Compile Include="Search\SearchSpecificationExtensions.cs" />
+    <Compile Include="SharpListSerialiser.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

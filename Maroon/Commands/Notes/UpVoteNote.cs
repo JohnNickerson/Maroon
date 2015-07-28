@@ -7,6 +7,7 @@ namespace AssimilationSoftware.Maroon.Notes
 {
     public class UpVoteNote : Command
     {
-        public Guid NoteID { get; set; }
+        public Guid ChildNoteID { get; set; }
+        public Guid ParentNoteId { get; set; }
     }
 }

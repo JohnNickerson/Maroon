@@ -7,6 +7,8 @@ namespace AssimilationSoftware.Maroon.Notes
 {
     public class AddNote : Command
     {
-        public Note NewNote { get; set; }
+        public Guid ID { get; set; }
+        public string Text { get; set; }
+        public List<string> Tags { get; set; }
     }
 }
