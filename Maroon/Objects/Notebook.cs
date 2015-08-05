@@ -40,7 +40,7 @@ namespace AssimilationSoftware.Maroon.Objects
                 else if (c is DeleteNote)
                 {
                     var d = (DeleteNote)c;
-                    if (items[d.NoteID].Revision == d.SourceRevision)
+                    if (items.ContainsKey(d.NoteID) && items[d.NoteID].Revision == d.SourceRevision)
                     {
                         items.Remove(d.NoteID);
                     }
@@ -89,7 +89,7 @@ namespace AssimilationSoftware.Maroon.Objects
                 else if (c is UpVoteNote)
                 {
                     var u = (UpVoteNote)c;
-                    if (items[u.ChildNoteID].Revision == u.SourceRevision)
+                    if (items.ContainsKey(u.ChildNoteID) && items[u.ChildNoteID].Revision == u.SourceRevision)
                     {
                         items[u.ChildNoteID].ParentId = u.ParentNoteId;
                     }

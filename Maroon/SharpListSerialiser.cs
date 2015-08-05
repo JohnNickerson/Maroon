@@ -43,15 +43,18 @@ namespace AssimilationSoftware.Maroon
             {
                 var result = new List<T>();
 
-                foreach (string file in Directory.GetFiles(FileName, "*.xml"))
+                if (Directory.Exists(FileName))
                 {
-                    try
+                    foreach (string file in Directory.GetFiles(FileName, "*.xml"))
                     {
-                        result.Add((T) _serial.Deserialize(file));
-                    }
-                    catch (InvalidCastException)
-                    {
-                        // Ignore. Not one of our files.
+                        try
+                        {
+                            result.Add((T)_serial.Deserialize(file));
+                        }
+                        catch (InvalidCastException)
+                        {
+                            // Ignore. Not one of our files.
+                        }
                     }
                 }
 
@@ -80,7 +83,11 @@ namespace AssimilationSoftware.Maroon
                 }
                 foreach (var d in data)
                 {
-                    _serial.Serialize(d, Path.Combine(FileName, string.Format("{0}.xml", GenerateFileName(d))));
+                    var commandfilename = Path.Combine(FileName, string.Format("{0}.xml", GenerateFileName(d)));
+                    if (deleteFirst || !File.Exists(commandfilename))
+                    {
+                        _serial.Serialize(d, commandfilename);
+                    }
                 }
             }
         }

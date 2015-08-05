@@ -20,7 +20,7 @@ namespace AssimilationSoftware.Maroon
             Read();
         }
 
-        public void Add(AddNote cmd)
+        public void Add(Command cmd)
         {
             _commands.Add(cmd);
         }
@@ -39,7 +39,7 @@ namespace AssimilationSoftware.Maroon
         {
             get
             {
-                return _commands;
+                return _commands.OrderBy(c => c.Timestamp);
             }
         }
 
@@ -49,6 +49,7 @@ namespace AssimilationSoftware.Maroon
             set
             {
                 _path = value;
+                _serialiser.FileName = value;
                 Read();
             }
         }
