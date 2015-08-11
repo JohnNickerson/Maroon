@@ -44,6 +44,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandQueue.cs" />
+    <Compile Include="Commands\Actions\AddActionItem.cs" />
+    <Compile Include="Commands\Actions\CommentOnActionItem.cs" />
+    <Compile Include="Commands\Actions\DeferActionItem.cs" />
+    <Compile Include="Commands\Actions\DeleteActionItem.cs" />
+    <Compile Include="Commands\Actions\DoneActionItem.cs" />
+    <Compile Include="Commands\Actions\MoveActionItem.cs" />
+    <Compile Include="Commands\Actions\RenameActionItem.cs" />
+    <Compile Include="Commands\Actions\TagActionItem.cs" />
+    <Compile Include="Commands\Actions\UndeferActionItem.cs" />
+    <Compile Include="Commands\Actions\UndoActionItem.cs" />
+    <Compile Include="Commands\Actions\UpVoteActionItem.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\Notes\AddNote.cs" />
     <Compile Include="Commands\Notes\DeleteNote.cs" />
@@ -56,6 +67,8 @@
     <Compile Include="Events\TimeLogging\TimeLogCreated.cs" />
     <Compile Include="Events\TimeLogging\TimeLogDeleted.cs" />
     <Compile Include="Events\TimeLogging\TimeLogUpdated.cs" />
+    <Compile Include="Objects\ActionItem.cs" />
+    <Compile Include="Objects\ActionList.cs" />
     <Compile Include="Objects\Aggregate.cs" />
     <Compile Include="Objects\Note.cs" />
     <Compile Include="Commands\Notes\TagNote.cs" />
