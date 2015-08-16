@@ -55,6 +55,10 @@
     <Compile Include="Commands\Actions\UndeferActionItem.cs" />
     <Compile Include="Commands\Actions\UndoActionItem.cs" />
     <Compile Include="Commands\Actions\UpVoteActionItem.cs" />
+    <Compile Include="Commands\Budget\DeleteSpending.cs" />
+    <Compile Include="Commands\Budget\RecordRepeatSpending.cs" />
+    <Compile Include="Commands\Budget\RecordSpending.cs" />
+    <Compile Include="Commands\Budget\RenameSpending.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\Notes\AddNote.cs" />
     <Compile Include="Commands\Notes\DeleteNote.cs" />
