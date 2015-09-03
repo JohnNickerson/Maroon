@@ -8,5 +8,6 @@ namespace AssimilationSoftware.Maroon.Commands.Actions
     public class DoneActionItem : Command
     {
         public Guid ActionId { get; set; }
+        public DateTime? DoneDate { get; set; }
     }
 }

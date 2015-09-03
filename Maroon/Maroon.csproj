@@ -44,7 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandQueue.cs" />
+    <Compile Include="Commands\Actions\MergeActionItems.cs" />
+    <Compile Include="Commands\Actions\SetProjectForActionItem.cs" />
+    <Compile Include="Commands\CommandQueue.cs" />
     <Compile Include="Commands\Actions\AddActionItem.cs" />
     <Compile Include="Commands\Actions\CommentOnActionItem.cs" />
     <Compile Include="Commands\Actions\DeferActionItem.cs" />

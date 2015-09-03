@@ -1,9 +1,9 @@
-﻿using AssimilationSoftware.Maroon.Notes;
+﻿using AssimilationSoftware.Maroon.Commands;
+using AssimilationSoftware.Maroon.Commands.Notes;
 using AssimilationSoftware.Maroon.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace AssimilationSoftware.Maroon.Objects
 {

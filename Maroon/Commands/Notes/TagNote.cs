@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AssimilationSoftware.Maroon.Notes
+namespace AssimilationSoftware.Maroon.Commands.Notes
 {
     public class TagNote : Command
     {

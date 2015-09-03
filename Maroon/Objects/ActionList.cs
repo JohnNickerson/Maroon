@@ -1,4 +1,5 @@
-﻿using AssimilationSoftware.Maroon.Commands.Actions;
+﻿using AssimilationSoftware.Maroon.Commands;
+using AssimilationSoftware.Maroon.Commands.Actions;
 using AssimilationSoftware.Maroon.Search;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace AssimilationSoftware.Maroon.Objects
                         Notes = new List<string>() { a.Note },
                         ID = a.ID,
                         Status = "Active",
-                        Tags = a.Tags,
+                        Tags = a.Tags ?? new Dictionary<string, string>(),
                         Title = a.Title,
                         Revision = 0
                     });
@@ -133,10 +134,72 @@ namespace AssimilationSoftware.Maroon.Objects
                 else if (c is UpVoteActionItem)
                 {
                     var up = (UpVoteActionItem)c;
-                    if (items.ContainsKey(up.ParentId) && items.ContainsKey(up.ChildId) && items[up.ChildId].Revision == up.SourceRevision)
+                    if (up.ParentId.HasValue)
                     {
-                        items[up.ChildId].Parent = items[up.ParentId];
+                        if (items.ContainsKey(up.ParentId.Value) && items.ContainsKey(up.ChildId) && items[up.ChildId].Revision == up.SourceRevision)
+                        {
+                            items[up.ChildId].Parent = items[up.ParentId.Value];
+                            items[up.ChildId].Revision++;
+                        }
+                    }
+                    else if (items.ContainsKey(up.ChildId) && items[up.ChildId].Revision == up.SourceRevision)
+                    {
+                        items[up.ChildId].Parent = null;
                         items[up.ChildId].Revision++;
+                    }
+                }
+                else if (c is MergeActionItems)
+                {
+                    var merge = (MergeActionItems)c;
+                    // Combine the items:
+                    // - Make a note about the merge.
+                    items[merge.ParentId].Notes.Add(string.Format("Merged with {0} on {1}", merge.ChildId, merge.Timestamp));
+                    // - Combine tags.
+                    foreach (var tag in items[merge.ChildId].Tags.Keys)
+                    {
+                        if (items[merge.ParentId].Tags.ContainsKey(tag))
+                        {
+                            // Parent already has this key.
+                            if (items[merge.ParentId].Tags[tag].ToLower() != items[merge.ChildId].Tags[tag].ToLower())
+                            {
+                                // Tag values mismatch. Add a note.
+                                items[merge.ParentId].Notes.Add(string.Format("Merge tag value mismatch: {0}:{1}", tag, items[merge.ChildId].Tags[tag]));
+                            }
+                        }
+                        else
+                        {
+                            // Add to the parent.
+                            items[merge.ParentId].Tags[tag] = items[merge.ChildId].Tags[tag];
+                        }
+                    }
+                    // - Combine notes.
+                    foreach (var note in items[merge.ChildId].Notes)
+                    {
+                        items[merge.ParentId].Notes.Add(note);
+                    }
+                    // - Update inbound references: priority children
+                    foreach (var child in items.Where(i => i.Value.Parent == items[merge.ChildId]))
+                    {
+                        child.Value.Parent = items[merge.ParentId];
+                    }
+                    // - Update inbound references: project children
+                    foreach (var child in items.Where(i => i.Value.Project == items[merge.ChildId]))
+                    {
+                        child.Value.Project = items[merge.ParentId];
+                    }
+                    // - Remove the absorbed item.
+                    items.Remove(merge.ChildId);
+                }
+                else if (c is SetProjectForActionItem)
+                {
+                    var setparent = (SetProjectForActionItem)c;
+                    if (items.ContainsKey(setparent.ProjectId) && items.ContainsKey(setparent.ActionId))
+                    {
+                        if (items[setparent.ActionId].Revision == setparent.SourceRevision)
+                        {
+                            items[setparent.ActionId].Parent = items[setparent.ProjectId];
+                            items[setparent.ActionId].Revision++;
+                        }
                     }
                 }
             }
@@ -149,7 +212,7 @@ namespace AssimilationSoftware.Maroon.Objects
         {
             get
             {
-                Rehydrate();
+                //Rehydrate();
                 if (SearchSpecification == null)
                 {
                     return _actions;

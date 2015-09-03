@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Polenter.Serialization;
 using System.IO;
-using AssimilationSoftware.Maroon.Notes;
 
 namespace AssimilationSoftware.Maroon
 {

@@ -7,6 +7,11 @@ namespace AssimilationSoftware.Maroon.Objects
 {
     public class ActionItem
     {
+        public ActionItem()
+        {
+            Notes = new List<string>();
+            Tags = new Dictionary<string, string>();
+        }
         public Guid ID { get; set; }
         public string Title { get; set; }
         public string Context { get; set; }
@@ -18,5 +23,7 @@ namespace AssimilationSoftware.Maroon.Objects
 
         public int Revision { get; set; }
         public ActionItem Parent { get; set; }
+        public ActionItem Project { get; set; }
+        public int RankDepth { get; set; }
     }
 }
