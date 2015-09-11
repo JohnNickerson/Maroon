@@ -67,13 +67,7 @@
     <Compile Include="Commands\Notes\DeleteNote.cs" />
     <Compile Include="Commands\Notes\EditNote.cs" />
     <Compile Include="Commands\Notes\MergeNotes.cs" />
-    <Compile Include="Events\Event.cs" />
-    <Compile Include="Events\Notes\NoteCreated.cs" />
-    <Compile Include="Events\Notes\NoteDeleted.cs" />
-    <Compile Include="Events\Notes\NoteUpdated.cs" />
-    <Compile Include="Events\TimeLogging\TimeLogCreated.cs" />
-    <Compile Include="Events\TimeLogging\TimeLogDeleted.cs" />
-    <Compile Include="Events\TimeLogging\TimeLogUpdated.cs" />
+    <Compile Include="Interfaces\ICommandListMapper.cs" />
     <Compile Include="Objects\ActionItem.cs" />
     <Compile Include="Objects\ActionList.cs" />
     <Compile Include="Objects\Aggregate.cs" />
