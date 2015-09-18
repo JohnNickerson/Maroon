@@ -88,7 +88,9 @@
     <Compile Include="Search\NotSpecification.cs" />
     <Compile Include="Search\OrSpecification.cs" />
     <Compile Include="Search\SearchSpecificationExtensions.cs" />
+    <Compile Include="Search\TrueSpecification.cs" />
     <Compile Include="SharpListSerialiser.cs" />
+    <Compile Include="Views\CacheView.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

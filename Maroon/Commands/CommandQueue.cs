@@ -16,7 +16,7 @@ namespace AssimilationSoftware.Maroon.Commands
         {
             _path = path;
             _serialiser = new SharpListSerialiser<Command>(path, false, (Command d) => d.CommandID.ToString());
-            Read();
+            _commands = new List<Command>();
         }
 
         public void Add(Command cmd)

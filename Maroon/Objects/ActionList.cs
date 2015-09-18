@@ -1,8 +1,10 @@
 ﻿using AssimilationSoftware.Maroon.Commands;
 using AssimilationSoftware.Maroon.Commands.Actions;
 using AssimilationSoftware.Maroon.Search;
+using Polenter.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -12,14 +14,36 @@ namespace AssimilationSoftware.Maroon.Objects
     {
         private CommandQueue _commandHistory;
         private List<ActionItem> _actions;
+        private string _cacheFileName;
+        private SharpSerializer _serialiser;
 
-        public ActionList(CommandQueue commands)
+        public ActionList(CommandQueue commands, string cache)
         {
             _commandHistory = commands;
-            Rehydrate();
+            _cacheFileName = cache;
+            _serialiser = new SharpSerializer();
+            Load();
         }
 
-        private void Rehydrate()
+        public void Load()
+        {
+            if (File.Exists(_cacheFileName))
+            {
+                _actions = (List<ActionItem>)_serialiser.Deserialize(_cacheFileName);
+            }
+            else
+            {
+                Rehydrate();
+                Save();
+            }
+        }
+
+        public void Save()
+        {
+            _serialiser.Serialize(_actions, _cacheFileName);
+        }
+
+        public void Rehydrate()
         {
             _commandHistory.Read();
             var items = new Dictionary<Guid, ActionItem>();
