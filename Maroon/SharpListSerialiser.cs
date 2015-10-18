@@ -48,7 +48,7 @@ namespace AssimilationSoftware.Maroon
                         {
                             result.Add((T)_serial.Deserialize(file));
                         }
-                        catch (InvalidCastException)
+                        catch
                         {
                             // Ignore. Not one of our files.
                         }
