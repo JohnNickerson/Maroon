@@ -49,7 +49,6 @@ namespace AssimilationSoftware.Maroon.Commands
             {
                 _path = value;
                 _serialiser.FileName = value;
-                Read();
             }
         }
     }
