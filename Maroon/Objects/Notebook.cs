@@ -15,7 +15,6 @@ namespace AssimilationSoftware.Maroon.Objects
         public Notebook(CommandQueue commandhistory)
         {
             _commandHistory = commandhistory;
-            Rehydrate();
         }
 
         private void Rehydrate()
@@ -104,7 +103,6 @@ namespace AssimilationSoftware.Maroon.Objects
         {
             get
             {
-                Rehydrate();
                 if (SearchSpecification == null)
                 {
                     return _notes;

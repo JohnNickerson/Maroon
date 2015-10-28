@@ -22,7 +22,6 @@ namespace AssimilationSoftware.Maroon.Objects
             _commandHistory = commands;
             _cacheFileName = cache;
             _serialiser = new SharpSerializer();
-            Load();
         }
 
         public void Load()
@@ -236,7 +235,6 @@ namespace AssimilationSoftware.Maroon.Objects
         {
             get
             {
-                //Rehydrate();
                 if (SearchSpecification == null)
                 {
                     return _actions;

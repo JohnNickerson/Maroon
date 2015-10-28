@@ -1,0 +1,3 @@
+@todo
+Add a reject method to allow commands to be changed that way
+Add a CommandHandler class?
