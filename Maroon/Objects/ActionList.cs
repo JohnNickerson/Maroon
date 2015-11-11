@@ -22,6 +22,7 @@ namespace AssimilationSoftware.Maroon.Objects
             _commandHistory = commands;
             _cacheFileName = cache;
             _serialiser = new SharpSerializer();
+            _actions = new List<ActionItem>();
         }
 
         public void Load()
@@ -42,7 +43,7 @@ namespace AssimilationSoftware.Maroon.Objects
             _serialiser.Serialize(_actions, _cacheFileName);
         }
 
-        public void Rehydrate()
+        public override void Rehydrate()
         {
             _commandHistory.Read();
             var items = new Dictionary<Guid, ActionItem>();

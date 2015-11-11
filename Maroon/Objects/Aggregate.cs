@@ -1,6 +1,7 @@
 ﻿namespace AssimilationSoftware.Maroon.Objects
 {
-    public class Aggregate
+    public abstract class Aggregate
     {
+        public abstract void Rehydrate();
     }
 }

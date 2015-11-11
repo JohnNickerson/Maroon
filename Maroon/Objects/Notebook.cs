@@ -15,9 +15,10 @@ namespace AssimilationSoftware.Maroon.Objects
         public Notebook(CommandQueue commandhistory)
         {
             _commandHistory = commandhistory;
+            _notes = new List<Note>();
         }
 
-        private void Rehydrate()
+        public override void Rehydrate()
         {
             // Replay the command history to generate the list of objects.
             _commandHistory.Read();
