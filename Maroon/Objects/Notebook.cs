@@ -9,21 +9,20 @@ namespace AssimilationSoftware.Maroon.Objects
 {
     public class Notebook : Aggregate
     {
-        private readonly CommandQueue _commandHistory;
         private List<Note> _notes;
 
         public Notebook(CommandQueue commandhistory)
         {
-            _commandHistory = commandhistory;
+            CommandHistory = commandhistory;
             _notes = new List<Note>();
         }
 
         public override void Rehydrate()
         {
             // Replay the command history to generate the list of objects.
-            _commandHistory.Read();
+            CommandHistory.Read();
             var items = new Dictionary<Guid, Note>();
-            foreach (var c in _commandHistory.Commands)
+            foreach (var c in CommandHistory.Commands)
             {
                 if (c is AddNote)
                 {

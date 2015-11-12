@@ -12,14 +12,13 @@ namespace AssimilationSoftware.Maroon.Objects
 {
     public class ActionList : Aggregate
     {
-        private CommandQueue _commandHistory;
         private List<ActionItem> _actions;
         private string _cacheFileName;
         private SharpSerializer _serialiser;
 
         public ActionList(CommandQueue commands, string cache)
         {
-            _commandHistory = commands;
+            CommandHistory = commands;
             _cacheFileName = cache;
             _serialiser = new SharpSerializer();
             _actions = new List<ActionItem>();
@@ -45,9 +44,9 @@ namespace AssimilationSoftware.Maroon.Objects
 
         public override void Rehydrate()
         {
-            _commandHistory.Read();
+            CommandHistory.Read();
             var items = new Dictionary<Guid, ActionItem>();
-            foreach (var c in _commandHistory.Commands)
+            foreach (var c in CommandHistory.Commands)
             {
                 if (c is AddActionItem)
                 {
