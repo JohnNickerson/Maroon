@@ -68,6 +68,13 @@
     <Compile Include="Commands\Notes\EditNote.cs" />
     <Compile Include="Commands\Notes\MergeNotes.cs" />
     <Compile Include="Interfaces\ICommandListMapper.cs" />
+    <Compile Include="Interfaces\IMapper.cs" />
+    <Compile Include="Interfaces\IRepository.cs" />
+    <Compile Include="Mappers\Csv\CsvDiskMapper.cs" />
+    <Compile Include="Mappers\Csv\Extensions.cs" />
+    <Compile Include="Mappers\Text\NotebookEntryDiskMapper.cs" />
+    <Compile Include="Model\ModelObject.cs" />
+    <Compile Include="Objects\AccountTransfer.cs" />
     <Compile Include="Objects\ActionItem.cs" />
     <Compile Include="Objects\ActionList.cs" />
     <Compile Include="Objects\Aggregate.cs" />
@@ -82,7 +89,9 @@
     <Compile Include="Commands\TimeLogging\MergeTime.cs" />
     <Compile Include="Commands\TimeLogging\ReTagTime.cs" />
     <Compile Include="Objects\TimeLogEntry.cs" />
+    <Compile Include="Repositories\DiskRepository.cs" />
     <Compile Include="Search\AndSpecification.cs" />
+    <Compile Include="Search\FalseSpecification.cs" />
     <Compile Include="Search\ISearchSpecification.cs" />
     <Compile Include="Search\NoteDateSpecification.cs" />
     <Compile Include="Search\NotSpecification.cs" />

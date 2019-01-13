@@ -10,7 +10,6 @@ IQuery
 	OnUpdated
 
 Use SharpSerializer to store individual ICommand objects. Allow them to be synchronised by external file sync processes.
-Alternatively access the Dropbox datastore API, which has the advantage of being supported on Android.
 Run a single-instance service to pick up command files and include them in a central command log.
 	- This is the one part that feels off to me, but creating a single file should make some actions easier.
 	- I could, theoretically, just process a directory of single command files as an API action.

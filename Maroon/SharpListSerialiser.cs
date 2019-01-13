@@ -8,83 +8,60 @@ namespace AssimilationSoftware.Maroon
     public class SharpListSerialiser<T>
     {
         public string FileName { get; set; }
-        public bool SingleFile { get; set; }
+
         public Func<T, string> GenerateFileName { get; set; }
-        private SharpSerializer _serial;
+        private readonly SharpSerializer _serial;
 
         public SharpListSerialiser(string path)
-            : this(path, true, null)
+            : this(path, null)
         {
         }
 
         public SharpListSerialiser(string path, Func<T, string> generateFileNameFunction)
-            : this(path, false, generateFileNameFunction)
-        {
-        }
-
-        public SharpListSerialiser(string path, bool singlefile, Func<T, string> generateFileNameFunction )
         {
             FileName = path;
-            SingleFile = singlefile;
             GenerateFileName = generateFileNameFunction;
             _serial = new SharpSerializer();
         }
 
         public List<T> Deserialise()
         {
-            if (SingleFile)
-            {
-                return (List<T>) _serial.Deserialize(FileName);
-            }
-            else
-            {
-                var result = new List<T>();
+            var result = new List<T>();
 
-                if (Directory.Exists(FileName))
+            if (Directory.Exists(FileName))
+            {
+                foreach (string file in Directory.GetFiles(FileName, "*.xml"))
                 {
-                    foreach (string file in Directory.GetFiles(FileName, "*.xml"))
+                    try
                     {
-                        try
-                        {
-                            result.Add((T)_serial.Deserialize(file));
-                        }
-                        catch
-                        {
-                            // Ignore. Not one of our files.
-                        }
+                        result.Add((T) _serial.Deserialize(file));
+                    }
+                    catch
+                    {
+                        // Ignore. Not one of our files.
                     }
                 }
-
-                return result;
             }
+
+            return result;
         }
 
         public void Serialise(List<T> data, bool deleteFirst = false)
         {
-            if (SingleFile)
+            if (deleteFirst)
             {
-                if (deleteFirst)
+                foreach (var f in Directory.GetFiles(FileName))
                 {
-                    File.Delete(FileName);
+                    File.Delete(f);
                 }
-                _serial.Serialize(data, FileName);
             }
-            else
+
+            foreach (var d in data)
             {
-                if (deleteFirst)
+                var commandFileName = Path.Combine(FileName, $"{GenerateFileName(d)}.xml");
+                if (deleteFirst || !File.Exists(commandFileName))
                 {
-                    foreach (var f in Directory.GetFiles(FileName))
-                    {
-                        File.Delete(f);
-                    }
-                }
-                foreach (var d in data)
-                {
-                    var commandfilename = Path.Combine(FileName, string.Format("{0}.xml", GenerateFileName(d)));
-                    if (deleteFirst || !File.Exists(commandfilename))
-                    {
-                        _serial.Serialize(d, commandfilename);
-                    }
+                    _serial.Serialize(d, commandFileName);
                 }
             }
         }
@@ -95,18 +72,8 @@ namespace AssimilationSoftware.Maroon
         /// <param name="data">The item to add.</param>
         public void Serialise(T data)
         {
-            if (SingleFile)
-            {
-                // Read, add, write.
-                var list = Deserialise();
-                list.Add(data);
-                Serialise(list, false);
-            }
-            else
-            {
-                // This is the shortcut way that you can't do with everything in a single file.
-                _serial.Serialize(data, Path.Combine(FileName, string.Format("{0}.xml", GenerateFileName(data))));
-            }
+            // This is the shortcut way that you can't do with everything in a single file.
+            _serial.Serialize(data, Path.Combine(FileName, $"{GenerateFileName(data)}.xml"));
         }
     }
 }

@@ -1,8 +1,5 @@
-﻿using AssimilationSoftware.Maroon;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace AssimilationSoftware.Maroon.Commands
 {
@@ -15,7 +12,7 @@ namespace AssimilationSoftware.Maroon.Commands
         public CommandQueue(string path)
         {
             _path = path;
-            _serialiser = new SharpListSerialiser<Command>(path, false, (Command d) => d.CommandID.ToString());
+            _serialiser = new SharpListSerialiser<Command>(path, d => d.CommandID.ToString());
             _commands = new List<Command>();
         }
 
@@ -32,6 +29,11 @@ namespace AssimilationSoftware.Maroon.Commands
         public void Write()
         {
             _serialiser.Serialise(_commands);
+        }
+
+        public void Delete(Command cmd)
+        {
+            _commands.Remove(cmd);
         }
 
         public IEnumerable<Command> Commands

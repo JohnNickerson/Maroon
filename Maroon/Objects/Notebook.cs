@@ -4,97 +4,103 @@ using AssimilationSoftware.Maroon.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AssimilationSoftware.Maroon.Repositories;
 
 namespace AssimilationSoftware.Maroon.Objects
 {
     public class Notebook : Aggregate
     {
-        private List<Note> _notes;
+        private readonly DiskRepository<Note> _notes;
 
-        public Notebook(CommandQueue commandhistory)
+        public Notebook(CommandQueue commandhistory, DiskRepository<Note> notes)
         {
             CommandHistory = commandhistory;
-            _notes = new List<Note>();
+            _notes = notes;
         }
 
         public override void Rehydrate()
         {
             // Replay the command history to generate the list of objects.
             CommandHistory.Read();
-            var items = new Dictionary<Guid, Note>();
+            _notes.FindAll();
             foreach (var c in CommandHistory.Commands)
             {
                 if (c is AddNote)
                 {
                     AddNote a = (AddNote)c;
-                    items[a.ID] = new Note
+                    _notes.Create(new Note
                     {
                         ID = a.ID,
                         Tags = a.Tags,
                         Text = a.Text,
                         Timestamp = a.Timestamp,
                         Revision = 0
-                    };
+                    });
                 }
                 else if (c is DeleteNote)
                 {
                     var d = (DeleteNote)c;
-                    if (items.ContainsKey(d.NoteID) && items[d.NoteID].Revision == d.SourceRevision)
+                    var n = _notes.Find(d.NoteID);
+                    if (n != null && n.Revision == d.SourceRevision)
                     {
-                        items.Remove(d.NoteID);
+                        _notes.Delete(_notes.Find(d.NoteID));
                     }
                 }
                 else if (c is EditNote)
                 {
-                    var e = (EditNote)c;
-                    if (items[e.NoteID].Revision == e.SourceRevision)
+                    var e = (EditNote) c;
+                    var n = _notes.Find(e.NoteID);
+                    if (n != null && n.Revision == e.SourceRevision)
                     {
-                        items[e.NoteID].Text = e.NewText;
-                        items[e.NoteID].Revision = e.SourceRevision + 1;
+                        n.Text = e.NewText;
+                        n.Revision++;
+                        _notes.Update(n);
                     }
                 }
                 else if (c is MergeNotes)
                 {
                     var m = (MergeNotes)c;
-                    if (items[m.MergeWinnerId].Revision == m.SourceRevision)
+                    var w = _notes.Find(m.MergeWinnerId);
+                    var l = _notes.Find(m.MergeLoserId);
+                    if (w.Revision == m.SourceRevision)
                     {
                         // Update references in other notes (parent IDs).
-                        foreach (var i in items.Keys.Where(k => items[k].ParentId == m.MergeLoserId))
+                        foreach (var i in _notes.FindAll().Where(k => k.ParentId == m.MergeLoserId))
                         {
-                            items[i].ParentId = m.MergeWinnerId;
-                            items[i].Revision++;
+                            i.ParentId = m.MergeWinnerId;
+                            i.Revision++;
+                            _notes.Update(i);
                         }
                         // Merge the two notes.
-                        items[m.MergeWinnerId].Text = string.Format("{0}\n{1}", items[m.MergeWinnerId].Text, items[m.MergeLoserId].Text);
-                        foreach (var t in items[m.MergeLoserId].Tags)
-                        {
-                            if (!items[m.MergeWinnerId].Tags.Contains(t))
-                            {
-                                items[m.MergeWinnerId].Tags.Add(t);
-                            }
-                        }
-                        items[m.MergeWinnerId].Revision++;
-                        items.Remove(m.MergeLoserId);
+                        w.Text = string.Format("{0}\n{1}", w.Text, l.Text);
+                        w.Tags = w.Tags.Union(l.Tags).ToList();
+                        w.Revision++;
+                        _notes.Update(w);
+                        _notes.Delete(l);
                     }
                 }
                 else if (c is TagNote)
                 {
                     var t = (TagNote)c;
-                    if (items[t.NoteID].Revision == t.SourceRevision)
+                    var n = _notes.Find(t.NoteID);
+                    if (n.Revision == t.SourceRevision)
                     {
-                        items[t.NoteID].Tags = t.NewTags;
+                        n.Tags = t.NewTags;
+                        _notes.Update(n);
                     }
                 }
                 else if (c is UpVoteNote)
                 {
                     var u = (UpVoteNote)c;
-                    if (items.ContainsKey(u.ChildNoteID) && items[u.ChildNoteID].Revision == u.SourceRevision)
+                    var n = _notes.Find(u.ChildNoteID);
+                    var p = _notes.Find(u.ParentNoteId);
+                    if (n != null && p != null && n.Revision == u.SourceRevision)
                     {
-                        items[u.ChildNoteID].ParentId = u.ParentNoteId;
+                        n.ParentId = u.ParentNoteId;
+                        _notes.Update(n);
                     }
                 }
             }
-            _notes = items.Values.ToList();
         }
 
         public ISearchSpecification<Note> SearchSpecification { get; set; }
@@ -105,11 +111,11 @@ namespace AssimilationSoftware.Maroon.Objects
             {
                 if (SearchSpecification == null)
                 {
-                    return _notes;
+                    return _notes.Items;
                 }
                 else
                 {
-                    return _notes.Where(n => SearchSpecification.IsSatisfiedBy(n));
+                    return _notes.Items.Where(n => SearchSpecification.IsSatisfiedBy(n));
                 }
             }
         }
