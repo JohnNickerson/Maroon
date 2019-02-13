@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using AssimilationSoftware.Maroon.Mappers.Xml;
 
 namespace AssimilationSoftware.Maroon.Commands
 {
+    [Obsolete("No more serialising commands.")]
     public class CommandQueue
     {
         private string _path;
@@ -12,7 +15,7 @@ namespace AssimilationSoftware.Maroon.Commands
         public CommandQueue(string path)
         {
             _path = path;
-            _serialiser = new SharpListSerialiser<Command>(path, d => d.CommandID.ToString());
+            _serialiser = new SharpListSerialiser<Command>(path);
             _commands = new List<Command>();
         }
 
@@ -50,7 +53,7 @@ namespace AssimilationSoftware.Maroon.Commands
             set
             {
                 _path = value;
-                _serialiser.FileName = value;
+                _serialiser.Path = value;
             }
         }
     }

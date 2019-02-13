@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Commands
 {
-    public abstract class Command
+    [Obsolete]
+    public abstract class Command : ModelObject // Just to keep things going for a while.
     {
         public Command()
         {

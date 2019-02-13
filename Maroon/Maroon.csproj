@@ -90,6 +90,7 @@
     <Compile Include="Commands\TimeLogging\ReTagTime.cs" />
     <Compile Include="Objects\TimeLogEntry.cs" />
     <Compile Include="Repositories\DiskRepository.cs" />
+    <Compile Include="Repositories\MergeDiskRepository.cs" />
     <Compile Include="Search\AndSpecification.cs" />
     <Compile Include="Search\FalseSpecification.cs" />
     <Compile Include="Search\ISearchSpecification.cs" />
@@ -98,7 +99,7 @@
     <Compile Include="Search\OrSpecification.cs" />
     <Compile Include="Search\SearchSpecificationExtensions.cs" />
     <Compile Include="Search\TrueSpecification.cs" />
-    <Compile Include="SharpListSerialiser.cs" />
+    <Compile Include="Mappers\Xml\SharpListSerialiser.cs" />
     <Compile Include="Views\CacheView.cs" />
   </ItemGroup>
   <ItemGroup />
