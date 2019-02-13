@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using AssimilationSoftware.Maroon.Interfaces;
-using AssimilationSoftware.Maroon.Objects;
+using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Mappers.Text
 {

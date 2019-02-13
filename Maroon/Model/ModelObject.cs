@@ -8,6 +8,8 @@ namespace AssimilationSoftware.Maroon.Model
         /// Unique identifier for this item.
         /// </summary>
         public Guid ID { get; set; }
+        public DateTime LastModified { get; set; }
+        public int Revision { get; set; }
 
         public ModelObject() { }
 

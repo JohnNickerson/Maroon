@@ -1,5 +1,5 @@
-﻿using AssimilationSoftware.Maroon.Objects;
-using System;
+﻿using System;
+using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Search
 {

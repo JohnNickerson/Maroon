@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace AssimilationSoftware.Maroon.Objects
+namespace AssimilationSoftware.Maroon.Model
 {
     public class AccountTransfer
     {
