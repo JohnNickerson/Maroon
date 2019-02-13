@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace AssimilationSoftware.PimData.Mappers.Csv
+namespace AssimilationSoftware.Maroon.Mappers.Csv
 {
     public static class Extensions
     {

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
-using System.Reflection;
 using AssimilationSoftware.Maroon.Interfaces;
 using AssimilationSoftware.Maroon.Model;
 
-namespace AssimilationSoftware.PimData.Mappers.Csv
+namespace AssimilationSoftware.Maroon.Mappers.Csv
 {
     /// <summary>
     /// Generic CSV mapper.
@@ -67,7 +66,7 @@ namespace AssimilationSoftware.PimData.Mappers.Csv
         public T Load(Guid id)
         {
             var items = LoadAll();
-			return !items.Any() ? null : items.FirstOrDefault(i => i.ID == id);
+            return items.FirstOrDefault(item => item.ID == id);
         }
 
         public void Delete(T item)
