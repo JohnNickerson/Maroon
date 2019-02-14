@@ -48,6 +48,7 @@
     <Compile Include="Interfaces\IRepository.cs" />
     <Compile Include="Mappers\Csv\CsvDiskMapper.cs" />
     <Compile Include="Mappers\Csv\Extensions.cs" />
+    <Compile Include="Mappers\Text\ActionItemDiskMapper.cs" />
     <Compile Include="Mappers\Text\NoteDiskMapper.cs" />
     <Compile Include="Model\ModelObject.cs" />
     <Compile Include="Model\AccountTransfer.cs" />
