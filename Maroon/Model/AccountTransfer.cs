@@ -2,7 +2,7 @@
 
 namespace AssimilationSoftware.Maroon.Model
 {
-    public class AccountTransfer
+    public class AccountTransfer : ModelObject
     {
         /// <summary>
         /// The start date and time of the entry.
@@ -23,11 +23,6 @@ namespace AssimilationSoftware.Maroon.Model
         /// A short description of the transfer.
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// A globally unique identifier for the transfer.
-        /// </summary>
-        public Guid ID { get; set; }
 
         /// <summary>
         /// The source account from which the transfer originated.

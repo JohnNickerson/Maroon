@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using AssimilationSoftware.Maroon.Mappers.Csv;
+using AssimilationSoftware.Maroon.Model;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace UnitTests
+{
+    [TestClass]
+    public class LedgerMapperTests
+    {
+        [TestMethod]
+        public void Round_Trip_Test()
+        {
+            var ledger = new List<AccountTransfer>
+            {
+                new AccountTransfer
+                {
+                    ID = Guid.NewGuid(),
+                    Revision = 0,
+                    LastModified = DateTime.Now,
+                    Amount = 69,
+                    Category = "test",
+                    Date = DateTime.Today,
+                    Description = "A test record",
+                    FromAccount = "FromTest",
+                    ToAccount = "ToTest"
+                }
+            };
+            var filename = "TestLedger.csv";
+            if (File.Exists(filename)) File.Delete(filename);
+            var mapper = new LedgerCsvMapper(filename);
+            mapper.SaveAll(ledger);
+            var fromDisk = mapper.LoadAll();
+
+            Assert.IsNotNull(fromDisk);
+            Assert.AreEqual(ledger.Count, fromDisk.Count());
+        }
+    }
+}

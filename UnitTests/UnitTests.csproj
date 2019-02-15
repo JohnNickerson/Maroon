@@ -51,6 +51,8 @@
   <ItemGroup>
     <Compile Include="ActionItemMapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeLogMapperTests.cs" />
+    <Compile Include="LedgerMapperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

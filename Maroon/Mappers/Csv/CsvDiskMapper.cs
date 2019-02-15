@@ -12,7 +12,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
     /// Generic CSV mapper.
     /// </summary>
     /// <typeparam name="T">The type of model data to work with.</typeparam>
-    public abstract class CsvDiskMapper<T> : IMapper<T> where T : ModelObject, new()
+    public abstract class CsvDiskMapper<T> : IMapper<T> where T : ModelObject
     {
         private string _filename;
 
