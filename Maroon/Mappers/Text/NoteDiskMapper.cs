@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using AssimilationSoftware.Maroon.Interfaces;
 using AssimilationSoftware.Maroon.Model;
 
@@ -46,19 +48,22 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                         {
                             current = new Note();
                         }
-                        if (IsGuidLine(line))
+
+                        if (TryParseGuidLine(line, out var id, out var rev, out var parent))
                         {
-                            if (line.Contains(":"))
+                            if (id.HasValue)
                             {
-                                // Parent relationship.
-                                var ids = line.Split(':');
-                                current.ID = Guid.Parse(ids[0].Trim());
-                                parents[current] = Guid.Parse(ids[1].Trim());
+                                current.ID = id.Value;
                             }
-                            else
+
+                            if (rev.HasValue)
                             {
-                                // Plain old item ID.
-                                current.ID = Guid.Parse(line);
+                                current.Revision = rev.Value;
+                            }
+
+                            if (parent.HasValue)
+                            {
+                                parents[current] = parent.Value;
                             }
                         }
                         else if (DateTime.TryParse(line, out stamp))
@@ -72,7 +77,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                         }
                         else
                         {
-                            current.Text += Environment.NewLine;
+                            if (!string.IsNullOrEmpty(current.Text))
+                            {
+                                current.Text += Environment.NewLine;
+                            }
                             current.Text += line;
                         }
                     }
@@ -96,28 +104,63 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             return drafts;
         }
 
-        private bool IsGuidLine(string line)
+        private bool TryParseGuidLine(string line, out Guid? noteId, out int? revision, out Guid? parentId)
         {
-            Guid whocares;
-            if (Guid.TryParse(line.Trim(), out whocares))
+            var re1 = "([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})";  // SQL GUID 1
+            var re2 = "(\\[)";   // Any Single Character 1
+            var re3 = "(\\d+)";  // Integer Number 1
+            var re4 = "(\\])";   // Any Single Character 2
+            var re5 = "(:)"; // Any Single Character 3
+            var re6 = "([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})";  // SQL GUID 2
+
+            // Case 1: ID with revision.
+            var r = new Regex(re1 + re2 + re3 + re4 + re5 + re6, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m = r.Match(line);
+            if (m.Success)
             {
+                noteId = new Guid(m.Groups[1].ToString());
+                revision = int.Parse(m.Groups[3].ToString());
+                parentId = new Guid(m.Groups[6].ToString());
                 return true;
             }
-            else if (line.Contains(':'))
+
+            // Case 2: ID with revision and parent.
+            var r2 = new Regex(re1 + re2 + re3 + re4, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m2 = r2.Match(line);
+            if (m2.Success)
             {
-                foreach (string id in line.Split(':'))
-                {
-                    if (!Guid.TryParse(id.Trim(), out whocares))
-                    {
-                        return false;
-                    }
-                }
+                noteId = new Guid(m2.Groups[1].ToString());
+                revision = int.Parse(m2.Groups[3].ToString());
+                parentId = null;
                 return true;
             }
-            else
+
+            // Backwards-compatible cases: no revision number.
+            var r3 = new Regex(re1, RegexOptions.IgnoreCase|RegexOptions.Singleline);
+            var m3 = r3.Match(line);
+            if (m3.Success)
             {
-                return false;
+                noteId = new Guid(m3.Groups[1].ToString());
+                revision = 0;
+                parentId = null;
+                return true;
             }
+
+            var r4 = new Regex(re1 + re5 + re6, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m4 = r4.Match(line);
+            if (m4.Success)
+            {
+                noteId = new Guid(m4.Groups[1].ToString());
+                revision = 0;
+                parentId=new Guid(m4.Groups[3].ToString());
+                return true;
+            }
+
+            // Failed to parse.
+            noteId = null;
+            revision = null;
+            parentId = null;
+            return false;
         }
 
         public Note Load(Guid id)
@@ -152,11 +195,11 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
                 if (d.ParentId != null)
                 {
-                    filecontents.AppendLine(string.Format("{0}:{1}", d.ID, d.ParentId));
+                    filecontents.AppendLine($"{d.ID}[{d.Revision}]:{d.ParentId}");
                 }
                 else
                 {
-                    filecontents.AppendLine(d.ID.ToString());
+                    filecontents.AppendLine($"{d.ID}[{d.Revision}]");
                 }
                 filecontents.AppendLine();
             }

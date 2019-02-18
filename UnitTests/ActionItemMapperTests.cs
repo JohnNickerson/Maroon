@@ -25,7 +25,7 @@ namespace UnitTests
                 {
                     Context = "test",
                     ID = Guid.NewGuid(),
-                    Revision = 0,
+                    Revision = 1,
                     Title = "Test Item",
                     Notes = new List<string>
                     {
@@ -51,6 +51,7 @@ namespace UnitTests
                 Assert.IsNotNull(s);
                 Assert.AreEqual(n.Title, s.Title);
                 Assert.AreEqual(n.Context, s.Context);
+                Assert.AreEqual(n.Revision, s.Revision);
             }
         }
     }
