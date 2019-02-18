@@ -36,7 +36,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 {
                     return Items;
                 }
-
+                // File changed since we last saw it. Read it again and note the time later.
                 _lastModTime = null;
             }
             var lines = (File.Exists(Filename) ? File.ReadAllLines(Filename) : new string[] { });
@@ -143,6 +143,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 // We assigned some IDs, so rewrite the file. This prevents subsequent reads from assigning new, different IDs.
                 SaveAll(Items);
             }
+            // Note the last write time of the file for subsequent reads. If we can avoid reading it again, do that.
             _lastModTime = new FileInfo(Filename).LastWriteTime;
             return Items;
         }
