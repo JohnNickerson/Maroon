@@ -31,7 +31,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
 
             if (Directory.Exists(Path))
             {
-                foreach (string file in Directory.GetFiles(Path, "*.xml"))
+                foreach (string file in Directory.GetFiles(Path, string.Format(FileNamePattern, "*")))
                 {
                     try
                     {
