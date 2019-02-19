@@ -46,7 +46,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             var idFoundCount = 0;
             Items = new List<ActionItem>();
             var context = string.Empty;
-            var currentItem = new ActionItem { Context = context, Title = "(item out of order)" };
+            var currentItem = new ActionItem { Context = context, Title = "(item out of order)", Done = false };
             foreach (var t in lines)
             {
                 if (t.StartsWith("@"))
@@ -68,6 +68,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                             {
                                 case "done-date":
                                     currentItem.DoneDate = DateTime.Parse(ts[1]);
+                                    currentItem.Done = true;
                                     break;
                                 case "id":
                                     currentItem.ID = Guid.Parse(ts[1]);

@@ -15,6 +15,7 @@ namespace AssimilationSoftware.Maroon.Model
         public string Status { get; set; }
         public List<string> Notes { get; set; }
         public DateTime? DoneDate { get; set; }
+        public bool Done { get; set; }
         public DateTime? TickleDate { get; set; }
         public Dictionary<string, string> Tags { get; set; }
 

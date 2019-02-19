@@ -101,6 +101,9 @@ namespace AssimilationSoftware.Maroon.Repositories
 
                 // Load all.
                 FindAll();
+
+                // TODO: Verify no conflicts first?
+
                 // Apply changes (encapsulated in the Items property).
                 // Save all.
                 _mapper.SaveAll(Items.ToList());
@@ -121,7 +124,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         /// </summary>
         /// <returns></returns>
         /// <remarks>A conflict here is defined as two or more updates or deletes to the same version (ie revision number) of the same object.</remarks>
-        List<List<T>> FindConflicts()
+        public List<List<T>> FindConflicts()
         {
             var result = new List<List<T>>();
 
@@ -155,21 +158,21 @@ namespace AssimilationSoftware.Maroon.Repositories
             return result;
         }
 
-        void ResolveConflict(T item)
+        public void ResolveConflict(T item)
         {
             _deleted.RemoveAll(d => d.ID == item.ID);
             _updated.RemoveAll(u => u.ID == item.ID);
             Update(item);
         }
 
-        void ResolveByDelete(Guid id)
+        public void ResolveByDelete(Guid id)
         {
             _deleted.RemoveAll(d => d.ID == id);
             _updated.RemoveAll(u => u.ID == id);
             Delete(Find(id));
         }
 
-        void Revert(Guid id)
+        public void Revert(Guid id)
         {
             _deleted.RemoveAll(d => d.ID == id);
             _updated.RemoveAll(u => u.ID == id);
