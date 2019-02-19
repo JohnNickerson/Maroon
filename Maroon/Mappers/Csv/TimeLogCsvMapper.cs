@@ -35,5 +35,11 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
             return string.Format("{0:s},{1:s},{2},{3},{4},{5},{6},{7}", obj.StartTime, obj.EndTime, obj.Client, obj.Project,
                 obj.Note, obj.Billable, obj.ID, obj.Revision);
         }
+
+        public override void SaveAll(IEnumerable<TimeLogEntry> list)
+        {
+            // Just sort so that the file saves in order.
+            base.SaveAll(list.OrderBy(t => t.StartTime));
+        }
     }
 }

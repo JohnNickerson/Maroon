@@ -44,7 +44,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
             return result;
         }
 
-        public void SaveAll(IEnumerable<T> list)
+        public virtual void SaveAll(IEnumerable<T> list)
         {
             var output = new StringBuilder();
             output.AppendLine(FieldsHeader);
