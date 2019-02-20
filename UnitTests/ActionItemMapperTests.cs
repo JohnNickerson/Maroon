@@ -38,6 +38,17 @@ namespace UnitTests
                     }
                 }
             };
+            i.Add(new ActionItem
+            {
+                ID = Guid.NewGuid(),
+                Context = "test",
+                Revision = 0,
+                Notes = new List<string>(),
+                Parent = i[0],
+                Tags = new Dictionary<string, string>(),
+                Title = "Child, depth 1",
+                Upvotes = 0
+            });
             var m = new ActionItemDiskMapper(fileName);
 
             m.SaveAll(i);
@@ -52,6 +63,7 @@ namespace UnitTests
                 Assert.AreEqual(n.Title, s.Title);
                 Assert.AreEqual(n.Context, s.Context);
                 Assert.AreEqual(n.Revision, s.Revision);
+                Assert.AreEqual(n.RankDepth, s.RankDepth);
             }
         }
     }

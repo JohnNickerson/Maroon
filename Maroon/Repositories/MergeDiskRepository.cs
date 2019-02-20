@@ -102,7 +102,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 // Load all.
                 FindAll();
 
-                // TODO: Verify no conflicts first?
+                // TODO: Verify no conflicts first? How to report a problem?
 
                 // Apply changes (encapsulated in the Items property).
                 // Save all.
@@ -138,15 +138,16 @@ namespace AssimilationSoftware.Maroon.Repositories
                 var duplicates = new List<T>();
                 for (var j = i + 1; j < allChanges.Count; j++)
                 {
-                    if (allChanges[i].ID == allChanges[j].ID && allChanges[i].Revision == allChanges[j].Revision)
+                    if (allChanges[i].ID != allChanges[j].ID || allChanges[i].Revision != allChanges[j].Revision)
                     {
-                        if (!found)
-                        {
-                            duplicates.Add(allChanges[i]);
-                            found = true;
-                        }
-                        duplicates.Add(allChanges[j]);
+                        continue;
                     }
+                    if (!found)
+                    {
+                        duplicates.Add(allChanges[i]);
+                        found = true;
+                    }
+                    duplicates.Add(allChanges[j]);
                 }
 
                 if (found)

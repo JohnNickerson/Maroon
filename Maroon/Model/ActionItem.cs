@@ -21,7 +21,24 @@ namespace AssimilationSoftware.Maroon.Model
 
         public ActionItem Parent { get; set; }
         public ActionItem Project { get; set; }
-        public int RankDepth { get; set; }
+
+        public int RankDepth
+        {
+            get
+            {
+                if (Parent == null) return 0;
+                // Recursive version would be simpler ("return Parent.RankDepth + 1;") but can get stuck on loops.
+                var ancestors = new List<ActionItem> { Parent };
+                var cursor = Parent.Parent;
+                while (cursor != null && !ancestors.Contains(cursor))
+                {
+                    ancestors.Add(cursor);
+                    cursor = cursor.Parent;
+                }
+                return ancestors.Count;
+            }
+        }
+
         public int Upvotes { get; set; }
     }
 }
