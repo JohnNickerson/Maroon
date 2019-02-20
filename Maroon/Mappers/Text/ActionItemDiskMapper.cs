@@ -68,7 +68,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                             {
                                 case "done-date":
                                     currentItem.DoneDate = DateTime.Parse(ts[1]);
-                                    currentItem.Done = true;
                                     break;
                                 case "id":
                                     currentItem.ID = Guid.Parse(ts[1]);

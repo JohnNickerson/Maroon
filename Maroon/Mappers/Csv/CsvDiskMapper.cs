@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
     {
         private string _filename;
 
-        public CsvDiskMapper(string filename)
+        protected CsvDiskMapper(string filename)
         {
             _filename = filename;
         }
@@ -36,9 +37,16 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
 
             for (var i = 1; i < lines.Count(); i++)
             {
-                // Generic deserialisation.
-				var item = FromTokens(lines[i].Tokenise().ToArray());
-                result.Add(item);
+                try
+                {
+                    // Generic deserialisation.
+                    var item = FromTokens(lines[i].Tokenise().ToArray());
+                    result.Add(item);
+                }
+                catch
+                {
+                    Trace.WriteLine("Bad line in file: {0}", lines[i]);
+                }
             }
 
             return result;

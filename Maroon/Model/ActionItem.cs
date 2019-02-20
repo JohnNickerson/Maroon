@@ -15,7 +15,15 @@ namespace AssimilationSoftware.Maroon.Model
         public string Status { get; set; }
         public List<string> Notes { get; set; }
         public DateTime? DoneDate { get; set; }
-        public bool Done { get; set; }
+        public bool Done
+        {
+            get => DoneDate.HasValue;
+            set
+            {
+                if (DoneDate.HasValue == value) return;
+                DoneDate = value ? DateTime.Today : (DateTime?)null;
+            }
+        }
         public DateTime? TickleDate { get; set; }
         public Dictionary<string, string> Tags { get; set; }
 
