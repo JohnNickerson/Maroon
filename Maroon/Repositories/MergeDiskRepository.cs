@@ -124,30 +124,45 @@ namespace AssimilationSoftware.Maroon.Repositories
         /// </summary>
         /// <returns></returns>
         /// <remarks>A conflict here is defined as two or more updates or deletes to the same version (ie revision number) of the same object.</remarks>
-        public List<List<T>> FindConflicts()
+        public List<Conflict<T>> FindConflicts()
         {
-            var result = new List<List<T>>();
+            var result = new List<Conflict<T>>();
 
             // Check for pairs of identical revision numbers in updates and deletes.
-            var allChanges = new List<T>();
-            allChanges.AddRange(_updated);
-            allChanges.AddRange(_deleted);
-            for (var i = 0; i < allChanges.Count; i++)
+            // Two deletes of the same item is not a conflict in itself.
+
+            // Conflicting updates:
+            for (var i = 0; i < _updated.Count; i++)
             {
                 var found = false;
-                var duplicates = new List<T>();
-                for (var j = i + 1; j < allChanges.Count; j++)
+                var duplicates = new Conflict<T>();
+                for (var j = i + 1; j < _updated.Count; j++)
                 {
-                    if (allChanges[i].ID != allChanges[j].ID || allChanges[i].Revision != allChanges[j].Revision)
+                    if (_updated[i].ID != _updated[j].ID || _updated[i].Revision != _updated[j].Revision)
                     {
                         continue;
                     }
                     if (!found)
                     {
-                        duplicates.Add(allChanges[i]);
+                        duplicates.Updates.Add(_updated[i]);
                         found = true;
                     }
-                    duplicates.Add(allChanges[j]);
+
+                    duplicates.Updates.Add(_updated[j]);
+                }
+
+                // Conflicting deletes:
+                foreach (var d in _deleted)
+                {
+                    if (_updated[i].ID == d.ID && _updated[i].Revision == d.Revision)
+                    {
+                        if (!found)
+                        {
+                            duplicates.Updates.Add(_updated[i]);
+                            found = true;
+                        }
+                        duplicates.Deletes.Add(d);
+                    }
                 }
 
                 if (found)
