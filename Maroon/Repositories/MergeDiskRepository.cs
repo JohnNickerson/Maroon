@@ -7,7 +7,7 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Repositories
 {
-    public class MergeDiskRepository<T> : IRepository<T> where T : ModelObject
+    public class MergeDiskRepository<T> : IMergeRepository<T> where T : ModelObject
     {
         #region Fields
         private IMapper<T> _mapper;
@@ -94,15 +94,15 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void CommitChanges()
         {
+            SaveChanges(); // So we don't stomp on anything in memory.
+            // Load all, in case other changes have been merged in.
+            FindAll();
+
             // Only write changes if there are any to write.
             if (_updated.Count > 0 || _deleted.Count > 0)
             {
-                SaveChanges(); // So we don't stomp on anything in memory.
-
-                // Load all.
-                FindAll();
-
-                // TODO: Verify no conflicts first? How to report a problem?
+                // Verify no conflicts first. Caller must check and resolve conflicts if they exist.
+                if (FindConflicts().Count > 0) return;
 
                 // Apply changes (encapsulated in the Items property).
                 // Save all.
@@ -128,46 +128,34 @@ namespace AssimilationSoftware.Maroon.Repositories
         {
             var result = new List<Conflict<T>>();
 
-            // Check for pairs of identical revision numbers in updates and deletes.
-            // Two deletes of the same item is not a conflict in itself.
+            // A set of pending edits comprises a conflict if:
+            // 1. There is a gap in the list of revision numbers.
+            // 2. There are two edits with the same revision number.
 
-            // Conflicting updates:
-            for (var i = 0; i < _updated.Count; i++)
+            // Get the list of IDs to check.
+            var checkIds = _updated.Select(u => u.ID).Union(_deleted.Select(d => d.ID)).Distinct();
+            foreach (var id in checkIds)
             {
-                var found = false;
-                var duplicates = new Conflict<T>();
-                for (var j = i + 1; j < _updated.Count; j++)
-                {
-                    if (_updated[i].ID != _updated[j].ID || _updated[i].Revision != _updated[j].Revision)
-                    {
-                        continue;
-                    }
-                    if (!found)
-                    {
-                        duplicates.Updates.Add(_updated[i]);
-                        found = true;
-                    }
+                // Verify pending updates and deletes form a coherent chain.
+                var baseRevision = _items.FirstOrDefault(i => i.ID == id)?.Revision ?? _updated.OrderBy(u => u.Revision).FirstOrDefault(u => u.ID == id)?.Revision - 1;
+                if (!baseRevision.HasValue) continue;
 
-                    duplicates.Updates.Add(_updated[j]);
+                baseRevision++;
+                // Look for exactly one update or delete with the next revision number.
+                while (_updated.Count(u => u.ID == id && u.Revision == baseRevision) +
+                       _deleted.Count(d => d.ID == id && d.Revision == baseRevision) == 1)
+                {
+                    baseRevision++;
                 }
-
-                // Conflicting deletes:
-                foreach (var d in _deleted)
+                // If there are any updates or deletes left with equal or higher revision numbers, there is a conflict.
+                var c = new Conflict<T>
                 {
-                    if (_updated[i].ID == d.ID && _updated[i].Revision == d.Revision)
-                    {
-                        if (!found)
-                        {
-                            duplicates.Updates.Add(_updated[i]);
-                            found = true;
-                        }
-                        duplicates.Deletes.Add(d);
-                    }
-                }
-
-                if (found)
+                    Updates = _updated.Where(u => u.ID == id && u.Revision >= baseRevision).ToList(),
+                    Deletes = _deleted.Where(d => d.ID == id && d.Revision >= baseRevision).ToList()
+                };
+                if (c.Updates.Count + c.Deletes.Count > 0)
                 {
-                    result.Add(duplicates);
+                    result.Add(c);
                 }
             }
 

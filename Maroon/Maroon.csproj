@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interfaces\IMapper.cs" />
+    <Compile Include="Interfaces\IMergeRepository.cs" />
     <Compile Include="Interfaces\IRepository.cs" />
     <Compile Include="Mappers\Csv\CsvDiskMapper.cs" />
     <Compile Include="Mappers\Csv\Extensions.cs" />
