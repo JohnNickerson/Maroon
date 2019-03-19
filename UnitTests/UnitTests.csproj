@@ -56,6 +56,7 @@
     <Compile Include="TimeLogMapperTests.cs" />
     <Compile Include="LedgerMapperTests.cs" />
     <Compile Include="MergeDiskActionTests.cs" />
+    <Compile Include="MergeDiskNoteTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

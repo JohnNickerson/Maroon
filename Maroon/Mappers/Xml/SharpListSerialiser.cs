@@ -9,6 +9,8 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
     {
         #region Fields
         private readonly SharpSerializer _serial;
+        private string _path;
+
         #endregion
 
         #region Constructors
@@ -79,7 +81,12 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
         #endregion
 
         #region Properties
-        public string Path { get; set; }
+
+        public string Path
+        {
+            get => string.IsNullOrEmpty(_path) ? "." : _path;
+            set => _path = value;
+        }
 
         public string FileNamePattern { get; set; }
 

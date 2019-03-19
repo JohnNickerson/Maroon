@@ -65,8 +65,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Delete(T entity)
         {
-            // Multiple deletes won't cause a conflict, so keep the data simple and make sure there's only one per object.
-            _deleted.RemoveAll(t => t.ID == entity.ID);
+            // Multiple deletes won't cause a conflict, but removing them would leave a gap in the revision chain.
             entity.LastModified = DateTime.Now;
             entity.Revision++;
             _deleted.Add(entity);
