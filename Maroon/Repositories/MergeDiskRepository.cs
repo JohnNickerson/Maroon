@@ -59,24 +59,24 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Create(T entity)
         {
             entity.LastModified = DateTime.Now;
-            entity.Revision++;
-            _updated.Add(entity);
+            entity.UpdateRevision();
+            _updated.Add((T)entity.Clone());
         }
 
         public void Delete(T entity)
         {
             // Multiple deletes won't cause a conflict, but removing them would leave a gap in the revision chain.
             entity.LastModified = DateTime.Now;
-            entity.Revision++;
-            _deleted.Add(entity);
+            entity.UpdateRevision();
+            _deleted.Add((T)entity.Clone());
         }
 
         public void Update(T entity)
         {
             // Do not remove from the list, or else we can't detect conflicts.
             entity.LastModified = DateTime.Now;
-            entity.Revision++;
-            _updated.Add(entity);
+            entity.UpdateRevision();
+            _updated.Add((T)entity.Clone());
         }
 
         public void SaveChanges()

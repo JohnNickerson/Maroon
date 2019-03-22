@@ -23,5 +23,22 @@ namespace AssimilationSoftware.Maroon.Model
             }
             set => Tags = value.Replace("#", "").Split(' ').ToList();
         }
+
+        public override object Clone()
+        {
+            return new Note
+            {
+                Parent = Parent,
+                ParentId = ParentId,
+                TagString = TagString,
+                Tags = Tags,
+                Text = Text,
+                Timestamp = Timestamp,
+                RevisionGuid = RevisionGuid,
+                Revision = Revision,
+                ID = ID,
+                LastModified = LastModified
+            };
+        }
     }
 }

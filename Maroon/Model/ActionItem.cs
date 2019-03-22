@@ -57,5 +57,29 @@ namespace AssimilationSoftware.Maroon.Model
         }
 
         public int Upvotes { get; set; }
+
+        public override object Clone()
+        {
+            return new ActionItem
+            {
+                Context = Context,
+                Done = Done,
+                DoneDate = DoneDate,
+                Notes = Notes,
+                Parent = Parent,
+                ParentId = ParentId,
+                Project = Project,
+                ProjectId = ProjectId,
+                Status = Status,
+                Tags = Tags,
+                TickleDate = TickleDate,
+                Title = Title,
+                Upvotes = Upvotes,
+                RevisionGuid = RevisionGuid,
+                Revision = Revision,
+                ID = ID,
+                LastModified = LastModified
+            };
+        }
     }
 }

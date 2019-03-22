@@ -37,7 +37,7 @@ namespace UnitTests
             repo.Create(item);
             repo.SaveChanges();
 
-            Assert.IsTrue(File.Exists($".\\update-{item.ID}.xml"));
+            Assert.IsTrue(File.Exists($".\\update-{item.RevisionGuid}.xml"));
         }
 
         [TestMethod]
@@ -65,6 +65,7 @@ namespace UnitTests
                 TickleDate = null
             };
             repo.Create(item);
+            repo.SaveChanges();
             item.Context = "moved";
             repo.Update(item);
 

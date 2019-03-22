@@ -2,16 +2,21 @@
 
 namespace AssimilationSoftware.Maroon.Model
 {
-    public abstract class ModelObject
+    public abstract class ModelObject : ICloneable
     {
         /// <summary>
-        /// Unique identifier for this item.
+        /// Unique identifier for this item across all revisions.
         /// </summary>
         public Guid ID { get; set; }
+
         public DateTime LastModified { get; set; }
+
         public int Revision { get; set; }
 
-        public ModelObject() { }
+        /// <summary>
+        /// A unique ID assigned just to this revision of this object, used mostly for serialisation.
+        /// </summary>
+        public Guid RevisionGuid { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -22,5 +27,13 @@ namespace AssimilationSoftware.Maroon.Model
         {
             return ID.GetHashCode();
         }
+
+        public void UpdateRevision()
+        {
+            Revision++;
+            RevisionGuid = Guid.NewGuid();
+        }
+
+        public abstract object Clone();
     }
 }

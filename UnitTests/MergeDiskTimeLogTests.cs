@@ -37,19 +37,19 @@ namespace UnitTests
 
             var found = repo.Find(log.ID);
             Assert.IsNotNull(found);
-            Assert.IsTrue(File.Exists(Path.Combine(path, $"update-{log.ID}.xml")));
+            Assert.IsTrue(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.xml")));
 
             repo.CommitChanges();
 
             found = repo.Find(log.ID);
             Assert.IsNotNull(found);
-            Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.ID}.xml")));
+            Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.xml")));
 
             repo.Delete(log);
             repo.SaveChanges();
-            Assert.IsTrue(File.Exists(Path.Combine(path, $"delete-{log.ID}.xml")));
+            Assert.IsTrue(File.Exists(Path.Combine(path, $"delete-{log.RevisionGuid}.xml")));
             repo.CommitChanges();
-            Assert.IsFalse(File.Exists(Path.Combine(path, $"delete-{log.ID}.xml")));
+            Assert.IsFalse(File.Exists(Path.Combine(path, $"delete-{log.RevisionGuid}.xml")));
         }
     }
 }

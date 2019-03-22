@@ -61,7 +61,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
 
             foreach (var d in data)
             {
-                var fileName = System.IO.Path.Combine(Path, string.Format(FileNamePattern, d.ID));
+                var fileName = System.IO.Path.Combine(Path, string.Format(FileNamePattern, d.RevisionGuid));
                 if (deleteFirst || !File.Exists(fileName))
                 {
                     _serial.Serialize(d, fileName);
@@ -76,7 +76,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
         public void Serialise(T data)
         {
             // This is the shortcut way that you can't do with everything in a single file.
-            _serial.Serialize(data, System.IO.Path.Combine(Path, string.Format(FileNamePattern, data.ID)));
+            _serial.Serialize(data, System.IO.Path.Combine(Path, string.Format(FileNamePattern, data.RevisionGuid)));
         }
         #endregion
 
