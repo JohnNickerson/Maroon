@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Polenter.Serialization;
 
 namespace AssimilationSoftware.Maroon.Model
 {
@@ -27,8 +28,16 @@ namespace AssimilationSoftware.Maroon.Model
         public DateTime? TickleDate { get; set; }
         public Dictionary<string, string> Tags { get; set; }
 
+        [ExcludeFromSerialization]
         public ActionItem Parent { get; set; }
+
+        public Guid? ParentId { get; set; }
+
+        [ExcludeFromSerialization]
         public ActionItem Project { get; set; }
+
+        public Guid? ProjectId { get; set; }
+
 
         public int RankDepth
         {

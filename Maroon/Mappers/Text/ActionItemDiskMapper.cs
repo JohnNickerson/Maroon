@@ -46,7 +46,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             var idFoundCount = 0;
             Items = new List<ActionItem>();
             var context = string.Empty;
-            var currentItem = new ActionItem { Context = context, Title = "(item out of order)", Done = false };
+            var currentItem = new ActionItem { Context = context, Title = "(item out of order)", Done = false, ID = Guid.NewGuid() };
             foreach (var t in lines)
             {
                 if (t.StartsWith("@"))
@@ -113,7 +113,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 else
                 {
                     // New item.
-                    currentItem = new ActionItem { Context = context, Title = t.Trim() };
+                    currentItem = new ActionItem { Context = context, Title = t.Trim(), ID = Guid.NewGuid() };
                     Items.Add(currentItem);
                 }
             }

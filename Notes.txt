@@ -27,3 +27,7 @@ Challenges:
 	
 What to send via queues? Commands, data, files.
 Broadcast and targeted messaging.
+
+2019-03-21: Build 0.1.2.1 released to Production
+	- Better conflict detection.
+	- Fixed path use in SharpListSerialiser.
