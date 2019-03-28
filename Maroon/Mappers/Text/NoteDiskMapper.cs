@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using AssimilationSoftware.Maroon.Interfaces;
@@ -27,9 +26,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
         {
             List<Note> drafts = new List<Note>();
             Note current = null;
-            DateTime stamp = DateTime.Now;
-            // A dictionary to store parent hashes for later processing.
-            var parents = new Dictionary<Note, Guid>();
+            DateTime stamp;
             if (File.Exists(Filename))
             {
                 foreach (string line in File.ReadAllLines(Filename))
@@ -63,7 +60,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
                             if (parent.HasValue)
                             {
-                                parents[current] = parent.Value;
+                                current.ParentId = parent.Value;
                             }
                         }
                         else if (DateTime.TryParse(line, out stamp))
@@ -83,21 +80,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                             }
                             current.Text += line;
                         }
-                    }
-                }
-
-                var itemMap = new Dictionary<Guid, Note>();
-                foreach (var i in drafts)
-                {
-                    itemMap[i.ID] = i;
-                }
-
-                // Process parental relationships.
-                foreach (Note n in parents.Keys)
-                {
-                    if (itemMap.ContainsKey(parents[n]))
-                    {
-                        n.Parent = itemMap[parents[n]];
                     }
                 }
             }
@@ -136,7 +118,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             }
 
             // Backwards-compatible cases: no revision number.
-            var r3 = new Regex(re1, RegexOptions.IgnoreCase|RegexOptions.Singleline);
+            var r3 = new Regex(re1, RegexOptions.IgnoreCase | RegexOptions.Singleline);
             var m3 = r3.Match(line);
             if (m3.Success)
             {
@@ -152,7 +134,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             {
                 noteId = new Guid(m4.Groups[1].ToString());
                 revision = 0;
-                parentId=new Guid(m4.Groups[3].ToString());
+                parentId = new Guid(m4.Groups[3].ToString());
                 return true;
             }
 
@@ -165,10 +147,8 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
         public Note Load(Guid id)
         {
-            // TODO: Optimise?
             var items = LoadAll();
-            var matches = from i in items where i.ID == id select i;
-            return matches.Any() ? matches.First() : null;
+            return items.FirstOrDefault(i => i.ID == id);
         }
 
         public void Save(Note item)
@@ -206,15 +186,11 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
             File.WriteAllText(Filename, filecontents.ToString());
         }
-        
+
         public void Delete(Note item)
         {
             var allitems = LoadAll().ToList();
-            var search = (from i in allitems where i.ID == item.ID select i);
-            if (search.Count() > 0)
-            {
-                allitems.Remove(search.First());
-            }
+            allitems.RemoveAll(i => i.ID == item.ID);
             SaveAll(allitems);
         }
     }

@@ -40,8 +40,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 _lastModTime = null;
             }
             var lines = (File.Exists(Filename) ? File.ReadAllLines(Filename) : new string[] { });
-            var priorityParents = new Dictionary<ActionItem, Guid>();
-            var projects = new Dictionary<ActionItem, Guid>();
 
             var idFoundCount = 0;
             Items = new List<ActionItem>();
@@ -74,10 +72,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                                     idFoundCount++;
                                     break;
                                 case "priority-parent":
-                                    priorityParents[currentItem] = Guid.Parse(ts[1]);
+                                    currentItem.ParentId = Guid.Parse(ts[1]);
                                     break;
                                 case "project":
-                                    projects[currentItem] = Guid.Parse(ts[1]);
+                                    currentItem.ProjectId = Guid.Parse(ts[1]);
                                     break;
                                 case "tickle-date":
                                     currentItem.TickleDate = DateTime.Parse(ts[1]);
@@ -115,26 +113,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                     // New item.
                     currentItem = new ActionItem { Context = context, Title = t.Trim(), ID = Guid.NewGuid() };
                     Items.Add(currentItem);
-                }
-            }
-
-            var itemMap = new Dictionary<Guid, ActionItem>();
-            foreach (var i in Items)
-            {
-                itemMap[i.ID] = i;
-            }
-
-            // Process references.
-            foreach (var t in Items)
-            {
-                if (projects.ContainsKey(t) && itemMap.ContainsKey(projects[t]))
-                {
-                    t.Project = itemMap[projects[t]];
-                }
-
-                if (priorityParents.ContainsKey(t) && itemMap.ContainsKey(priorityParents[t]))
-                {
-                    t.Parent = itemMap[priorityParents[t]];
                 }
             }
 
@@ -202,14 +180,14 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 {
                     file.AppendLine($"\t\t#revision:{i.Revision}");
                 }
-                if (i.Project != null)
+                if (i.ProjectId != null)
                 {
-                    file.AppendLine($"\t\t#project:{i.Project.ID}");
+                    file.AppendLine($"\t\t#project:{i.ProjectId}");
                 }
 
-                if (i.Parent != null)
+                if (i.ParentId != null)
                 {
-                    file.AppendLine($"\t\t#priority-parent:{i.Parent.ID}");
+                    file.AppendLine($"\t\t#priority-parent:{i.ParentId}");
                 }
             }
 

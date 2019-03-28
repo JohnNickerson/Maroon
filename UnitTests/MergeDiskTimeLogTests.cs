@@ -49,7 +49,7 @@ namespace UnitTests
             repo.SaveChanges();
             Assert.IsTrue(File.Exists(Path.Combine(path, $"delete-{log.RevisionGuid}.xml")));
             repo.CommitChanges();
-            Assert.IsFalse(File.Exists(Path.Combine(path, $"delete-{log.RevisionGuid}.xml")));
+            Assert.IsFalse(File.Exists(Path.Combine(path, $"delete-{log.RevisionGuid}.xml")), "Delete-change file still exists after commit.");
         }
     }
 }

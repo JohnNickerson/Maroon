@@ -28,7 +28,6 @@ namespace UnitTests
                 ID = Guid.NewGuid(),
                 Timestamp = DateTime.Now,
                 Revision = 0,
-                Parent = null,
                 LastModified = DateTime.Now,
                 Text = "This is a test entry",
                 ParentId = null,

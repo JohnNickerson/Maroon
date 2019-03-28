@@ -1,16 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
+using AssimilationSoftware.Maroon.Interfaces;
 using Polenter.Serialization;
 
 namespace AssimilationSoftware.Maroon.Model
 {
     public class ActionItem : ModelObject
     {
+        #region Constructors
         public ActionItem()
         {
             Notes = new List<string>();
             Tags = new Dictionary<string, string>();
         }
+        #endregion
+
+        #region Methods
+
+        public ActionItem GetProject(IRepository<ActionItem> repository)
+        {
+            return ProjectId.HasValue ? repository.Find(ProjectId.Value) : null;
+        }
+
+        public ActionItem GetParent(IRepository<ActionItem> repository)
+        {
+            return ParentId.HasValue ? repository.Find(ParentId.Value) : null;
+        }
+
+        public int GetRankDepth(IRepository<ActionItem> repository)
+        {
+            if (ParentId == null) return 0;
+            // Recursive version would be simpler ("return Parent.RankDepth + 1;") but can get stuck on loops.
+            var ancestors = new List<ActionItem> {GetParent(repository)};
+            var cursor = GetParent(repository).GetParent(repository);
+            while (cursor != null && !ancestors.Contains(cursor))
+            {
+                ancestors.Add(cursor);
+                cursor = cursor.GetParent(repository);
+            }
+
+            return ancestors.Count;
+        }
+        
+        public override object Clone()
+        {
+            return new ActionItem
+            {
+                Context = Context,
+                Done = Done,
+                DoneDate = DoneDate,
+                Notes = Notes,
+                ParentId = ParentId,
+                ProjectId = ProjectId,
+                Status = Status,
+                Tags = Tags,
+                TickleDate = TickleDate,
+                Title = Title,
+                Upvotes = Upvotes,
+                RevisionGuid = RevisionGuid,
+                Revision = Revision,
+                ID = ID,
+                LastModified = LastModified
+            };
+        }
+
+        #endregion
+
+        #region Properties
         public string Title { get; set; }
         public string Context { get; set; }
         public string Status { get; set; }
@@ -28,58 +84,12 @@ namespace AssimilationSoftware.Maroon.Model
         public DateTime? TickleDate { get; set; }
         public Dictionary<string, string> Tags { get; set; }
 
-        [ExcludeFromSerialization]
-        public ActionItem Parent { get; set; }
-
         public Guid? ParentId { get; set; }
-
-        [ExcludeFromSerialization]
-        public ActionItem Project { get; set; }
 
         public Guid? ProjectId { get; set; }
 
 
-        public int RankDepth
-        {
-            get
-            {
-                if (Parent == null) return 0;
-                // Recursive version would be simpler ("return Parent.RankDepth + 1;") but can get stuck on loops.
-                var ancestors = new List<ActionItem> { Parent };
-                var cursor = Parent.Parent;
-                while (cursor != null && !ancestors.Contains(cursor))
-                {
-                    ancestors.Add(cursor);
-                    cursor = cursor.Parent;
-                }
-                return ancestors.Count;
-            }
-        }
-
         public int Upvotes { get; set; }
-
-        public override object Clone()
-        {
-            return new ActionItem
-            {
-                Context = Context,
-                Done = Done,
-                DoneDate = DoneDate,
-                Notes = Notes,
-                Parent = Parent,
-                ParentId = ParentId,
-                Project = Project,
-                ProjectId = ProjectId,
-                Status = Status,
-                Tags = Tags,
-                TickleDate = TickleDate,
-                Title = Title,
-                Upvotes = Upvotes,
-                RevisionGuid = RevisionGuid,
-                Revision = Revision,
-                ID = ID,
-                LastModified = LastModified
-            };
-        }
+        #endregion
     }
 }

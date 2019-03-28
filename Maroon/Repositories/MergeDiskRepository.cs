@@ -44,6 +44,16 @@ namespace AssimilationSoftware.Maroon.Repositories
             {
                 _items.Add(i);
             }
+            else
+            {
+                // Reload pending changes.
+                _updated = _updateMapper.Deserialise();
+                _deleted = _deleteMapper.Deserialise();
+                if (Items.Any(v => v.ID == id))
+                {
+                    i = Items.First(t => t.ID == id);
+                }
+            }
             return i;
         }
 
@@ -52,7 +62,6 @@ namespace AssimilationSoftware.Maroon.Repositories
             _items = _mapper.LoadAll().ToList();
             _updated = _updateMapper.Deserialise();
             _deleted = _deleteMapper.Deserialise();
-
             return Items;
         }
 
@@ -81,40 +90,47 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void SaveChanges()
         {
-            // Only write changes if there are any to write.
-            if (_updated.Count > 0 || _deleted.Count > 0)
+            lock (_mapper)
             {
-                // Note: all changes will be in these lists, and the core list does not get updated except via CommitChanges().
-                // Therefore, saving the updated and deleted collections saves all changes.
-                _updateMapper.Serialise(_updated);
-                _deleteMapper.Serialise(_deleted);
+                // Only write changes if there are any to write.
+                if (_updated.Count > 0 || _deleted.Count > 0)
+                {
+                    // Note: all changes will be in these lists, and the core list does not get updated except via CommitChanges().
+                    // Therefore, saving the updated and deleted collections saves all changes.
+                    _updateMapper.Serialise(_updated);
+                    _deleteMapper.Serialise(_deleted);
+                }
             }
         }
 
         public void CommitChanges()
         {
-            SaveChanges(); // So we don't stomp on anything in memory.
-            // Load all, in case other changes have been merged in.
-            FindAll();
-
-            // Only write changes if there are any to write.
-            if (_updated.Count > 0 || _deleted.Count > 0)
+            lock (_mapper)
             {
-                // Verify no conflicts first. Caller must check and resolve conflicts if they exist.
-                if (FindConflicts().Count > 0) return;
+                // This is inefficient and probably causes disk read/write conflicts. It's certainly not thread-safe.
+                SaveChanges(); // So we don't stomp on anything in memory.
+                               // Load all, in case other changes have been merged in.
+                FindAll();
 
-                // Apply changes (encapsulated in the Items property).
-                // Save all.
-                _mapper.SaveAll(Items.ToList());
+                // Only write changes if there are any to write.
+                if (_updated.Count > 0 || _deleted.Count > 0)
+                {
+                    // Verify no conflicts first. Caller must check and resolve conflicts if they exist.
+                    if (FindConflicts().Count > 0) return;
 
-                // Clear the lists.
-                _items = Items.ToList();
-                _updated = new List<T>();
-                _deleted = new List<T>();
+                    // Apply changes (encapsulated in the Items property).
+                    // Save all.
+                    _mapper.SaveAll(Items.ToList());
 
-                // Clear pending lists on disk (delete files).
-                _updateMapper.Serialise(_updated, true);
-                _deleteMapper.Serialise(_deleted, true);
+                    // Clear the lists.
+                    _items = Items.ToList();
+                    _updated = new List<T>();
+                    _deleted = new List<T>();
+
+                    // Clear pending lists on disk (delete files).
+                    _updateMapper.Serialise(_updated, true);
+                    _deleteMapper.Serialise(_deleted, true);
+                }
             }
         }
 
@@ -149,6 +165,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 // If there are any updates or deletes left with equal or higher revision numbers, there is a conflict.
                 var c = new Conflict<T>
                 {
+                    Id = id,
                     Updates = _updated.Where(u => u.ID == id && u.Revision >= baseRevision).ToList(),
                     Deletes = _deleted.Where(d => d.ID == id && d.Revision >= baseRevision).ToList()
                 };

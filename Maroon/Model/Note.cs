@@ -1,16 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AssimilationSoftware.Maroon.Interfaces;
+using Polenter.Serialization;
 
 namespace AssimilationSoftware.Maroon.Model
 {
     public class Note : ModelObject
     {
+        #region Methods
+
+        public Note GetParent(IRepository<Note> repository)
+        {
+            return ParentId == null ? null : repository.Find(ParentId.Value);
+        }
+        public override object Clone()
+        {
+            return new Note
+            {
+                ParentId = ParentId,
+                TagString = TagString,
+                Tags = Tags,
+                Text = Text,
+                Timestamp = Timestamp,
+                RevisionGuid = RevisionGuid,
+                Revision = Revision,
+                ID = ID,
+                LastModified = LastModified
+            };
+        }
+        #endregion
+
+        #region Properties
         public string Text { get; set; }
         public List<string> Tags { get; set; }
         public DateTime Timestamp { get; set; }
         public Guid? ParentId { get; set; }
-        public Note Parent { get; set; }
         public string TagString
         {
             get
@@ -23,22 +48,6 @@ namespace AssimilationSoftware.Maroon.Model
             }
             set => Tags = value.Replace("#", "").Split(' ').ToList();
         }
-
-        public override object Clone()
-        {
-            return new Note
-            {
-                Parent = Parent,
-                ParentId = ParentId,
-                TagString = TagString,
-                Tags = Tags,
-                Text = Text,
-                Timestamp = Timestamp,
-                RevisionGuid = RevisionGuid,
-                Revision = Revision,
-                ID = ID,
-                LastModified = LastModified
-            };
-        }
+        #endregion
     }
 }
