@@ -103,7 +103,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
         }
 
-        public void CommitChanges()
+        public int CommitChanges()
         {
             lock (_mapper)
             {
@@ -112,11 +112,13 @@ namespace AssimilationSoftware.Maroon.Repositories
                                // Load all, in case other changes have been merged in.
                 FindAll();
 
+                int pendingCount = _updated.Count + _deleted.Count;
+
                 // Only write changes if there are any to write.
-                if (_updated.Count > 0 || _deleted.Count > 0)
+                if (pendingCount > 0)
                 {
                     // Verify no conflicts first. Caller must check and resolve conflicts if they exist.
-                    if (FindConflicts().Count > 0) return;
+                    if (FindConflicts().Count > 0) return 0;
 
                     // Apply changes (encapsulated in the Items property).
                     // Save all.
@@ -131,6 +133,8 @@ namespace AssimilationSoftware.Maroon.Repositories
                     _updateMapper.Serialise(_updated, true);
                     _deleteMapper.Serialise(_deleted, true);
                 }
+
+                return pendingCount;
             }
         }
 

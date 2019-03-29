@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AssimilationSoftware.Maroon.Interfaces;
-using Polenter.Serialization;
 
 namespace AssimilationSoftware.Maroon.Model
 {

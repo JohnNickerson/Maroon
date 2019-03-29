@@ -12,62 +12,61 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
             var quoted = false;
 			var escape = false;
             var token = new StringBuilder();
-            for (int x = 0; x < line.Length; x++)
+            foreach (var c in line)
             {
-				if (escape)
-				{
-					if (line[x] == '"')
-					{
-						// Escaped double quotes. Add as literal.
-						token.Append(line[x]);
-					}
-					else if (line[x] == ',')
-					{
-						// That wasn't an escape.
-						tokens.Add(token.ToString());
-						quoted = false;
-						escape = false;
-					}
-					else
-					{
-						// Well-formed strings should not end up here.
-						// If we do, however, let's assume that was an erroneous escape and this next character is a literal.
-						token.Append('"');
-						token.Append(line[x]);
-						escape = false;
-					}
-				}
+                if (escape)
+                {
+                    switch (c)
+                    {
+                        case '"':
+                            // Escaped double quotes. Add as literal.
+                            token.Append(c);
+                            break;
+                        case ',':
+                            // That wasn't an escape.
+                            tokens.Add(token.ToString());
+                            quoted = false;
+                            escape = false;
+                            break;
+                        default:
+                            // Well-formed strings should not end up here.
+                            // If we do, however, let's assume that was an erroneous escape and this next character is a literal.
+                            token.Append('"');
+                            token.Append(c);
+                            escape = false;
+                            break;
+                    }
+                }
                 else if (quoted)
                 {
-                    if (line[x] == '"')
+                    if (c == '"')
                     {
                         // Potentially the beginning of an escape sequence (double-double-quotes).
-						escape = true;
+                        escape = true;
                     }
                     else
                     {
                         // Add to token.
-                        token.Append(line[x]);
+                        token.Append(c);
                     }
                 }
                 else
                 {
-                    if (line[x] == ',')
+                    switch (c)
                     {
-                        // End of token.
-                        tokens.Add(token.ToString());
-                        token = new StringBuilder();
-                    }
-                    else if (line[x] == '"')
-                    {
-                        // Beginning of token.
-                        quoted = true;
-						escape = false;
-                    }
-                    else
-                    {
-                        // Add to token.
-                        token.Append(line[x]);
+                        case ',':
+                            // End of token.
+                            tokens.Add(token.ToString());
+                            token = new StringBuilder();
+                            break;
+                        case '"':
+                            // Beginning of token.
+                            quoted = true;
+                            break;
+                        default:
+                            // Add to token.
+                            token.Append(c);
+                            break;
                     }
                 }
             }

@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Interfaces
 {
     public interface IMergeRepository<T> : IRepository<T> where T : ModelObject
     {
-        void CommitChanges();
+        /// <summary>
+        /// Writes pending changes into the baseline collection.
+        /// </summary>
+        /// <returns>Number of changes committed.</returns>
+        int CommitChanges();
 
         /// <summary>
         /// Gets a list containing sets of conflicting edits.
