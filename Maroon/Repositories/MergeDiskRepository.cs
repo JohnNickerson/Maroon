@@ -143,9 +143,14 @@ namespace AssimilationSoftware.Maroon.Repositories
         /// </summary>
         /// <returns></returns>
         /// <remarks>A conflict here is defined as two or more updates or deletes to the same version (ie revision number) of the same object.</remarks>
-        public List<Conflict<T>> FindConflicts()
+        public List<PendingChange<T>> FindConflicts()
         {
-            var result = new List<Conflict<T>>();
+            return GetPendingChanges().Where(c => c.IsConflict).ToList();
+        }
+
+        public List<PendingChange<T>> GetPendingChanges()
+        {
+            var result = new List<PendingChange<T>>();
 
             // A set of pending edits comprises a conflict if:
             // 1. There is a gap in the list of revision numbers.
@@ -155,6 +160,13 @@ namespace AssimilationSoftware.Maroon.Repositories
             var checkIds = _updated.Select(u => u.ID).Union(_deleted.Select(d => d.ID)).Distinct();
             foreach (var id in checkIds)
             {
+                var c = new PendingChange<T>
+                {
+                    Id = id,
+                    Updates = _updated.Where(u => u.ID == id).ToList(),
+                    Deletes = _deleted.Where(d => d.ID == id).ToList()
+                };
+
                 // Verify pending updates and deletes form a coherent chain.
                 var baseRevision = _items.FirstOrDefault(i => i.ID == id)?.Revision ?? _updated.OrderBy(u => u.Revision).FirstOrDefault(u => u.ID == id)?.Revision - 1;
                 if (!baseRevision.HasValue) continue;
@@ -166,17 +178,12 @@ namespace AssimilationSoftware.Maroon.Repositories
                 {
                     baseRevision++;
                 }
+
                 // If there are any updates or deletes left with equal or higher revision numbers, there is a conflict.
-                var c = new Conflict<T>
-                {
-                    Id = id,
-                    Updates = _updated.Where(u => u.ID == id && u.Revision >= baseRevision).ToList(),
-                    Deletes = _deleted.Where(d => d.ID == id && d.Revision >= baseRevision).ToList()
-                };
-                if (c.Updates.Count + c.Deletes.Count > 0)
-                {
-                    result.Add(c);
-                }
+                c.IsConflict = c.Updates.Count(u => u.Revision >= baseRevision) +
+                               c.Deletes.Count(d => d.Revision >= baseRevision) > 0;
+
+                result.Add(c);
             }
 
             return result;

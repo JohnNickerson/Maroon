@@ -53,7 +53,7 @@
     <Compile Include="Mappers\Csv\TimeLogCsvMapper.cs" />
     <Compile Include="Mappers\Text\ActionItemDiskMapper.cs" />
     <Compile Include="Mappers\Text\NoteDiskMapper.cs" />
-    <Compile Include="Model\Conflict.cs" />
+    <Compile Include="Model\PendingChange.cs" />
     <Compile Include="Model\ModelObject.cs" />
     <Compile Include="Model\AccountTransfer.cs" />
     <Compile Include="Model\ActionItem.cs" />
