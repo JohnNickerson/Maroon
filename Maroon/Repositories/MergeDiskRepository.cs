@@ -10,13 +10,14 @@ namespace AssimilationSoftware.Maroon.Repositories
     public class MergeDiskRepository<T> : IMergeRepository<T> where T : ModelObject
     {
         #region Fields
-        private IMapper<T> _mapper;
-        private SharpListSerialiser<T> _updateMapper;
-        private SharpListSerialiser<T> _deleteMapper;
 
-        private List<T> _updated;
-        private List<T> _deleted;
-        private List<T> _items;
+        protected IMapper<T> _mapper;
+        protected SharpListSerialiser<T> _updateMapper;
+        protected SharpListSerialiser<T> _deleteMapper;
+
+        protected List<T> _updated;
+        protected List<T> _deleted;
+        protected List<T> _items;
         #endregion
 
         #region Constructors

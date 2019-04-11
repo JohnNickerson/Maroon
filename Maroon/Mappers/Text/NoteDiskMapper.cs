@@ -24,12 +24,12 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
         /// <returns>A list of blog drafts from the file, in order.</returns>
         public IEnumerable<Note> LoadAll()
         {
-            List<Note> drafts = new List<Note>();
+            var drafts = new List<Note>();
             Note current = null;
             DateTime stamp;
             if (File.Exists(Filename))
             {
-                foreach (string line in File.ReadAllLines(Filename))
+                foreach (var line in File.ReadAllLines(Filename))
                 {
                     if (line.Trim().Length == 0)
                     {
@@ -161,10 +161,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
         public void SaveAll(IEnumerable<Note> items)
         {
-            StringBuilder filecontents = new StringBuilder();
-            foreach (Note d in items)
+            var filecontents = new StringBuilder();
+            foreach (var d in items)
             {
-                filecontents.AppendLine(d.Timestamp.ToString("h:mm tt d/MM/yyyy"));
+                filecontents.AppendLine(d.Timestamp.ToString("s"));
 
                 filecontents.AppendLine(d.Text);
 

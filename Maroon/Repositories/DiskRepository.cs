@@ -8,10 +8,10 @@ namespace AssimilationSoftware.Maroon.Repositories
 {
     public class DiskRepository<T> : IRepository<T> where T : ModelObject
     {
-        private IMapper<T> _mapper;
-        private List<T> _updated;
-        private List<T> _deleted;
-        private List<T> _items;
+        protected IMapper<T> _mapper;
+        protected List<T> _updated;
+        protected List<T> _deleted;
+        protected List<T> _items;
 
         public DiskRepository(IMapper<T> mapper)
         {
