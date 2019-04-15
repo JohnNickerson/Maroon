@@ -34,7 +34,7 @@ namespace AssimilationSoftware.Maroon.Model
         /// </summary>
         public string ToAccount { get; set; }
 
-        public override object Clone()
+        public override ModelObject Clone()
         {
             return new AccountTransfer
             {
@@ -45,7 +45,8 @@ namespace AssimilationSoftware.Maroon.Model
                 FromAccount = FromAccount,
                 ToAccount = ToAccount,
                 RevisionGuid = RevisionGuid,
-                Revision = Revision,
+                PrevRevision = PrevRevision,
+                IsDeleted = IsDeleted,
                 ID = ID,
                 LastModified = LastModified
             };

@@ -12,22 +12,30 @@ namespace UnitTests
     [TestClass]
     public class MergeDiskNoteTest
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            {
+                File.Delete(updateFile);
+            }
+            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void Create_File_From_Scratch()
         {
-            var fileName = "LogFile.log";
-            if (File.Exists(fileName)) File.Delete(fileName);
-            foreach (var update in Directory.GetFiles(".", "update*.xml"))
-            {
-                File.Delete(update);
-            }
+            var fileName = "LogFile.txt";
             var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(fileName), Path.GetDirectoryName(fileName));
 
             repo.Create(new Note
             {
                 ID = Guid.NewGuid(),
                 Timestamp = DateTime.Now,
-                Revision = 0,
+                RevisionGuid = Guid.NewGuid(),
                 LastModified = DateTime.Now,
                 Text = "This is a test entry",
                 ParentId = null,

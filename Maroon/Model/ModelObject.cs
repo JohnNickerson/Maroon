@@ -2,7 +2,7 @@
 
 namespace AssimilationSoftware.Maroon.Model
 {
-    public abstract class ModelObject : ICloneable
+    public abstract class ModelObject
     {
         /// <summary>
         /// Unique identifier for this item across all revisions.
@@ -11,12 +11,14 @@ namespace AssimilationSoftware.Maroon.Model
 
         public DateTime LastModified { get; set; }
 
-        public int Revision { get; set; }
+        public Guid? PrevRevision { get; set; }
 
         /// <summary>
         /// A unique ID assigned just to this revision of this object, used mostly for serialisation.
         /// </summary>
         public Guid RevisionGuid { get; set; }
+
+        public bool IsDeleted { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -30,10 +32,10 @@ namespace AssimilationSoftware.Maroon.Model
 
         public void UpdateRevision()
         {
-            Revision++;
+            PrevRevision = RevisionGuid;
             RevisionGuid = Guid.NewGuid();
         }
 
-        public abstract object Clone();
+        public abstract ModelObject Clone();
     }
 }

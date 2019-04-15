@@ -22,14 +22,14 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                 Category = tokens[4],
                 Amount = decimal.Parse(tokens[5]),
                 ID = new Guid(tokens[6]),
-                Revision = int.Parse(tokens[7])
+                RevisionGuid = Guid.Parse(tokens[7])
             };
         }
 
         public override string ToCsv(AccountTransfer obj)
         {
             return string.Format("{0:yyyy-MM-dd},{1},{2},{3},{4},{5},{6},{7}", obj.Date, obj.FromAccount, obj.ToAccount,
-                obj.Description, obj.Category, obj.Amount, obj.ID, obj.Revision);
+                obj.Description, obj.Category, obj.Amount, obj.ID, obj.RevisionGuid);
         }
     }
 }

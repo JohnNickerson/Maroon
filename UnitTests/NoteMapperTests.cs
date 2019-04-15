@@ -11,6 +11,19 @@ namespace UnitTests
     [TestClass]
     public class NoteMapperTests
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            {
+                File.Delete(updateFile);
+            }
+            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void Round_Trip_Test()
         {
@@ -19,14 +32,13 @@ namespace UnitTests
                 new Note
                 {
                     ID = Guid.NewGuid(),
-                    Revision = 1,
+                    RevisionGuid = Guid.NewGuid(),
                     TagString = "#test1 #test2",
                     Text = "This is a test entry",
                     Timestamp = DateTime.Now
                 }
             };
             var filename = "NotesOnDisk.txt";
-            if (File.Exists(filename)) File.Delete(filename);
             var noteMapper = new NoteDiskMapper(filename);
             noteMapper.SaveAll(notebook);
 
@@ -44,7 +56,7 @@ namespace UnitTests
                 Assert.AreEqual(n.Timestamp.Day, i.Timestamp.Day);
                 Assert.AreEqual(n.Timestamp.Hour, i.Timestamp.Hour);
                 Assert.AreEqual(n.Timestamp.Minute, i.Timestamp.Minute);
-                Assert.AreEqual(n.Revision, i.Revision);
+                Assert.AreEqual(n.RevisionGuid, i.RevisionGuid);
             }
         }
     }

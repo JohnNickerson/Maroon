@@ -84,7 +84,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                                     currentItem.Upvotes = Int32.Parse(ts[1]);
                                     break;
                                 case "revision":
-                                    currentItem.Revision = int.Parse(ts[1]);
+                                    currentItem.RevisionGuid = Guid.Parse(ts[1]);
                                     break;
                                 default:
                                     currentItem.Tags[tag] = ts[1].Trim();
@@ -176,10 +176,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 }
 
                 file.AppendLine($"\t\t#id:{i.ID}");
-                if (i.Revision > 0)
-                {
-                    file.AppendLine($"\t\t#revision:{i.Revision}");
-                }
+                file.AppendLine($"\t\t#revision:{i.RevisionGuid}");
                 if (i.ProjectId != null)
                 {
                     file.AppendLine($"\t\t#project:{i.ProjectId}");

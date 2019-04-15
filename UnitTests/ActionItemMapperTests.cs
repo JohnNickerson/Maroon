@@ -11,21 +11,30 @@ namespace UnitTests
     [TestClass]
     public class ActionItemMapperTests
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            {
+                File.Delete(updateFile);
+            }
+            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void Round_Trip_Test()
         {
             var fileName = "TestFile.txt";
-            if (File.Exists(fileName))
-            {
-                File.Delete(fileName);
-            }
             var i = new List<ActionItem>
             {
                 new ActionItem
                 {
                     Context = "test",
                     ID = Guid.NewGuid(),
-                    Revision = 1,
+                    RevisionGuid = Guid.NewGuid(),
                     Title = "Test Item",
                     Notes = new List<string>
                     {
@@ -42,7 +51,7 @@ namespace UnitTests
             {
                 ID = Guid.NewGuid(),
                 Context = "test",
-                Revision = 0,
+                RevisionGuid = Guid.NewGuid(),
                 Notes = new List<string>(),
                 ParentId = i[0].ParentId,
                 Tags = new Dictionary<string, string>(),
@@ -62,7 +71,7 @@ namespace UnitTests
                 Assert.IsNotNull(s);
                 Assert.AreEqual(n.Title, s.Title);
                 Assert.AreEqual(n.Context, s.Context);
-                Assert.AreEqual(n.Revision, s.Revision);
+                Assert.AreEqual(n.RevisionGuid, s.RevisionGuid);
             }
         }
     }

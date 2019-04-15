@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
 using AssimilationSoftware.Maroon.Repositories;
@@ -11,6 +12,19 @@ namespace UnitTests
     [TestClass]
     public class MergeDiskActionTests
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            {
+                File.Delete(updateFile);
+            }
+            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void Save_Changes_Test()
         {
@@ -19,7 +33,7 @@ namespace UnitTests
             {
                 ID = Guid.NewGuid(),
                 Context = "context",
-                Revision = 0,
+                RevisionGuid = Guid.NewGuid(),
                 ProjectId = null, ParentId = null,
                 Title = "A test item for saving",
                 LastModified = DateTime.Now,
@@ -48,7 +62,7 @@ namespace UnitTests
             {
                 ID = Guid.NewGuid(),
                 Context = "context",
-                Revision = 0,
+                RevisionGuid = Guid.NewGuid(),
                 ProjectId = null,
                 ParentId = null,
                 Title = "A test item for saving",
@@ -80,7 +94,7 @@ namespace UnitTests
             {
                 ID = Guid.NewGuid(),
                 Context = "context",
-                Revision = 0,
+                RevisionGuid = Guid.NewGuid(),
                 ProjectId = null,
                 ParentId = null,
                 Title = "A test item for saving",
@@ -96,12 +110,17 @@ namespace UnitTests
                 Status = "watstatus",
                 TickleDate = null
             };
-            repo.Create(item);
+            repo.Create((ActionItem)item.Clone());
             item.Context = "moved";
-            item.Revision = 0;
-            repo.Update(item);
+            repo.Update((ActionItem)item.Clone());
+
+            Assert.AreEqual(0, repo.FindConflicts().Count);
+
+            item.Context = "conflicted";
+            repo.Update((ActionItem)item.Clone());
 
             Assert.AreEqual(1, repo.FindConflicts().Count);
+            Assert.AreEqual(1, repo.Items.Count());
         }
 
         [TestMethod]
@@ -112,7 +131,7 @@ namespace UnitTests
             {
                 ID = Guid.NewGuid(),
                 Context = "context",
-                Revision = 0,
+                RevisionGuid = Guid.NewGuid(),
                 ProjectId = null,
                 ParentId = null,
                 Title = "A test item for saving",
@@ -133,7 +152,7 @@ namespace UnitTests
             {
                 ID = Guid.NewGuid(),
                 Context = "context",
-                Revision = 0,
+                RevisionGuid = Guid.NewGuid(),
                 ProjectId = null,
                 ParentId = item.ID,
                 Title = "A child test item for saving",

@@ -24,7 +24,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                 Note = tokens[4],
                 Billable = bool.Parse(tokens[5]),
                 ID = new Guid(tokens[6]),
-                Revision = int.Parse(tokens[7]),
+                RevisionGuid = Guid.Parse(tokens[7]),
                 LastModified = DateTime.Parse(tokens[1])
             };
         }
@@ -32,7 +32,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
         public override string ToCsv(TimeLogEntry obj)
         {
             return string.Format("{0:s},{1:s},{2},{3},{4},{5},{6},{7}", obj.StartTime, obj.EndTime, obj.Client, obj.Project,
-                obj.Note, obj.Billable, obj.ID, obj.Revision);
+                obj.Note, obj.Billable, obj.ID, obj.RevisionGuid);
         }
 
         public override void SaveAll(IEnumerable<TimeLogEntry> list)

@@ -41,7 +41,7 @@ namespace AssimilationSoftware.Maroon.Model
             return ancestors.Count;
         }
         
-        public override object Clone()
+        public override ModelObject Clone()
         {
             return new ActionItem
             {
@@ -57,7 +57,8 @@ namespace AssimilationSoftware.Maroon.Model
                 Title = Title,
                 Upvotes = Upvotes,
                 RevisionGuid = RevisionGuid,
-                Revision = Revision,
+                PrevRevision = PrevRevision,
+                IsDeleted = IsDeleted,
                 ID = ID,
                 LastModified = LastModified
             };

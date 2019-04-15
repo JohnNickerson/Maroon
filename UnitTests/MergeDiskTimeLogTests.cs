@@ -11,12 +11,24 @@ namespace UnitTests
     [TestClass]
     public class MergeDiskTimeLogTests
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            {
+                File.Delete(updateFile);
+            }
+            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void Round_Trip_Test()
         {
             var path = ".";
             string filename = Path.Combine(path, "TimeLogRepoBase.csv");
-            if (File.Exists(filename)) File.Delete(filename);
 
             var mapper = new TimeLogCsvMapper(filename);
             var repo = new MergeDiskRepository<TimeLogEntry>(mapper, path);
@@ -24,7 +36,7 @@ namespace UnitTests
             var log = new TimeLogEntry
                 {
                     ID = Guid.NewGuid(),
-                    Revision = 0,
+                    RevisionGuid = Guid.NewGuid(),
                     StartTime = DateTime.Now,
                     Note = "Test note",
                     Billable = true,
@@ -43,13 +55,14 @@ namespace UnitTests
 
             found = repo.Find(log.ID);
             Assert.IsNotNull(found);
-            Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.xml")));
+            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.xml")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
 
             repo.Delete(log);
             repo.SaveChanges();
-            Assert.IsTrue(File.Exists(Path.Combine(path, $"delete-{log.RevisionGuid}.xml")));
+            Assert.AreEqual(0, repo.FindConflicts().Count);
             repo.CommitChanges();
-            Assert.IsFalse(File.Exists(Path.Combine(path, $"delete-{log.RevisionGuid}.xml")), "Delete-change file still exists after commit.");
+            Assert.IsNull(repo.Find(log.ID), "Deleted item still in repository.");
         }
     }
 }

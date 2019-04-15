@@ -11,6 +11,19 @@ namespace UnitTests
     [TestClass]
     public class LedgerMapperTests
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            {
+                File.Delete(updateFile);
+            }
+            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void Round_Trip_Test()
         {
@@ -19,7 +32,7 @@ namespace UnitTests
                 new AccountTransfer
                 {
                     ID = Guid.NewGuid(),
-                    Revision = 0,
+                    RevisionGuid = Guid.NewGuid(),
                     LastModified = DateTime.Now,
                     Amount = 69,
                     Category = "test",
@@ -30,7 +43,6 @@ namespace UnitTests
                 }
             };
             var filename = "TestLedger.csv";
-            if (File.Exists(filename)) File.Delete(filename);
             var mapper = new LedgerCsvMapper(filename);
             mapper.SaveAll(ledger);
             var fromDisk = mapper.LoadAll();

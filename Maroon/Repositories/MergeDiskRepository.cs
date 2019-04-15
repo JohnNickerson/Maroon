@@ -13,11 +13,10 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         protected IMapper<T> _mapper;
         protected SharpListSerialiser<T> _updateMapper;
-        protected SharpListSerialiser<T> _deleteMapper;
 
         protected List<T> _updated;
-        protected List<T> _deleted;
         protected List<T> _items;
+        protected bool _unsavedChanges;
         #endregion
 
         #region Constructors
@@ -26,10 +25,8 @@ namespace AssimilationSoftware.Maroon.Repositories
             _mapper = mapper;
             _items = new List<T>();
             _updated = new List<T>();
-            _deleted = new List<T>();
 
             _updateMapper = new SharpListSerialiser<T>(path, "update-{0}.xml");
-            _deleteMapper = new SharpListSerialiser<T>(path, "delete-{0}.xml");
         }
         #endregion
 
@@ -48,8 +45,8 @@ namespace AssimilationSoftware.Maroon.Repositories
             else
             {
                 // Reload pending changes.
+                SaveChanges();
                 _updated = _updateMapper.Deserialise();
-                _deleted = _deleteMapper.Deserialise();
                 if (Items.Any(v => v.ID == id))
                 {
                     i = Items.First(t => t.ID == id);
@@ -61,32 +58,35 @@ namespace AssimilationSoftware.Maroon.Repositories
         public IEnumerable<T> FindAll()
         {
             _items = _mapper.LoadAll().ToList();
+            SaveChanges();
             _updated = _updateMapper.Deserialise();
-            _deleted = _deleteMapper.Deserialise();
             return Items;
         }
 
         public void Create(T entity)
         {
             entity.LastModified = DateTime.Now;
-            entity.UpdateRevision();
-            _updated.Add((T)entity.Clone());
+            _updated.Add(entity);
+            _unsavedChanges = true;
         }
 
         public void Delete(T entity)
         {
-            // Multiple deletes won't cause a conflict, but removing them would leave a gap in the revision chain.
-            entity.LastModified = DateTime.Now;
-            entity.UpdateRevision();
-            _deleted.Add((T)entity.Clone());
+            var gone = (T) entity.Clone();
+            gone.LastModified = DateTime.Now;
+            gone.IsDeleted = true;
+            gone.UpdateRevision();
+            _updated.Add(gone);
+            _unsavedChanges = true;
         }
 
         public void Update(T entity)
         {
-            // Do not remove from the list, or else we can't detect conflicts.
-            entity.LastModified = DateTime.Now;
-            entity.UpdateRevision();
-            _updated.Add((T)entity.Clone());
+            var updated = (T) entity.Clone();
+            updated.LastModified = DateTime.Now;
+            updated.UpdateRevision();
+            _updated.Add(updated);
+            _unsavedChanges = true;
         }
 
         public void SaveChanges()
@@ -94,12 +94,12 @@ namespace AssimilationSoftware.Maroon.Repositories
             lock (_mapper)
             {
                 // Only write changes if there are any to write.
-                if (_updated.Count > 0 || _deleted.Count > 0)
+                if (_updated.Count > 0 || _unsavedChanges)
                 {
                     // Note: all changes will be in these lists, and the core list does not get updated except via CommitChanges().
                     // Therefore, saving the updated and deleted collections saves all changes.
                     _updateMapper.Serialise(_updated);
-                    _deleteMapper.Serialise(_deleted);
+                    _unsavedChanges = false;
                 }
             }
         }
@@ -113,7 +113,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                                // Load all, in case other changes have been merged in.
                 FindAll();
 
-                int pendingCount = _updated.Count + _deleted.Count;
+                int pendingCount = _updated.Count;
 
                 // Only write changes if there are any to write.
                 if (pendingCount > 0)
@@ -128,11 +128,9 @@ namespace AssimilationSoftware.Maroon.Repositories
                     // Clear the lists.
                     _items = Items.ToList();
                     _updated = new List<T>();
-                    _deleted = new List<T>();
 
                     // Clear pending lists on disk (delete files).
                     _updateMapper.Serialise(_updated, true);
-                    _deleteMapper.Serialise(_deleted, true);
                 }
 
                 return pendingCount;
@@ -154,35 +152,35 @@ namespace AssimilationSoftware.Maroon.Repositories
             var result = new List<PendingChange<T>>();
 
             // A set of pending edits comprises a conflict if:
-            // 1. There is a gap in the list of revision numbers.
-            // 2. There are two edits with the same revision number.
+            // 1. Any two (or more) updates have the same source revision ID.
+            // 2. Any update has a dangling previous revision ID.
 
             // Get the list of IDs to check.
-            var checkIds = _updated.Select(u => u.ID).Union(_deleted.Select(d => d.ID)).Distinct();
+            var checkIds = _updated.Select(u => u.ID).Distinct();
             foreach (var id in checkIds)
             {
                 var c = new PendingChange<T>
                 {
                     Id = id,
-                    Updates = _updated.Where(u => u.ID == id).ToList(),
-                    Deletes = _deleted.Where(d => d.ID == id).ToList()
+                    Updates = _updated.Where(u => u.ID == id).ToList()
                 };
 
-                // Verify pending updates and deletes form a coherent chain.
-                var baseRevision = _items.FirstOrDefault(i => i.ID == id)?.Revision ?? _updated.OrderBy(u => u.Revision).FirstOrDefault(u => u.ID == id)?.Revision - 1;
-                if (!baseRevision.HasValue) continue;
-
-                baseRevision++;
-                // Look for exactly one update or delete with the next revision number.
-                while (_updated.Count(u => u.ID == id && u.Revision == baseRevision) +
-                       _deleted.Count(d => d.ID == id && d.Revision == baseRevision) == 1)
+                // Get the count of revision IDs listed.
+                var pl = from r in _updated
+                    orderby r.PrevRevision
+                    group r by r.PrevRevision into grp
+                    select new { key = grp.Key, cnt = grp.Count() };
+                if (pl.Any(p => p.cnt > 1))
                 {
-                    baseRevision++;
+                    // Two or more updates branched from the same revision.
+                    c.IsConflict = true;
                 }
 
-                // If there are any updates or deletes left with equal or higher revision numbers, there is a conflict.
-                c.IsConflict = c.Updates.Count(u => u.Revision >= baseRevision) +
-                               c.Deletes.Count(d => d.Revision >= baseRevision) > 0;
+                // An update is based on an unknown revision.
+                if (_updated.Any(u => u.PrevRevision.HasValue && _items.All(p => p.RevisionGuid != u.PrevRevision.Value) && _updated.All(p => p.RevisionGuid != u.PrevRevision.Value)))
+                {
+                    c.IsConflict = true;
+                }
 
                 result.Add(c);
             }
@@ -192,28 +190,25 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void ResolveConflict(T item)
         {
-            _deleted.RemoveAll(d => d.ID == item.ID);
             _updated.RemoveAll(u => u.ID == item.ID);
             Update(item);
         }
 
         public void ResolveByDelete(Guid id)
         {
-            _deleted.RemoveAll(d => d.ID == id);
             _updated.RemoveAll(u => u.ID == id);
             Delete(Find(id));
         }
 
         public void Revert(Guid id)
         {
-            _deleted.RemoveAll(d => d.ID == id);
             _updated.RemoveAll(u => u.ID == id);
         }
         #endregion
 
         #region Properties
 
-        public IEnumerable<T> Items => _updated.Union(_items).Except(_deleted);
+        public IEnumerable<T> Items => _updated.Where(u => !_updated.Any(q => q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
 
         #endregion
     }

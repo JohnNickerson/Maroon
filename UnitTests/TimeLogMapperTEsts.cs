@@ -11,6 +11,19 @@ namespace UnitTests
     [TestClass]
     public class TimeLogMapperTests
     {
+        [TestInitialize]
+        public void Setup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            {
+                File.Delete(updateFile);
+            }
+            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void Round_Trip_Test()
         {
@@ -28,7 +41,6 @@ namespace UnitTests
                 }
             };
             var filename = "TestTimeFile.csv";
-            if (File.Exists(filename)) { File.Delete(filename); }
             var mapper = new TimeLogCsvMapper(filename);
 
             mapper.SaveAll(timeLog);
@@ -46,7 +58,7 @@ namespace UnitTests
                 new TimeLogEntry
                 {
                     ID = Guid.NewGuid(),
-                    Revision = 0,
+                    RevisionGuid = Guid.NewGuid(),
                     StartTime = DateTime.Now.AddMinutes(1),
                     Note = "Should save second",
                     Billable = true,
@@ -66,7 +78,6 @@ namespace UnitTests
                 }
             };
             var filename = "TestTimeFile.csv";
-            if (File.Exists(filename)) { File.Delete(filename); }
             var mapper = new TimeLogCsvMapper(filename);
 
             mapper.SaveAll(timeLog);

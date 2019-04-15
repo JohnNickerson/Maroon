@@ -10,7 +10,7 @@ namespace AssimilationSoftware.Maroon.Model
         public string Project { get; set; }
         public bool Billable { get; set; }
         public string Note { get; set; }
-        public override object Clone()
+        public override ModelObject Clone()
         {
             return new TimeLogEntry
             {
@@ -21,7 +21,8 @@ namespace AssimilationSoftware.Maroon.Model
                 Project = Project,
                 StartTime = StartTime,
                 RevisionGuid = RevisionGuid,
-                Revision = Revision,
+                PrevRevision = PrevRevision,
+                IsDeleted = IsDeleted,
                 ID = ID,
                 LastModified = LastModified
             };

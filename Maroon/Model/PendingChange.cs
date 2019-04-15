@@ -8,6 +8,5 @@ namespace AssimilationSoftware.Maroon.Model
         public Guid Id { get; set; }
         public bool IsConflict { get; set; }
         public List<T> Updates { get; set; }
-        public List<T> Deletes { get; set; }
     }
 }
