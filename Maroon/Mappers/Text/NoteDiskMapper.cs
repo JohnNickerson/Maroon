@@ -167,6 +167,8 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
                 filecontents.AppendLine(d.Text);
 
+                // Tidy up tags before writing.
+                d.Tags.RemoveAll(string.IsNullOrWhiteSpace);
                 if (d.Tags.Count > 0)
                 {
                     filecontents.AppendLine(d.TagString);

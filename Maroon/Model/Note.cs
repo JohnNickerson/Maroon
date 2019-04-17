@@ -46,7 +46,7 @@ namespace AssimilationSoftware.Maroon.Model
                 }
                 return string.Join(" ", Tags.Select(t => $"#{t}"));
             }
-            set => Tags = value.Replace("#", "").Split(' ').ToList();
+            set => Tags = value.Replace("#", "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
         #endregion
     }
