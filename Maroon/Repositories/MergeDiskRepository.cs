@@ -69,7 +69,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Create(T entity)
         {
             entity.LastModified = DateTime.Now;
-            entity.UpdateRevision();
+            entity.Revision = 0;
             _updated.Add((T)entity.Clone());
         }
 
@@ -206,8 +206,22 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Revert(Guid id)
         {
+            _deleted = _deleteMapper.Deserialise();
             _deleted.RemoveAll(d => d.ID == id);
-            _updated.RemoveAll(u => u.ID == id);
+            _deleteMapper.Serialise(_deleted, true);
+
+            _updated = _updateMapper.Deserialise();
+            if (_items.Any(i => i.ID == id))
+            {
+                // Existing item.
+                _updated.RemoveAll(u => u.ID == id);
+            }
+            else
+            {
+                // Newly-created.
+                _updated.RemoveAll(u => u.ID == id && u.Revision >= 1);
+            }
+            _updateMapper.Serialise(_updated, true);
         }
         #endregion
 
