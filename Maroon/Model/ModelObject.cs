@@ -34,6 +34,7 @@ namespace AssimilationSoftware.Maroon.Model
         {
             PrevRevision = RevisionGuid;
             RevisionGuid = Guid.NewGuid();
+            LastModified = DateTime.Now;
         }
 
         public abstract ModelObject Clone();

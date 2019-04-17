@@ -9,16 +9,14 @@ namespace AssimilationSoftware.Maroon.Repositories
     public class DiskRepository<T> : IRepository<T> where T : ModelObject
     {
         protected IMapper<T> _mapper;
-        protected List<T> _updated;
-        protected List<T> _deleted;
+        protected Dictionary<Guid, T> _updated;
         protected List<T> _items;
 
         public DiskRepository(IMapper<T> mapper)
         {
             _mapper = mapper;
             _items = new List<T>();
-            _updated = new List<T>();
-            _deleted = new List<T>();
+            _updated = new Dictionary<Guid, T>();
         }
 
         public IEnumerable<T> Items
@@ -26,20 +24,21 @@ namespace AssimilationSoftware.Maroon.Repositories
             get
             {
                 // "Union" returns objects from the first collection first, so "updated" takes precedence here.
-                return _updated.Union(_items).Except(_deleted);
+                return _updated.Values.Union(_items).Where(i => !i.IsDeleted);
             }
         }
 
         public void Create(T entity)
         {
-            _updated.RemoveAll(t => t.ID == entity.ID);
-            _updated.Add(entity);
+            entity.UpdateRevision();
+            entity.PrevRevision = null;
+            _updated[entity.ID] = entity;
         }
 
         public void Delete(T entity)
         {
-            _deleted.RemoveAll(t => t.ID == entity.ID);
-            _deleted.Add(entity);
+            entity.IsDeleted = true;
+            Update(entity);
         }
 
         public T Find(Guid id)
@@ -65,7 +64,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void SaveChanges()
         {
 			// Only write changes if there are any to write.
-			if (_updated.Count > 0 || _deleted.Count > 0)
+			if (_updated.Count > 0)
 			{
 				// Load all.
 				FindAll();
@@ -74,15 +73,14 @@ namespace AssimilationSoftware.Maroon.Repositories
 				_mapper.SaveAll(Items.ToList());
                 // Clear the lists.
                 _items = Items.ToList();
-				_updated = new List<T>();
-				_deleted = new List<T>();
+				_updated = new Dictionary<Guid, T>();
 			}
         }
 
         public void Update(T entity)
         {
-            _updated.RemoveAll(t => t.ID == entity.ID);
-            _updated.Add(entity);
+            entity.UpdateRevision();
+            _updated[entity.ID] = entity;
         }
     }
 }

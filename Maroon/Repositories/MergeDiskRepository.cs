@@ -65,7 +65,8 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Create(T entity)
         {
-            entity.LastModified = DateTime.Now;
+            entity.UpdateRevision();
+            entity.PrevRevision = null;
             _updated.Add(entity);
             _unsavedChanges = true;
         }
@@ -73,7 +74,6 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Delete(T entity)
         {
             var gone = (T) entity.Clone();
-            gone.LastModified = DateTime.Now;
             gone.IsDeleted = true;
             gone.UpdateRevision();
             _updated.Add(gone);
@@ -83,7 +83,6 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Update(T entity)
         {
             var updated = (T) entity.Clone();
-            updated.LastModified = DateTime.Now;
             updated.UpdateRevision();
             _updated.Add(updated);
             _unsavedChanges = true;
@@ -190,19 +189,20 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void ResolveConflict(T item)
         {
-            _updated.RemoveAll(u => u.ID == item.ID);
+            Revert(item.ID);
             Update(item);
         }
 
         public void ResolveByDelete(Guid id)
         {
-            _updated.RemoveAll(u => u.ID == id);
+            Revert(id);
             Delete(Find(id));
         }
 
         public void Revert(Guid id)
         {
-            _updated.RemoveAll(u => u.ID == id);
+            // If an item hasn't been committed yet, don't remove it.
+            _updated.RemoveAll(u => u.ID == id && u.PrevRevision != null);
         }
         #endregion
 
