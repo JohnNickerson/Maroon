@@ -69,6 +69,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Create(T entity)
         {
             entity.LastModified = DateTime.Now;
+            entity.UpdateRevision();
             entity.Revision = 0;
             _updated.Add((T)entity.Clone());
         }
