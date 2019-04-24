@@ -73,7 +73,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Delete(T entity)
         {
-            var gone = (T) entity.Clone();
+            var gone = (T)entity.Clone();
             gone.IsDeleted = true;
             gone.UpdateRevision();
             _updated.Add(gone);
@@ -82,7 +82,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Update(T entity)
         {
-            var updated = (T) entity.Clone();
+            var updated = (T)entity.Clone();
             updated.UpdateRevision();
             _updated.Add(updated);
             _unsavedChanges = true;
@@ -164,15 +164,17 @@ namespace AssimilationSoftware.Maroon.Repositories
                     Updates = _updated.Where(u => u.ID == id).ToList()
                 };
 
-                // Get the count of revision IDs listed.
-                var pl = from r in _updated
-                    orderby r.PrevRevision
-                    group r by r.PrevRevision into grp
-                    select new { key = grp.Key, cnt = grp.Count() };
-                if (pl.Any(p => p.cnt > 1))
+                // If two or more updates branched from the same revision, that's a conflict.
+                foreach (var p in c.Updates)
                 {
-                    // Two or more updates branched from the same revision.
-                    c.IsConflict = true;
+                    //if (!p.PrevRevision.HasValue) continue;
+                    foreach (var q in c.Updates)
+                    {
+                        if (p.PrevRevision == q.PrevRevision && p.RevisionGuid != q.RevisionGuid)
+                        {
+                            c.IsConflict = true;
+                        }
+                    }
                 }
 
                 // An update is based on an unknown revision.
@@ -208,7 +210,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         #region Properties
 
-        public IEnumerable<T> Items => _updated.Where(u => !_updated.Any(q => q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
+        public IEnumerable<T> Items => _updated.Where(u => !_updated.Any(q => q.ID == u.ID && q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
 
         #endregion
     }

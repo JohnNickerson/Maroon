@@ -34,7 +34,8 @@ namespace UnitTests
                 ID = Guid.NewGuid(),
                 Context = "context",
                 RevisionGuid = Guid.NewGuid(),
-                ProjectId = null, ParentId = null,
+                ProjectId = null,
+                ParentId = null,
                 Title = "A test item for saving",
                 LastModified = DateTime.Now,
                 DoneDate = null,
@@ -42,7 +43,7 @@ namespace UnitTests
                 {
                     {"type", "test"}
                 },
-                Notes = new List<string> {"Note1."},
+                Notes = new List<string> { "Note1." },
                 Upvotes = 0,
                 Done = false,
                 Status = "watstatus",
@@ -111,6 +112,10 @@ namespace UnitTests
                 TickleDate = null
             };
             repo.Create((ActionItem)item.Clone());
+
+            Assert.AreEqual(0, repo.FindConflicts().Count);
+
+            item = repo.Find(item.ID);
             item.Context = "moved";
             repo.Update((ActionItem)item.Clone());
 
@@ -176,6 +181,58 @@ namespace UnitTests
             Assert.IsNotNull(i);
             Assert.AreEqual(item2.ParentId, i.ParentId);
             Assert.IsNotNull(i.ParentId);
+        }
+
+        [TestMethod]
+        public void Double_Create_No_Conflicts_Test()
+        {
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemDiskMapper("todo.txt"), ".");
+            var item = new ActionItem
+            {
+                ID = Guid.NewGuid(),
+                Context = "context",
+                RevisionGuid = Guid.NewGuid(),
+                ProjectId = null,
+                ParentId = null,
+                Title = "A test item for saving",
+                LastModified = DateTime.Now,
+                DoneDate = null,
+                Tags = new Dictionary<string, string>
+                {
+                    {"type", "test"}
+                },
+                Notes = new List<string> { "Note1." },
+                Upvotes = 0,
+                Done = false,
+                Status = "watstatus",
+                TickleDate = null
+            };
+            repo.Create((ActionItem)item.Clone());
+            Assert.AreEqual(1, repo.Items.Count());
+            var item2 = new ActionItem
+            {
+                ID = Guid.NewGuid(),
+                Context = "context",
+                RevisionGuid = Guid.NewGuid(),
+                ProjectId = null,
+                ParentId = null,
+                Title = "Another test item for saving",
+                LastModified = DateTime.Now,
+                DoneDate = null,
+                Tags = new Dictionary<string, string>
+                {
+                    {"type", "test"}
+                },
+                Notes = new List<string> { "Note2." },
+                Upvotes = 0,
+                Done = false,
+                Status = "statuses",
+                TickleDate = null
+            };
+            repo.Create((ActionItem)item2.Clone());
+            Assert.AreEqual(2, repo.Items.Count());
+            Assert.AreEqual(2, repo.GetPendingChanges().Count);
+            Assert.AreEqual(0, repo.FindConflicts().Count);
         }
     }
 }
