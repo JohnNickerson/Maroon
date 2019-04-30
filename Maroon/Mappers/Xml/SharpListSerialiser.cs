@@ -78,6 +78,12 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
             // This is the shortcut way that you can't do with everything in a single file.
             _serial.Serialize(data, System.IO.Path.Combine(Path, string.Format(FileNamePattern, data.RevisionGuid)));
         }
+
+        public void Delete(T data)
+        {
+            var fileName = System.IO.Path.Combine(Path, string.Format(FileNamePattern, data.RevisionGuid));
+            File.Delete(fileName);
+        }
         #endregion
 
         #region Properties

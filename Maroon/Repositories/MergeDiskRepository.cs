@@ -45,8 +45,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             else
             {
                 // Reload pending changes.
-                SaveChanges();
-                _updated = _updateMapper.Deserialise();
+                LoadChanges();
                 if (Items.Any(v => v.ID == id))
                 {
                     i = Items.First(t => t.ID == id);
@@ -58,9 +57,20 @@ namespace AssimilationSoftware.Maroon.Repositories
         public IEnumerable<T> FindAll()
         {
             _items = _mapper.LoadAll().ToList();
-            SaveChanges();
-            _updated = _updateMapper.Deserialise();
+            LoadChanges();
             return Items;
+        }
+
+        private void LoadChanges()
+        {
+            // Load changes from disk without needing to save from memory first.
+            foreach (var u in _updateMapper.Deserialise())
+            {
+                if (_updated.All(p => p.RevisionGuid != u.RevisionGuid))
+                {
+                    _updated.Add(u);
+                }
+            }
         }
 
         public void Create(T entity)
@@ -107,12 +117,10 @@ namespace AssimilationSoftware.Maroon.Repositories
         {
             lock (_mapper)
             {
-                // This is inefficient and probably causes disk read/write conflicts. It's certainly not thread-safe.
-                SaveChanges(); // So we don't stomp on anything in memory.
-                               // Load all, in case other changes have been merged in.
+                // Make sure we've got the latest in memory.
                 FindAll();
 
-                int pendingCount = _updated.Count;
+                var pendingCount = _updated.Count;
 
                 // Only write changes if there are any to write.
                 if (pendingCount > 0)
@@ -205,10 +213,14 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Revert(Guid id)
         {
-            FindAll();
-            // If an item hasn't been committed yet, don't remove it.
-            _updated.RemoveAll(u => u.ID == id && u.PrevRevision != null);
-            _updateMapper.Serialise(_updated, true);
+            // Only remove updates. Newly-created items are in this set, too, with null previous revision IDs.
+            foreach (var change in _updated.Where(u => u.ID == id && u.PrevRevision.HasValue).ToList())
+            {
+                // Remove from memory.
+                _updated.Remove(change);
+                // Remove from disk, if present.
+                _updateMapper.Delete(change);
+            }
         }
         #endregion
 
