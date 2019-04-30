@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionItemMapperTests.cs" />
+    <Compile Include="MergeDiskLedgerTests.cs" />
     <Compile Include="MergeDiskTimeLogTests.cs" />
     <Compile Include="NoteMapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

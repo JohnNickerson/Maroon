@@ -96,7 +96,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 if (_updated.Count > 0 || _unsavedChanges)
                 {
                     // Note: all changes will be in these lists, and the core list does not get updated except via CommitChanges().
-                    // Therefore, saving the updated and deleted collections saves all changes.
+                    // Therefore, saving the updated collection saves all changes.
                     _updateMapper.Serialise(_updated);
                     _unsavedChanges = false;
                 }
@@ -192,7 +192,9 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void ResolveConflict(T item)
         {
             Revert(item.ID);
-            Update(item);
+            item.PrevRevision = Find(item.ID).RevisionGuid;
+            _updated.Add(item);
+            _unsavedChanges = true;
         }
 
         public void ResolveByDelete(Guid id)
@@ -203,8 +205,10 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Revert(Guid id)
         {
+            FindAll();
             // If an item hasn't been committed yet, don't remove it.
             _updated.RemoveAll(u => u.ID == id && u.PrevRevision != null);
+            _updateMapper.Serialise(_updated, true);
         }
         #endregion
 
