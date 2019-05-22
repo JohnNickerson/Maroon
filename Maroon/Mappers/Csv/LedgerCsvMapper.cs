@@ -9,7 +9,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
         {
         }
 
-        public override string FieldsHeader => "Date,FromAccount,ToAccount,Notes,Name,Amount,ID,Rev";
+        public override string FieldsHeader => "Date,FromAccount,ToAccount,Notes,Name,Amount,ID,Rev,Hash";
 
         public override AccountTransfer FromTokens(string[] tokens)
         {
@@ -22,14 +22,14 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                 Category = tokens[4],
                 Amount = decimal.Parse(tokens[5]),
                 ID = new Guid(tokens[6]),
-                RevisionGuid = Guid.Parse(tokens[7])
+                RevisionGuid = Guid.Parse(tokens[7]),
+                ImportHash = tokens.Length > 8 ? tokens[8] : null
             };
         }
 
         public override string ToCsv(AccountTransfer obj)
         {
-            return string.Format("{0:yyyy-MM-dd},{1},{2},{3},{4},{5},{6},{7}", obj.Date, obj.FromAccount, obj.ToAccount,
-                obj.Description, obj.Category, obj.Amount, obj.ID, obj.RevisionGuid);
+            return $"{obj.Date:yyyy-MM-dd},{obj.FromAccount},{obj.ToAccount},{obj.Description},{obj.Category},{obj.Amount},{obj.ID},{obj.RevisionGuid},{obj.ImportHash}";
         }
     }
 }
