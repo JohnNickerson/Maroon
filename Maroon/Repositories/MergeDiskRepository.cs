@@ -161,9 +161,19 @@ namespace AssimilationSoftware.Maroon.Repositories
             // A set of pending edits comprises a conflict if:
             // 1. Any two (or more) updates have the same source revision ID.
             // 2. Any update has a dangling previous revision ID.
+            var knownRevs = new HashSet<Guid>();
+            var seenRevs = new HashSet<Guid>();
+            foreach (var i in _items)
+            {
+                knownRevs.Add(i.RevisionGuid);
+            }
+            foreach (var u in _updated)
+            {
+                knownRevs.Add(u.RevisionGuid);
+            }
 
             // Get the list of IDs to check.
-            var checkIds = _updated.Select(u => u.ID).Distinct();
+            var checkIds = _updated.Select(u => u.ID).Distinct().ToArray();
             foreach (var id in checkIds)
             {
                 var c = new PendingChange<T>
@@ -171,26 +181,18 @@ namespace AssimilationSoftware.Maroon.Repositories
                     Id = id,
                     Updates = _updated.Where(u => u.ID == id).ToList()
                 };
-
                 // If two or more updates branched from the same revision, that's a conflict.
                 foreach (var p in c.Updates)
                 {
-                    //if (!p.PrevRevision.HasValue) continue;
-                    foreach (var q in c.Updates)
+                    if (!p.PrevRevision.HasValue) continue; // New item with no previous revision.
+
+                    if (seenRevs.Contains(p.PrevRevision.Value) || !knownRevs.Contains(p.PrevRevision.Value))
                     {
-                        if (p.PrevRevision == q.PrevRevision && p.RevisionGuid != q.RevisionGuid)
-                        {
-                            c.IsConflict = true;
-                        }
+                        c.IsConflict = true;
+                        break;
                     }
+                    seenRevs.Add(p.PrevRevision.Value);
                 }
-
-                // An update is based on an unknown revision.
-                if (_updated.Any(u => u.PrevRevision.HasValue && _items.All(p => p.RevisionGuid != u.PrevRevision.Value) && _updated.All(p => p.RevisionGuid != u.PrevRevision.Value)))
-                {
-                    c.IsConflict = true;
-                }
-
                 result.Add(c);
             }
 
