@@ -11,7 +11,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
         {
         }
 
-        public override string FieldsHeader => "Start,End,Client,Ticket,Notes,Chargeable,ID,Rev";
+        public override string FieldsHeader => "Start,End,Client,Ticket,Notes,Chargeable,ID,Rev,Hash";
 
         public override TimeLogEntry FromTokens(string[] tokens)
         {
@@ -19,20 +19,21 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
             {
                 StartTime = DateTime.Parse(tokens[0]),
                 EndTime = DateTime.Parse(tokens[1]),
+                LastModified = DateTime.Parse(tokens[1]),
                 Client = tokens[2],
                 Project = tokens[3],
                 Note = tokens[4],
                 Billable = bool.Parse(tokens[5]),
                 ID = new Guid(tokens[6]),
                 RevisionGuid = Guid.Parse(tokens[7]),
-                LastModified = DateTime.Parse(tokens[1])
+                ImportHash = tokens.Length>8?tokens[8]:null
             };
         }
 
         public override string ToCsv(TimeLogEntry obj)
         {
-            return string.Format("{0:s},{1:s},{2},{3},{4},{5},{6},{7}", obj.StartTime, obj.EndTime, obj.Client, obj.Project,
-                obj.Note, obj.Billable, obj.ID, obj.RevisionGuid);
+            return string.Format("{0:s},{1:s},{2},{3},{4},{5},{6},{7},{8}", obj.StartTime, obj.EndTime, obj.Client, obj.Project,
+                obj.Note, obj.Billable, obj.ID, obj.RevisionGuid, obj.ImportHash);
         }
 
         public override void SaveAll(IEnumerable<TimeLogEntry> list)

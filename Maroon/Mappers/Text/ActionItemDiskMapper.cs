@@ -86,6 +86,9 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                                 case "revision":
                                     currentItem.RevisionGuid = Guid.Parse(ts[1]);
                                     break;
+                                case "import-hash":
+                                    currentItem.ImportHash = ts[1];
+                                    break;
                                 default:
                                     currentItem.Tags[tag] = ts[1].Trim();
                                     break;
@@ -177,6 +180,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
                 file.AppendLine($"\t\t#id:{i.ID}");
                 file.AppendLine($"\t\t#revision:{i.RevisionGuid}");
+                if (!string.IsNullOrEmpty(i.ImportHash))
+                {
+                    file.AppendLine($"\t\t#import-hash:{i.ImportHash}");
+                }
                 if (i.ProjectId != null)
                 {
                     file.AppendLine($"\t\t#project:{i.ProjectId}");

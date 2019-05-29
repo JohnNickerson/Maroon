@@ -92,10 +92,17 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Update(T entity)
         {
-            var updated = (T)entity.Clone();
-            updated.UpdateRevision();
-            _updated.Add(updated);
-            _unsavedChanges = true;
+            if (entity.PrevRevision.HasValue)
+            {
+                var updated = (T) entity.Clone();
+                updated.UpdateRevision();
+                _updated.Add(updated);
+                _unsavedChanges = true;
+            }
+            else
+            {
+                Create(entity);
+            }
         }
 
         public void SaveChanges()

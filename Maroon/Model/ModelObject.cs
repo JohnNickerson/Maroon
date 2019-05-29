@@ -4,6 +4,7 @@ namespace AssimilationSoftware.Maroon.Model
 {
     public abstract class ModelObject
     {
+        #region Properties
         /// <summary>
         /// Unique identifier for this item across all revisions.
         /// </summary>
@@ -20,6 +21,14 @@ namespace AssimilationSoftware.Maroon.Model
 
         public bool IsDeleted { get; set; }
 
+        /// <summary>
+        /// A representation of how the item looked when it was first imported, if applicable.
+        /// </summary>
+        /// <remarks>To help avoid importing duplicates.</remarks>
+        public string ImportHash { get; set; }
+        #endregion
+
+        #region Methods
         public override bool Equals(object obj)
         {
             return obj is ModelObject other && other.ID == ID;
@@ -38,5 +47,6 @@ namespace AssimilationSoftware.Maroon.Model
         }
 
         public abstract ModelObject Clone();
+        #endregion
     }
 }

@@ -34,12 +34,6 @@ namespace AssimilationSoftware.Maroon.Model
         /// </summary>
         public string ToAccount { get; set; }
 
-        /// <summary>
-        /// A representation of how the item looked when it was first imported, if applicable.
-        /// </summary>
-        /// <remarks>To help avoid importing duplicates.</remarks>
-        public string ImportHash { get; set; }
-
         public override ModelObject Clone()
         {
             return new AccountTransfer
