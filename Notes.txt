@@ -36,3 +36,5 @@ Broadcast and targeted messaging.
 	- Patched to fix conflict resolution.
 	- Patched to fix disk file management.
 	- Patched to optimise conflict detection algorithm.
+2019-06-03: Build 0.2.0.4 released to Production
+	- Patched to fix null reference in NoteDiskMapper.

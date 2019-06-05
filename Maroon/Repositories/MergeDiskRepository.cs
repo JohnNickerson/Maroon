@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using AssimilationSoftware.Maroon.Interfaces;
 using AssimilationSoftware.Maroon.Mappers.Xml;
@@ -13,6 +14,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         protected IMapper<T> _mapper;
         protected SharpListSerialiser<T> _updateMapper;
+        protected List<T> _unsavedUpdates;
 
         protected List<T> _updated;
         protected List<T> _items;
@@ -25,6 +27,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             _mapper = mapper;
             _items = new List<T>();
             _updated = new List<T>();
+            _unsavedUpdates = new List<T>();
 
             _updateMapper = new SharpListSerialiser<T>(path, "update-{0}.xml");
         }
@@ -78,6 +81,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             entity.UpdateRevision();
             entity.PrevRevision = null;
             _updated.Add(entity);
+            _unsavedUpdates.Add(entity);
             _unsavedChanges = true;
         }
 
@@ -87,6 +91,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             gone.IsDeleted = true;
             gone.UpdateRevision();
             _updated.Add(gone);
+            _unsavedUpdates.Add(gone);
             _unsavedChanges = true;
         }
 
@@ -97,6 +102,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 var updated = (T) entity.Clone();
                 updated.UpdateRevision();
                 _updated.Add(updated);
+                _unsavedUpdates.Add(updated);
                 _unsavedChanges = true;
             }
             else
@@ -110,11 +116,10 @@ namespace AssimilationSoftware.Maroon.Repositories
             lock (_mapper)
             {
                 // Only write changes if there are any to write.
-                if (_updated.Count > 0 || _unsavedChanges)
+                if (_unsavedUpdates.Count > 0 || _unsavedChanges)
                 {
-                    // Note: all changes will be in these lists, and the core list does not get updated except via CommitChanges().
-                    // Therefore, saving the updated collection saves all changes.
-                    _updateMapper.Serialise(_updated);
+                    _updateMapper.Serialise(_unsavedUpdates);
+                    _unsavedUpdates = new List<T>();
                     _unsavedChanges = false;
                 }
             }
@@ -142,11 +147,12 @@ namespace AssimilationSoftware.Maroon.Repositories
                     // Clear the lists.
                     _items = Items.ToList();
                     _updated = new List<T>();
+                    _unsavedUpdates = new List<T>();
+                    _unsavedChanges = false;
 
                     // Clear pending lists on disk (delete files).
                     _updateMapper.Serialise(_updated, true);
                 }
-
                 return pendingCount;
             }
         }
@@ -211,6 +217,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             Revert(item.ID);
             item.PrevRevision = Find(item.ID).RevisionGuid;
             _updated.Add(item);
+            _unsavedUpdates.Add(item);
             _unsavedChanges = true;
         }
 
@@ -230,6 +237,8 @@ namespace AssimilationSoftware.Maroon.Repositories
                 // Remove from disk, if present.
                 _updateMapper.Delete(change);
             }
+            _unsavedUpdates.RemoveAll(u => u.ID == id);
+            _unsavedChanges = _unsavedUpdates.Any();
         }
         #endregion
 
