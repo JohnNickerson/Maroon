@@ -41,7 +41,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             }
             var lines = (File.Exists(Filename) ? File.ReadAllLines(Filename) : new string[] { });
 
-            var idFoundCount = 0;
             Items = new List<ActionItem>();
             var context = string.Empty;
             var currentItem = new ActionItem { Context = context, Title = "(item out of order)", Done = false, ID = Guid.NewGuid() };
@@ -69,7 +68,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                                     break;
                                 case "id":
                                     currentItem.ID = Guid.Parse(ts[1]);
-                                    idFoundCount++;
                                     break;
                                 case "priority-parent":
                                     currentItem.ParentId = Guid.Parse(ts[1]);
@@ -117,12 +115,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                     currentItem = new ActionItem { Context = context, Title = t.Trim(), ID = Guid.NewGuid() };
                     Items.Add(currentItem);
                 }
-            }
-
-            if (idFoundCount != Items.Count)
-            {
-                // We assigned some IDs, so rewrite the file. This prevents subsequent reads from assigning new, different IDs.
-                SaveAll(Items);
             }
             // Note the last write time of the file for subsequent reads. If we can avoid reading it again, do that.
             _lastModTime = new FileInfo(Filename).LastWriteTime;
