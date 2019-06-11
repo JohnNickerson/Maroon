@@ -47,6 +47,7 @@
     <Compile Include="Interfaces\IMapper.cs" />
     <Compile Include="Interfaces\IMergeRepository.cs" />
     <Compile Include="Interfaces\IRepository.cs" />
+    <Compile Include="Interfaces\ISourceReader.cs" />
     <Compile Include="Mappers\Csv\CsvDiskMapper.cs" />
     <Compile Include="Mappers\Csv\Extensions.cs" />
     <Compile Include="Mappers\Csv\LedgerCsvMapper.cs" />
@@ -71,7 +72,6 @@
     <Compile Include="Search\SearchSpecificationExtensions.cs" />
     <Compile Include="Search\TrueSpecification.cs" />
     <Compile Include="Mappers\Xml\SharpListSerialiser.cs" />
-    <Compile Include="Views\CacheView.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -29,6 +29,7 @@ namespace AssimilationSoftware.Maroon.Model
                 LastModified = LastModified
             };
         }
+
         #endregion
 
         #region Properties

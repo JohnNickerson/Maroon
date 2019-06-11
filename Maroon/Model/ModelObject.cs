@@ -47,6 +47,7 @@ namespace AssimilationSoftware.Maroon.Model
         }
 
         public abstract ModelObject Clone();
+
         #endregion
     }
 }

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace AssimilationSoftware.Maroon.Mappers.Csv
 {
     public static class Extensions
     {
-        public static List<string> Tokenise(this String line)
+        public static List<string> Tokenise(this string line)
         {
             var tokens = new List<string>();
             var quoted = false;
@@ -73,5 +75,24 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
             tokens.Add(token.ToString());
             return tokens;
         }
+
+        public static string CalculateHash(this string raw)
+        {
+            try
+            {
+                using (var cryptoProvider = new SHA1CryptoServiceProvider())
+                {
+                    var hash = cryptoProvider.ComputeHash(Encoding.UTF8.GetBytes(raw));
+                    return BitConverter.ToString(hash);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                return null;
+            }
+
+        }
+
     }
 }
