@@ -12,13 +12,9 @@ namespace AssimilationSoftware.Maroon.Interfaces
     public interface ISourceReader<out T> where T : ModelObject
     {
         /// <summary>
-        /// True if at least one more item can be returned. False otherwise.
+        /// Reads all items in the source, with ImportHash fields set.
         /// </summary>
-        bool HasNext();
-
-        /// <summary>
-        /// Returns the next item in the source, or null if not present, with its ImportHash field set.
-        /// </summary>
-        T GetNext();
+        /// <returns></returns>
+        IEnumerable<T> ReadAll();
     }
 }

@@ -38,3 +38,6 @@ Broadcast and targeted messaging.
 	- Patched to optimise conflict detection algorithm.
 2019-06-03: Build 0.2.0.4 released to Production
 	- Patched to fix null reference in NoteDiskMapper.
+2019-06-13: Build 0.2.1.1
+	- ImportHash field.
+	- Fix for null reference in ActionItemDiskMapper.
