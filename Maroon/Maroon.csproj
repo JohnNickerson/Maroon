@@ -55,7 +55,7 @@
     <Compile Include="Mappers\Csv\Extensions.cs" />
     <Compile Include="Mappers\Csv\LedgerCsvMapper.cs" />
     <Compile Include="Mappers\Csv\TimeLogCsvMapper.cs" />
-    <Compile Include="Mappers\LiteDb\NoteLiteDbMapper.cs" />
+    <Compile Include="Mappers\LiteDb\BaseLiteDbMapper.cs" />
     <Compile Include="Mappers\Text\ActionItemDiskMapper.cs" />
     <Compile Include="Mappers\Text\NoteDiskMapper.cs" />
     <Compile Include="Model\PendingChange.cs" />

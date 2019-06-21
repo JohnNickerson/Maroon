@@ -14,7 +14,7 @@ namespace UnitTests
         {
             var filename = "notes-test.db";
             if (File.Exists(filename)) File.Delete(filename);
-            var mapper = new AssimilationSoftware.Maroon.Mappers.LiteDb.NoteLiteDbMapper(filename);
+            var mapper = new AssimilationSoftware.Maroon.Mappers.LiteDb.BaseLiteDbMapper<Note>(filename, "notes");
 
             var note = new Note
             {
