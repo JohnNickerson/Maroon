@@ -41,3 +41,6 @@ Broadcast and targeted messaging.
 2019-06-13: Build 0.2.1.1
 	- ImportHash field.
 	- Fix for null reference in ActionItemDiskMapper.
+2019-06-27: Build 0.2.2
+	- Fixed ActionItemDiskMapper to leave files unchanged during read. 
+	- Updated MergeDiskRepository handling of unsaved changes.
