@@ -58,14 +58,17 @@
     <Compile Include="Mappers\LiteDb\BaseLiteDbMapper.cs" />
     <Compile Include="Mappers\Text\ActionItemDiskMapper.cs" />
     <Compile Include="Mappers\Text\NoteDiskMapper.cs" />
+    <Compile Include="Mappers\Xml\OriginXmlSerialiser.cs" />
     <Compile Include="Model\PendingChange.cs" />
     <Compile Include="Model\ModelObject.cs" />
     <Compile Include="Model\AccountTransfer.cs" />
     <Compile Include="Model\ActionItem.cs" />
     <Compile Include="Model\Note.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\TimeLogEntry.cs" />
     <Compile Include="Repositories\DiskRepository.cs" />
+    <Compile Include="Repositories\OriginDiskRepository.cs" />
     <Compile Include="Repositories\MergeDiskRepository.cs" />
     <Compile Include="Search\AndSpecification.cs" />
     <Compile Include="Search\FalseSpecification.cs" />
