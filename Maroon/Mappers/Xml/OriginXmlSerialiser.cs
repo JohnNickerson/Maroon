@@ -86,7 +86,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
         {
             if (Directory.Exists(Path))
             {
-                // Load data from each "updates-{machine}.xml" file.
                 foreach (string file in Directory.GetFiles(Path, string.Format(FileNamePattern, "*")))
                 {
                     try
