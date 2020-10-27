@@ -46,7 +46,10 @@ namespace AssimilationSoftware.Maroon.Model
             LastModified = DateTime.Now;
         }
 
-        public abstract ModelObject Clone();
+        public ModelObject Clone()
+        {
+            return (ModelObject)MemberwiseClone();
+        }
 
         #endregion
     }

@@ -14,7 +14,7 @@ namespace UnitTests
         [TestInitialize]
         public void Setup()
         {
-            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
+            foreach (var updateFile in Directory.GetFiles(".", "update*.txt"))
             {
                 File.Delete(updateFile);
             }
@@ -28,10 +28,10 @@ namespace UnitTests
         public void Round_Trip_Test()
         {
             var path = ".";
-            string filename = Path.Combine(path, "TimeLogRepoBase.csv");
+            var filename = Path.Combine(path, "TimeLogRepoBase.csv");
 
             var mapper = new TimeLogCsvMapper(filename);
-            var repo = new MergeDiskRepository<TimeLogEntry>(mapper, path);
+            var repo = new MergeDiskRepository<TimeLogEntry>(mapper, filename);
 
             var log = new TimeLogEntry
                 {
@@ -49,14 +49,14 @@ namespace UnitTests
 
             var found = repo.Find(log.ID);
             Assert.IsNotNull(found);
-            Assert.IsTrue(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.xml")));
+            Assert.IsTrue(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.txt")));
 
             repo.CommitChanges();
 
             found = repo.Find(log.ID);
             Assert.IsNotNull(found);
             Assert.AreEqual(0, repo.FindConflicts().Count);
-            Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.xml")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
+            Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
 
             repo.Delete(log);
             repo.SaveChanges();

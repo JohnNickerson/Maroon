@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using AssimilationSoftware.Maroon.Interfaces;
 using AssimilationSoftware.Maroon.Mappers.Xml;
@@ -12,24 +13,29 @@ namespace AssimilationSoftware.Maroon.Repositories
     {
         #region Fields
 
-        protected IMapper<T> _mapper;
-        protected SharpListSerialiser<T> _updateMapper;
-        protected List<T> _unsavedUpdates;
+        protected IDiskMapper<T> _mapper;
+        private readonly string _primaryFileName;
+        private string _updatesPath;
+        private string _updatesFileSearch = "update-*.txt";
 
-        protected List<T> _updated;
+        protected List<T> _unsavedUpdates;
+        protected List<T> _allUpdates;
         protected List<T> _items;
+
         protected bool _unsavedChanges;
+
         #endregion
 
         #region Constructors
-        public MergeDiskRepository(IMapper<T> mapper, string path)
+        public MergeDiskRepository(IDiskMapper<T> mapper, string primaryFileName)
         {
             _mapper = mapper;
+            _primaryFileName = primaryFileName;
+            _updatesPath = Path.GetDirectoryName(Path.GetFullPath(primaryFileName));
             _items = new List<T>();
-            _updated = new List<T>();
-            _unsavedUpdates = new List<T>();
+            _allUpdates = new List<T>();
 
-            _updateMapper = new SharpListSerialiser<T>(path, "update-{0}.xml");
+            _unsavedUpdates = new List<T>();
         }
         #endregion
 
@@ -40,7 +46,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             {
                 return Items.First(t => t.ID == id);
             }
-            var i = _mapper.Load(id);
+            var i = _mapper.Load(id, _primaryFileName);
             if (i != null)
             {
                 _items.Add(i);
@@ -59,7 +65,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public IEnumerable<T> FindAll()
         {
-            _items = _mapper.LoadAll().ToList();
+            _items = _mapper.LoadAll(_primaryFileName).ToList();
             LoadChanges();
             return Items;
         }
@@ -67,11 +73,14 @@ namespace AssimilationSoftware.Maroon.Repositories
         private void LoadChanges()
         {
             // Load changes from disk without needing to save from memory first.
-            foreach (var u in _updateMapper.Deserialise())
+            foreach (var updateFileName in UpdateFileNames)
             {
-                if (_updated.All(p => p.RevisionGuid != u.RevisionGuid))
+                foreach (var u in _mapper.LoadAll(updateFileName))
                 {
-                    _updated.Add(u);
+                    if (_allUpdates.All(p => p.RevisionGuid != u.RevisionGuid))
+                    {
+                        _allUpdates.Add(u);
+                    }
                 }
             }
         }
@@ -80,7 +89,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         {
             entity.UpdateRevision();
             entity.PrevRevision = null;
-            _updated.Add(entity);
+            _allUpdates.Add(entity);
             _unsavedUpdates.Add(entity);
             _unsavedChanges = true;
         }
@@ -90,18 +99,18 @@ namespace AssimilationSoftware.Maroon.Repositories
             var gone = (T)entity.Clone();
             gone.IsDeleted = true;
             gone.UpdateRevision();
-            _updated.Add(gone);
+            _allUpdates.Add(gone);
             _unsavedUpdates.Add(gone);
             _unsavedChanges = true;
         }
 
-        public void Update(T entity)
+        public void Update(T entity, bool isNew = false)
         {
-            if (entity.PrevRevision.HasValue)
+            if (!isNew || entity.PrevRevision.HasValue)
             {
-                var updated = (T) entity.Clone();
+                var updated = (T)entity.Clone();
                 updated.UpdateRevision();
-                _updated.Add(updated);
+                _allUpdates.Add(updated);
                 _unsavedUpdates.Add(updated);
                 _unsavedChanges = true;
             }
@@ -118,7 +127,10 @@ namespace AssimilationSoftware.Maroon.Repositories
                 // Only write changes if there are any to write.
                 if (_unsavedUpdates.Count > 0 || _unsavedChanges)
                 {
-                    _updateMapper.Serialise(_unsavedUpdates);
+                    foreach (var u in _unsavedUpdates)
+                    {
+                        _mapper.Save(u, $"update-{u.RevisionGuid}.txt", true);
+                    }
                     _unsavedUpdates = new List<T>();
                     _unsavedChanges = false;
                 }
@@ -132,7 +144,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 // Make sure we've got the latest in memory.
                 FindAll();
 
-                var pendingCount = _updated.Count;
+                var pendingCount = _allUpdates.Count;
 
                 // Only write changes if there are any to write.
                 if (pendingCount > 0)
@@ -142,16 +154,19 @@ namespace AssimilationSoftware.Maroon.Repositories
 
                     // Apply changes (encapsulated in the Items property).
                     // Save all.
-                    _mapper.SaveAll(Items.ToList());
+                    _mapper.SaveAll(Items.ToList(), _primaryFileName, true);
 
                     // Clear the lists.
                     _items = Items.ToList();
-                    _updated = new List<T>();
+                    _allUpdates = new List<T>();
                     _unsavedUpdates = new List<T>();
                     _unsavedChanges = false;
 
                     // Clear pending lists on disk (delete files).
-                    _updateMapper.Serialise(_updated, true);
+                    foreach (var u in UpdateFileNames)
+                    {
+                        File.Delete(u);
+                    }
                 }
                 return pendingCount;
             }
@@ -180,24 +195,37 @@ namespace AssimilationSoftware.Maroon.Repositories
             {
                 knownRevs.Add(i.RevisionGuid);
             }
-            foreach (var u in _updated)
+            foreach (var u in _allUpdates)
             {
                 knownRevs.Add(u.RevisionGuid);
             }
 
             // Get the list of IDs to check.
-            var checkIds = _updated.Select(u => u.ID).Distinct().ToArray();
+            var checkIds = _allUpdates.Select(u => u.ID).Distinct().ToArray();
             foreach (var id in checkIds)
             {
                 var c = new PendingChange<T>
                 {
                     Id = id,
-                    Updates = _updated.Where(u => u.ID == id).ToList()
+                    Updates = _allUpdates.Where(u => u.ID == id).ToList()
                 };
                 // If two or more updates branched from the same revision, that's a conflict.
+                bool seenNew = false;
                 foreach (var p in c.Updates)
                 {
-                    if (!p.PrevRevision.HasValue) continue; // New item with no previous revision.
+                    if (!p.PrevRevision.HasValue)
+                    {
+                        if (seenNew)
+                        {
+                            c.IsConflict = true; // Multiple "new" revisions.
+                            break;
+                        }
+                        else
+                        {
+                            seenNew = true;
+                            continue; // New item with no previous revision.
+                        }
+                    }
 
                     if (seenRevs.Contains(p.PrevRevision.Value) || !knownRevs.Contains(p.PrevRevision.Value))
                     {
@@ -216,7 +244,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         {
             Revert(item.ID);
             item.PrevRevision = Find(item.ID).RevisionGuid;
-            _updated.Add(item);
+            _allUpdates.Add(item);
             _unsavedUpdates.Add(item);
             _unsavedChanges = true;
         }
@@ -230,12 +258,12 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Revert(Guid id)
         {
             // Only remove updates. Newly-created items are in this set, too, with null previous revision IDs.
-            foreach (var change in _updated.Where(u => u.ID == id && u.PrevRevision.HasValue).ToList())
+            foreach (var change in _allUpdates.Where(u => u.ID == id && u.PrevRevision.HasValue).ToList())
             {
                 // Remove from memory.
-                _updated.Remove(change);
+                _allUpdates.Remove(change);
                 // Remove from disk, if present.
-                _updateMapper.Delete(change);
+                _mapper.Delete(change, $"update-{change.RevisionGuid}.txt");
             }
             _unsavedUpdates.RemoveAll(u => u.ID == id);
             _unsavedChanges = _unsavedUpdates.Any();
@@ -244,7 +272,9 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         #region Properties
 
-        public IEnumerable<T> Items => _updated.Where(u => !_updated.Any(q => q.ID == u.ID && q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
+        public IEnumerable<T> Items => _allUpdates.Where(u => !_allUpdates.Any(q => q.ID == u.ID && q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
+
+        private string[] UpdateFileNames => Directory.GetFiles(Path.GetDirectoryName(Path.GetFullPath(_primaryFileName)), _updatesFileSearch, SearchOption.TopDirectoryOnly);
 
         #endregion
     }

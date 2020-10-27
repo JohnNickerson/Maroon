@@ -28,7 +28,7 @@ namespace UnitTests
         [TestMethod]
         public void Save_Changes_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemDiskMapper("todo.txt"), ".");
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -52,13 +52,13 @@ namespace UnitTests
             repo.Create(item);
             repo.SaveChanges();
 
-            Assert.IsTrue(File.Exists($".\\update-{item.RevisionGuid}.xml"));
+            Assert.IsTrue(File.Exists($".\\update-{item.RevisionGuid}.txt"));
         }
 
         [TestMethod]
         public void Double_Edit_No_Conflicts_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemDiskMapper("todo.txt"), ".");
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -90,7 +90,7 @@ namespace UnitTests
         [TestMethod]
         public void Conflicting_Edits_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemDiskMapper("todo.txt"), ".");
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -124,14 +124,15 @@ namespace UnitTests
             item.Context = "conflicted";
             repo.Update((ActionItem)item.Clone());
 
-            Assert.AreEqual(1, repo.FindConflicts().Count);
             Assert.AreEqual(1, repo.Items.Count());
+            Assert.AreEqual(1, repo.FindConflicts().Count);
         }
 
         [TestMethod]
         public void Rank_Serialisation_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemDiskMapper("todo.txt"), ".");
+            var primaryFileName = "todo.txt";
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), primaryFileName);
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -176,7 +177,7 @@ namespace UnitTests
             repo.Create(item2);
             repo.SaveChanges();
 
-            var testrepo = new MergeDiskRepository<ActionItem>(new ActionItemDiskMapper("todo.txt"), ".");
+            var testrepo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), primaryFileName);
             var i = testrepo.Find(item2.ID);
             Assert.IsNotNull(i);
             Assert.AreEqual(item2.ParentId, i.ParentId);
@@ -186,7 +187,7 @@ namespace UnitTests
         [TestMethod]
         public void Double_Create_No_Conflicts_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemDiskMapper("todo.txt"), ".");
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),

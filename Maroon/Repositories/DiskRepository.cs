@@ -77,9 +77,9 @@ namespace AssimilationSoftware.Maroon.Repositories
 			}
         }
 
-        public void Update(T entity)
+        public void Update(T entity, bool isNew = false)
         {
-            if (entity.PrevRevision.HasValue)
+            if (!isNew || entity.PrevRevision.HasValue)
             {
                 entity.UpdateRevision();
                 _updated[entity.ID] = entity;

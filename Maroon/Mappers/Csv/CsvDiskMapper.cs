@@ -13,7 +13,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
     /// Generic CSV mapper.
     /// </summary>
     /// <typeparam name="T">The type of model data to work with.</typeparam>
-    public abstract class CsvDiskMapper<T> : IMapper<T> where T : ModelObject
+    public abstract class CsvDiskMapper<T> : IDiskMapper<T> where T : ModelObject
     {
         private string _filename;
 
@@ -28,12 +28,28 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
 
         public IEnumerable<T> LoadAll()
         {
+            return LoadAll(_filename);
+        }
+
+        public virtual void SaveAll(IEnumerable<T> list)
+        {
+            SaveAll(list, _filename);
+        }
+
+        public T Load(Guid id, string filename)
+        {
+            var items = LoadAll(filename);
+            return items.FirstOrDefault(item => item.ID == id);
+        }
+
+        public IEnumerable<T> LoadAll(string filename)
+        {
             var result = new List<T>();
-			if (!File.Exists(_filename))
-			{
-				return result;
-			}
-            var lines = File.ReadAllLines(_filename);
+            if (!File.Exists(filename))
+            {
+                return result;
+            }
+            var lines = File.ReadAllLines(filename);
 
             for (var i = 1; i < lines.Count(); i++)
             {
@@ -52,39 +68,37 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
             return result;
         }
 
-        public virtual void SaveAll(IEnumerable<T> list)
+        public void Save(T item, string filename, bool overwrite = false)
+        {
+            var items = LoadAll().ToList();
+            if (overwrite)
+            {
+                items.RemoveAll(i => i.ID == item.ID);
+            }
+            items.Add(item);
+            SaveAll(items, filename, overwrite);
+        }
+
+        public void SaveAll(IEnumerable<T> items, string filename, bool overwrite = false)
         {
             var output = new StringBuilder();
             output.AppendLine(FieldsHeader);
-            foreach (var row in list)
+            foreach (var row in items)
             {
                 output.AppendLine(ToCsv(row));
             }
 
-            File.WriteAllText(_filename, output.ToString());
+            File.WriteAllText(filename, output.ToString());
         }
 
-        public void Save(T item)
-        {
-            var items = LoadAll().ToList();
-            items.Add(item);
-            SaveAll(items);
-        }
-
-        public T Load(Guid id)
-        {
-            var items = LoadAll();
-            return items.FirstOrDefault(item => item.ID == id);
-        }
-
-        public void Delete(T item)
+        public void Delete(T item, string filename)
         {
             var allitems = LoadAll().ToList();
             if (allitems.Contains(item))
             {
                 allitems.Remove(item);
             }
-            SaveAll(allitems);
+            SaveAll(allitems, filename);
         }
     }
 }

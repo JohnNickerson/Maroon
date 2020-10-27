@@ -9,27 +9,114 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Mappers.Text
 {
-    public class NoteDiskMapper : IMapper<Note>
+    public class NoteDiskMapper : IDiskMapper<Note>
     {
-        protected string Filename;
-
-        public NoteDiskMapper(string filename)
+        public NoteDiskMapper()
         {
-            Filename = filename;
         }
 
-        /// <summary>
-        /// Reads a collection of blog drafts from a file.
-        /// </summary>
-        /// <returns>A list of blog drafts from the file, in order.</returns>
-        public IEnumerable<Note> LoadAll()
+        private bool TryParseGuidLine(string line, out Guid? noteId, out Guid? revision, out Guid? parentId, out Guid? prevRevision)
+        {
+            var id = "([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})";  // SQL GUID 1
+            var lSquare = "(\\[)";   // Any Single Character 1
+            var rSquare = "(\\])";   // Any Single Character 2
+            var colon = "(:)"; // Any Single Character 3
+            var semicolon = "(;)";
+
+            // ID with revision, previous revision, and parent. GUID[GUID;GUID]:GUID
+            var r6 = new Regex(id + lSquare + id + semicolon + id + rSquare + colon + id, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m6 = r6.Match(line);
+            if (m6.Success)
+            {
+                noteId = new Guid(m6.Groups[1].ToString());
+                revision = new Guid(m6.Groups[3].ToString());
+                prevRevision = new Guid(m6.Groups[5].ToString());
+                parentId = new Guid(m6.Groups[7].ToString());
+                return true;
+            }
+
+            // ID with revision and previous revision. GUID[GUID;GUID]
+            var r5 = new Regex(id + lSquare + id + semicolon + id + rSquare, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m5 = r5.Match(line);
+            if (m5.Success)
+            {
+                noteId = new Guid(m5.Groups[1].ToString());
+                revision = new Guid(m5.Groups[3].ToString());
+                prevRevision = new Guid(m5.Groups[5].ToString());
+                parentId = null;
+                return true;
+            }
+
+            // Case 1: ID with revision and parent. GUID[GUID]:[GUID]
+            var r = new Regex(id + lSquare + id + rSquare + colon + id, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m = r.Match(line);
+            if (m.Success)
+            {
+                noteId = new Guid(m.Groups[1].ToString());
+                revision = Guid.Parse(m.Groups[3].ToString());
+                parentId = new Guid(m.Groups[6].ToString());
+                prevRevision = null;
+                return true;
+            }
+
+            // Case 2: ID with revision. GUID[GUID]
+            var r2 = new Regex(id + lSquare + id + rSquare, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m2 = r2.Match(line);
+            if (m2.Success)
+            {
+                noteId = new Guid(m2.Groups[1].ToString());
+                revision = Guid.Parse(m2.Groups[3].ToString());
+                parentId = null;
+                prevRevision = null;
+                return true;
+            }
+
+            // Backwards-compatible cases: no revision id. GUID
+            var r3 = new Regex(id, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m3 = r3.Match(line);
+            if (m3.Success)
+            {
+                noteId = new Guid(m3.Groups[1].ToString());
+                revision = null;
+                parentId = null;
+                prevRevision = null;
+                return true;
+            }
+
+            // GUID:GUID
+            var r4 = new Regex(id + colon + id, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var m4 = r4.Match(line);
+            if (m4.Success)
+            {
+                noteId = new Guid(m4.Groups[1].ToString());
+                revision = null;
+                parentId = new Guid(m4.Groups[3].ToString());
+                prevRevision = null;
+                return true;
+            }
+
+            // Failed to parse.
+            noteId = null;
+            revision = null;
+            parentId = null;
+            prevRevision = null;
+            return false;
+        }
+
+        public Note Load(Guid id, string filename)
+        {
+            var items = LoadAll(filename);
+            return items.FirstOrDefault(i => i.ID == id);
+        }
+
+        public IEnumerable<Note> LoadAll(string filename)
         {
             var drafts = new List<Note>();
             Note current = null;
             DateTime stamp;
-            if (File.Exists(Filename))
+            if (File.Exists(filename))
             {
-                foreach (var line in File.ReadAllLines(Filename))
+                foreach (var line in File.ReadAllLines(filename))
                 {
                     if (line.Trim().Length == 0)
                     {
@@ -46,7 +133,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                             current = new Note();
                         }
 
-                        if (TryParseGuidLine(line, out var id, out var rev, out var parent))
+                        if (TryParseGuidLine(line, out var id, out var rev, out var parent, out var prevRevision))
                         {
                             if (id.HasValue)
                             {
@@ -61,6 +148,11 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                             if (parent.HasValue)
                             {
                                 current.ParentId = parent.Value;
+                            }
+
+                            if (prevRevision.HasValue)
+                            {
+                                current.PrevRevision = prevRevision;
                             }
                         }
                         else if (DateTime.TryParse(line, out stamp))
@@ -86,79 +178,15 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             return drafts;
         }
 
-        private bool TryParseGuidLine(string line, out Guid? noteId, out Guid? revision, out Guid? parentId)
-        {
-            var re1 = "([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})";  // SQL GUID 1
-            var re2 = "(\\[)";   // Any Single Character 1
-            var re4 = "(\\])";   // Any Single Character 2
-            var re5 = "(:)"; // Any Single Character 3
-            var re6 = "([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})";  // SQL GUID 2
-
-            // Case 1: ID with revision.
-            var r = new Regex(re1 + re2 + re6 + re4 + re5 + re6, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            var m = r.Match(line);
-            if (m.Success)
-            {
-                noteId = new Guid(m.Groups[1].ToString());
-                revision = Guid.Parse(m.Groups[3].ToString());
-                parentId = new Guid(m.Groups[6].ToString());
-                return true;
-            }
-
-            // Case 2: ID with revision and parent.
-            var r2 = new Regex(re1 + re2 + re6 + re4, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            var m2 = r2.Match(line);
-            if (m2.Success)
-            {
-                noteId = new Guid(m2.Groups[1].ToString());
-                revision = Guid.Parse(m2.Groups[3].ToString());
-                parentId = null;
-                return true;
-            }
-
-            // Backwards-compatible cases: no revision number.
-            var r3 = new Regex(re1, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            var m3 = r3.Match(line);
-            if (m3.Success)
-            {
-                noteId = new Guid(m3.Groups[1].ToString());
-                revision = null;
-                parentId = null;
-                return true;
-            }
-
-            var r4 = new Regex(re1 + re5 + re6, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            var m4 = r4.Match(line);
-            if (m4.Success)
-            {
-                noteId = new Guid(m4.Groups[1].ToString());
-                revision = null;
-                parentId = new Guid(m4.Groups[3].ToString());
-                return true;
-            }
-
-            // Failed to parse.
-            noteId = null;
-            revision = null;
-            parentId = null;
-            return false;
-        }
-
-        public Note Load(Guid id)
-        {
-            var items = LoadAll();
-            return items.FirstOrDefault(i => i.ID == id);
-        }
-
-        public void Save(Note item)
+        public void Save(Note item, string filename, bool overwrite = false)
         {
             // TODO: Optimise.
-            var f = LoadAll().ToList();
+            var f = LoadAll(filename).ToList();
             f.Add(item);
-            SaveAll(f.OrderBy(e => e.Timestamp).ToList());
+            SaveAll(f.OrderBy(e => e.Timestamp).ToList(), filename);
         }
 
-        public void SaveAll(IEnumerable<Note> items)
+        public void SaveAll(IEnumerable<Note> items, string filename, bool overwrite = false)
         {
             var filecontents = new StringBuilder();
             foreach (var d in items)
@@ -174,25 +202,40 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                     filecontents.AppendLine(d.TagString);
                 }
 
-                if (d.ParentId != null)
+                filecontents.Append(d.ID.ToString());
+                if (d.PrevRevision.HasValue)
                 {
-                    filecontents.AppendLine($"{d.ID}[{d.RevisionGuid}]:{d.ParentId}");
+                    filecontents.AppendFormat("[{0};{1}]", d.RevisionGuid, d.PrevRevision);
                 }
                 else
                 {
-                    filecontents.AppendLine($"{d.ID}[{d.RevisionGuid}]");
+                    filecontents.AppendFormat("[{0}]", d.RevisionGuid);
                 }
+
+                if (d.ParentId.HasValue)
+                {
+                    filecontents.AppendFormat(":{0}", d.ParentId);
+                }
+
+                filecontents.AppendLine();
                 filecontents.AppendLine();
             }
 
-            File.WriteAllText(Filename, filecontents.ToString());
+            if (filecontents.Length == 0 && File.Exists(filename))
+            {
+                File.Delete(filename);
+            }
+            else
+            {
+                File.WriteAllText(filename, filecontents.ToString());
+            }
         }
 
-        public void Delete(Note item)
+        public void Delete(Note item, string filename)
         {
-            var allitems = LoadAll().ToList();
+            var allitems = LoadAll(filename).ToList();
             allitems.RemoveAll(i => i.ID == item.ID);
-            SaveAll(allitems);
+            SaveAll(allitems, filename);
         }
     }
 }

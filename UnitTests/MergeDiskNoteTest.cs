@@ -30,7 +30,7 @@ namespace UnitTests
         public void Create_File_From_Scratch()
         {
             var fileName = "LogFile.txt";
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(fileName), Path.GetDirectoryName(fileName));
+            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
 
             repo.Create(new Note
             {
@@ -46,7 +46,7 @@ namespace UnitTests
 
             Assert.AreEqual(1, repo.Items.Count(), "Empty after saving");
 
-            var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(fileName), Path.GetDirectoryName(fileName));
+            var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
             repo2.FindAll();
 
             Assert.AreEqual(1, repo2.Items.Count(), "Empty in new repository");
@@ -60,7 +60,8 @@ namespace UnitTests
         public void Revert_Conflict()
         {
             // Set up a conflict.
-            var mapper = new AssimilationSoftware.Maroon.Mappers.Xml.SharpListSerialiser<Note>(".", "update-{0}.xml");
+            var primaryFileName = "notes.txt";
+            var mapper = new NoteDiskMapper();
             Guid root = Guid.NewGuid();
             Guid rev1 = Guid.NewGuid();
             Guid rev2 = Guid.NewGuid();
@@ -84,6 +85,7 @@ namespace UnitTests
                     ParentId = null,
                     LastModified = DateTime.Now,
                     RevisionGuid = rev2,
+                    PrevRevision = rev1,
                     Text = "edited text",
                     Tags = new List<string>{"tag"}
                 },
@@ -94,16 +96,22 @@ namespace UnitTests
                     ParentId = null,
                     LastModified = DateTime.Now,
                     RevisionGuid = rev3,
+                    PrevRevision = rev1,
                     Text = "base text has been modified",
                     Tags = new List<string>{"tag"}
                 },
             };
 
-            mapper.Serialise(data);
-            Assert.AreEqual(3, mapper.Deserialise().Count);
+            foreach (var n in data)
+            {
+                mapper.Save(n, $"update-{n.RevisionGuid}.txt");
+            }
+
+            var path = Path.GetDirectoryName(Path.GetFullPath(primaryFileName));
+            Assert.AreEqual(3, Directory.GetFiles(path, "update-*.txt").Length);
 
             // Get the conflicts into a repository.
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper("LogFile.log"), ".");
+            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), primaryFileName);
             repo.FindAll();
             Assert.AreEqual(1, repo.Items.Count());
             Assert.AreEqual(1, repo.FindConflicts().Count);
@@ -111,7 +119,7 @@ namespace UnitTests
             repo.Revert(root);
             repo.SaveChanges();
             Assert.AreEqual(1, repo.Items.Count());
-            Assert.AreEqual(1, mapper.Deserialise().Count);
+            Assert.AreEqual(1, Directory.GetFiles(path, "update-*.txt").Length);
             Assert.AreEqual(0, repo.FindConflicts().Count);
         }
     }

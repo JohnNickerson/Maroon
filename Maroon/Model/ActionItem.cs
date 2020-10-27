@@ -40,29 +40,6 @@ namespace AssimilationSoftware.Maroon.Model
 
             return ancestors.Count;
         }
-        
-        public override ModelObject Clone()
-        {
-            return new ActionItem
-            {
-                Context = Context,
-                Done = Done,
-                DoneDate = DoneDate,
-                Notes = Notes,
-                ParentId = ParentId,
-                ProjectId = ProjectId,
-                Status = Status,
-                Tags = Tags,
-                TickleDate = TickleDate,
-                Title = Title,
-                Upvotes = Upvotes,
-                RevisionGuid = RevisionGuid,
-                PrevRevision = PrevRevision,
-                IsDeleted = IsDeleted,
-                ID = ID,
-                LastModified = LastModified
-            };
-        }
 
         #endregion
 

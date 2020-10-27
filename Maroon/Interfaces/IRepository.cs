@@ -16,7 +16,7 @@ namespace AssimilationSoftware.Maroon.Interfaces
 
         void Delete(T entity);
 
-        void Update(T entity);
+        void Update(T entity, bool isNew = false);
 
         void SaveChanges();
     }

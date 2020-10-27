@@ -58,10 +58,10 @@ namespace UnitTests
                 Title = "Child, depth 1",
                 Upvotes = 0
             });
-            var m = new ActionItemDiskMapper(fileName);
+            var m = new ActionItemTextMapper();
 
-            m.SaveAll(i);
-            var j = m.LoadAll();
+            m.SaveAll(i, fileName);
+            var j = m.LoadAll(fileName);
 
             Assert.IsNotNull(j);
             Assert.AreEqual(i.Count, j.Count());

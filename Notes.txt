@@ -27,20 +27,3 @@ Challenges:
 	
 What to send via queues? Commands, data, files.
 Broadcast and targeted messaging.
-
-2019-03-21: Build 0.1.2.1 released to Production
-	- Better conflict detection.
-	- Fixed path use in SharpListSerialiser.
-2019-03-27: Build 0.2.0.3 released to Production
-	- Previous revision GUIDs rather than integers.
-	- Patched to fix conflict resolution.
-	- Patched to fix disk file management.
-	- Patched to optimise conflict detection algorithm.
-2019-06-03: Build 0.2.0.4 released to Production
-	- Patched to fix null reference in NoteDiskMapper.
-2019-06-13: Build 0.2.1.1
-	- ImportHash field.
-	- Fix for null reference in ActionItemDiskMapper.
-2019-06-27: Build 0.2.2
-	- Fixed ActionItemDiskMapper to leave files unchanged during read. 
-	- Updated MergeDiskRepository handling of unsaved changes.

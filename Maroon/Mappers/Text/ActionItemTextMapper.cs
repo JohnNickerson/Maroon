@@ -8,38 +8,36 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Mappers.Text
 {
-    public class ActionItemDiskMapper : IMapper<ActionItem>
+    public class ActionItemTextMapper : IDiskMapper<ActionItem>
     {
-        protected string Filename;
         protected List<ActionItem> Items;
         private DateTime? _lastModTime;
 
-        public ActionItemDiskMapper(string filename)
+        public ActionItemTextMapper()
         {
-            Filename = filename;
             _lastModTime = null;
         }
 
-        public ActionItem Load(Guid id)
+        public ActionItem Load(Guid id, string filename)
         {
-            Items = LoadAll().ToList();
+            Items = LoadAll(filename).ToList();
             var filtered = from i in Items where i.ID == id select i;
             return filtered.FirstOrDefault();
         }
 
-        public IEnumerable<ActionItem> LoadAll()
+        public IEnumerable<ActionItem> LoadAll(string filename)
         {
-            if (File.Exists(Filename))
+            if (File.Exists(filename))
             {
                 // Check item cache. If the file hasn't changed since we last read it in full, just return the Items from memory.
-                if (new FileInfo(Filename).LastWriteTime == _lastModTime)
+                if (new FileInfo(filename).LastWriteTime == _lastModTime)
                 {
                     return Items;
                 }
                 // File changed since we last saw it. Read it again and note the time later.
                 _lastModTime = null;
             }
-            var lines = (File.Exists(Filename) ? File.ReadAllLines(Filename) : new string[] { });
+            var lines = (File.Exists(filename) ? File.ReadAllLines(filename) : new string[] { });
 
             Items = new List<ActionItem>();
             var context = string.Empty;
@@ -84,6 +82,9 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                                 case "revision":
                                     currentItem.RevisionGuid = Guid.Parse(ts[1]);
                                     break;
+                                case "prev-revision":
+                                    currentItem.PrevRevision = Guid.Parse(ts[1]);
+                                    break;
                                 case "import-hash":
                                     currentItem.ImportHash = ts[1];
                                     break;
@@ -117,22 +118,22 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 }
             }
             // Note the last write time of the file for subsequent reads. If we can avoid reading it again, do that.
-            _lastModTime = new FileInfo(Filename).LastWriteTime;
+            _lastModTime = new FileInfo(filename).LastWriteTime;
             return Items;
         }
 
-        public void Save(ActionItem item)
+        public void Save(ActionItem item, string filename, bool overwrite = false)
         {
             if (Items == null)
             {
-                Items = LoadAll().ToList();
+                Items = LoadAll(filename).ToList();
             }
             Items.RemoveAll(i => i.ID == item.ID);
             Items.Add(item);
-            SaveAll(Items);
+            SaveAll(Items, filename);
         }
 
-        public void SaveAll(IEnumerable<ActionItem> items)
+        public void SaveAll(IEnumerable<ActionItem> items, string filename, bool overwrite = false)
         {
             var file = new StringBuilder();
             var currentContext = string.Empty;
@@ -172,6 +173,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 
                 file.AppendLine($"\t\t#id:{i.ID}");
                 file.AppendLine($"\t\t#revision:{i.RevisionGuid}");
+                if (i.PrevRevision.HasValue)
+                {
+                    file.AppendLine($"\t\t#prev-revision:{i.PrevRevision}");
+                }
                 if (!string.IsNullOrEmpty(i.ImportHash))
                 {
                     file.AppendLine($"\t\t#import-hash:{i.ImportHash}");
@@ -187,16 +192,16 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 }
             }
 
-            File.WriteAllText(Filename, file.ToString());
+            File.WriteAllText(filename, file.ToString());
         }
 
-        public void Delete(ActionItem item)
+        public void Delete(ActionItem item, string filename)
         {
-            var allItems = LoadAll().ToList();
+            var allItems = LoadAll(filename).ToList();
 
             allItems.RemoveAll(i => i.ID == item.ID);
 
-            SaveAll(allItems);
+            SaveAll(allItems, filename);
         }
     }
 }

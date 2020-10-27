@@ -13,22 +13,6 @@ namespace AssimilationSoftware.Maroon.Model
         {
             return ParentId == null ? null : repository.Find(ParentId.Value);
         }
-        public override ModelObject Clone()
-        {
-            return new Note
-            {
-                ParentId = ParentId,
-                TagString = TagString,
-                Tags = Tags,
-                Text = Text,
-                Timestamp = Timestamp,
-                RevisionGuid = RevisionGuid,
-                PrevRevision = PrevRevision,
-                IsDeleted = IsDeleted,
-                ID = ID,
-                LastModified = LastModified
-            };
-        }
 
         #endregion
 

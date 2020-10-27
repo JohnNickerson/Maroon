@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using AssimilationSoftware.Maroon.Model;
 using Polenter.Serialization;
 
 namespace AssimilationSoftware.Maroon.Mappers.Xml
 {
+    [Obsolete]
     public class SharpListSerialiser<T> where T : ModelObject
     {
         #region Fields

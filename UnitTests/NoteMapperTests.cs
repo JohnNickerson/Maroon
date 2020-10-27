@@ -39,10 +39,10 @@ namespace UnitTests
                 }
             };
             var filename = "NotesOnDisk.txt";
-            var noteMapper = new NoteDiskMapper(filename);
-            noteMapper.SaveAll(notebook);
+            var noteMapper = new NoteDiskMapper();
+            noteMapper.SaveAll(notebook, filename);
 
-            var fromDisk = noteMapper.LoadAll();
+            var fromDisk = noteMapper.LoadAll(filename);
             Assert.IsNotNull(fromDisk );
             Assert.AreEqual(notebook.Count, fromDisk.Count());
             foreach (var i in fromDisk)

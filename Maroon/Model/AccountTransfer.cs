@@ -33,24 +33,5 @@ namespace AssimilationSoftware.Maroon.Model
         /// The destination account to which the transfer was sent.
         /// </summary>
         public string ToAccount { get; set; }
-
-        public override ModelObject Clone()
-        {
-            return new AccountTransfer
-            {
-                Amount = Amount,
-                Category = Category,
-                Date = Date,
-                Description = Description,
-                FromAccount = FromAccount,
-                ToAccount = ToAccount,
-                RevisionGuid = RevisionGuid,
-                PrevRevision = PrevRevision,
-                IsDeleted = IsDeleted,
-                ID = ID,
-                LastModified = LastModified,
-                ImportHash = ImportHash
-            };
-        }
     }
 }
