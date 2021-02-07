@@ -9,6 +9,19 @@ namespace UnitTests
     [TestClass]
     public class NoteLiteDbTests
     {
+        [TestCleanup, TestInitialize]
+        public void Cleanup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "notes-test.db"))
+            {
+                try
+                {
+                    File.Delete(updateFile);
+                }
+                catch { /*ignored */ }
+            }
+        }
+
         [TestMethod]
         public void Round_Trip_Test()
         {

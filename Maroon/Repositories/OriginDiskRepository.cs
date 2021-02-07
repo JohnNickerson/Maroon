@@ -258,9 +258,11 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public IEnumerable<T> Items => _allUpdates.Where(u => !_allUpdates.Any(q => q.ID == u.ID && q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
 
-        private string ThisMachineFile => $"updates-{_thisMachineName}.txt";
+        private string ThisMachineFile => Path.Combine(PrimaryPath, $"updates-{_thisMachineName}.txt");
 
-        private string[] UpdateFileNames => Directory.GetFiles(Path.GetDirectoryName(Path.GetFullPath(_primaryFileName)), MachineFileNameSearch, SearchOption.TopDirectoryOnly);
+        private string[] UpdateFileNames => Directory.GetFiles(PrimaryPath, MachineFileNameSearch, SearchOption.TopDirectoryOnly);
+
+        private string PrimaryPath => Path.GetDirectoryName(Path.GetFullPath(_primaryFileName));
 
         #endregion
     }

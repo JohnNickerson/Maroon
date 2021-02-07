@@ -14,6 +14,15 @@ namespace UnitTests
     [TestClass]
     public class OriginDiskRepositoryTests
     {
+        [TestCleanup, TestInitialize]
+        public void Cleanup()
+        {
+            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
+            {
+                File.Delete(updateFile);
+            }
+        }
+
         [TestMethod]
         public void TestConstructor()
         {

@@ -13,13 +13,9 @@ namespace UnitTests
     [TestClass]
     public class MergeDiskNoteTest
     {
-        [TestInitialize]
-        public void Setup()
+        [TestCleanup, TestInitialize]
+        public void Cleanup()
         {
-            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
-            {
-                File.Delete(updateFile);
-            }
             foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
             {
                 File.Delete(updateFile);
@@ -61,6 +57,8 @@ namespace UnitTests
         {
             // Set up a conflict.
             var primaryFileName = "notes.txt";
+            var path = Path.GetDirectoryName(Path.GetFullPath(primaryFileName));
+
             var mapper = new NoteDiskMapper();
             Guid root = Guid.NewGuid();
             Guid rev1 = Guid.NewGuid();
@@ -107,7 +105,6 @@ namespace UnitTests
                 mapper.Save(n, $"update-{n.RevisionGuid}.txt");
             }
 
-            var path = Path.GetDirectoryName(Path.GetFullPath(primaryFileName));
             Assert.AreEqual(3, Directory.GetFiles(path, "update-*.txt").Length);
 
             // Get the conflicts into a repository.

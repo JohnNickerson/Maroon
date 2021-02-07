@@ -11,13 +11,9 @@ namespace UnitTests
     [TestClass]
     public class TimeLogMapperTests
     {
-        [TestInitialize]
-        public void Setup()
+        [TestCleanup, TestInitialize]
+        public void Cleanup()
         {
-            foreach (var updateFile in Directory.GetFiles(".", "update*.xml"))
-            {
-                File.Delete(updateFile);
-            }
             foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
             {
                 File.Delete(updateFile);
