@@ -96,6 +96,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Delete(T entity)
         {
+            if (entity == null) return;
             var gone = (T)entity.Clone();
             gone.IsDeleted = true;
             gone.UpdateRevision();
