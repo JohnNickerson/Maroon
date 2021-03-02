@@ -31,7 +31,7 @@ namespace AssimilationSoftware.Maroon.Model
             if (ParentId == null) return 0;
             // Recursive version would be simpler ("return Parent.RankDepth + 1;") but can get stuck on loops.
             var ancestors = new List<ActionItem> {GetParent(repository)};
-            var cursor = GetParent(repository).GetParent(repository);
+            var cursor = GetParent(repository)?.GetParent(repository);
             while (cursor != null && !ancestors.Contains(cursor))
             {
                 ancestors.Add(cursor);
