@@ -4,6 +4,31 @@ namespace AssimilationSoftware.Maroon.Model
 {
     public abstract class ModelObject
     {
+        #region Constructors
+
+        public ModelObject(ModelObject toClone = null)
+        {
+            if (toClone != null)
+            {
+                ID = toClone.ID;
+                LastModified = toClone.LastModified;
+                PrevRevision = toClone.PrevRevision;
+                RevisionGuid = toClone.RevisionGuid;
+                IsDeleted = toClone.IsDeleted;
+                ImportHash = toClone.ImportHash;
+            }
+            else
+            {
+                ID = Guid.NewGuid();
+                LastModified = DateTime.Now;
+                PrevRevision = null;
+                RevisionGuid = Guid.NewGuid();
+                IsDeleted = false;
+            }
+        }
+
+        #endregion
+
         #region Properties
         /// <summary>
         /// Unique identifier for this item across all revisions.
@@ -39,9 +64,9 @@ namespace AssimilationSoftware.Maroon.Model
             return ID.GetHashCode();
         }
 
-        public void UpdateRevision()
+        public void UpdateRevision(bool isNew = false)
         {
-            PrevRevision = RevisionGuid;
+            PrevRevision = isNew ? (Guid?)null : RevisionGuid;
             RevisionGuid = Guid.NewGuid();
             LastModified = DateTime.Now;
         }

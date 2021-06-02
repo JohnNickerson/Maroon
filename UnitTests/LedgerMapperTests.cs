@@ -39,9 +39,9 @@ namespace UnitTests
                 }
             };
             var filename = "TestLedger.csv";
-            var mapper = new LedgerCsvMapper(filename);
-            mapper.SaveAll(ledger);
-            var fromDisk = mapper.LoadAll();
+            var mapper = new LedgerCsvMapper();
+            mapper.Write(ledger, filename);
+            var fromDisk = mapper.Read(filename);
 
             Assert.IsNotNull(fromDisk);
             Assert.AreEqual(ledger.Count, fromDisk.Count());

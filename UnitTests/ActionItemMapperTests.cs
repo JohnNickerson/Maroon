@@ -56,8 +56,8 @@ namespace UnitTests
             });
             var m = new ActionItemTextMapper();
 
-            m.SaveAll(i, fileName);
-            var j = m.LoadAll(fileName);
+            m.Write(i, fileName);
+            var j = m.Read(fileName).ToArray();
 
             Assert.IsNotNull(j);
             Assert.AreEqual(i.Count, j.Count());

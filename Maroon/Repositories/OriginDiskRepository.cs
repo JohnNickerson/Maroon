@@ -33,7 +33,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             _items = new List<T>();
             _allUpdates = new List<T>();
 
-            _localUpdates = (List<T>)_mapper.LoadAll(ThisMachineFile);
+            _localUpdates = (List<T>)_mapper.Read(ThisMachineFile);
         }
         #endregion
 
@@ -44,26 +44,27 @@ namespace AssimilationSoftware.Maroon.Repositories
             {
                 return Items.First(t => t.ID == id);
             }
-            var i = _mapper.Load(id, _primaryFileName);
+            var i = _mapper.Read(_primaryFileName);
             if (i != null)
             {
-                _items.Add(i);
+                _items.AddRange(i);
             }
             else
             {
                 // Reload pending changes.
                 LoadChanges();
-                if (Items.Any(v => v.ID == id))
-                {
-                    i = Items.First(t => t.ID == id);
-                }
             }
-            return i;
+            if (Items.Any(v => v.ID == id))
+            {
+                return Items.First(t => t.ID == id);
+            }
+
+            return null;
         }
 
         public IEnumerable<T> FindAll()
         {
-            _items = _mapper.LoadAll(_primaryFileName).ToList();
+            _items = _mapper.Read(_primaryFileName).ToList();
             LoadChanges();
             return Items;
         }
@@ -73,7 +74,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             // Load changes from disk without needing to save from memory first.
             foreach (var updateFileName in UpdateFileNames)
             {
-                foreach (var u in _mapper.LoadAll(updateFileName))
+                foreach (var u in _mapper.Read(updateFileName))
                 {
                     if (_allUpdates.All(p => p.RevisionGuid != u.RevisionGuid))
                     {
@@ -125,7 +126,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 // Only write changes if there are any to write.
                 if (_localUpdates.Count > 0 && _unsavedChanges)
                 {
-                    _mapper.SaveAll(_localUpdates, ThisMachineFile);
+                    _mapper.Write(_localUpdates, ThisMachineFile);
                     _unsavedChanges = false;
                 }
             }
@@ -148,7 +149,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
                     // Apply changes (encapsulated in the Items property).
                     // Save all.
-                    _mapper.SaveAll(Items.ToList(), _primaryFileName, true);
+                    _mapper.Write(Items.ToList(), _primaryFileName);
 
                     // Clear the lists.
                     _items = Items.ToList();
@@ -201,20 +202,8 @@ namespace AssimilationSoftware.Maroon.Repositories
                 var c = new PendingChange<T>
                 {
                     Id = id,
-                    Updates = _allUpdates.Where(u => u.ID == id).ToList()
                 };
                 // If two or more updates branched from the same revision, that's a conflict.
-                foreach (var p in c.Updates)
-                {
-                    if (!p.PrevRevision.HasValue) continue; // New item with no previous revision.
-
-                    if (seenRevs.Contains(p.PrevRevision.Value) || !knownRevs.Contains(p.PrevRevision.Value))
-                    {
-                        c.IsConflict = true;
-                        break;
-                    }
-                    seenRevs.Add(p.PrevRevision.Value);
-                }
                 result.Add(c);
             }
 
@@ -246,7 +235,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 // Remove from disk, if present.
                 foreach (var updateFileName in UpdateFileNames)
                 {
-                    _mapper.Delete(change, updateFileName);
+                    File.Delete(updateFileName);
                 }
             }
             _localUpdates.RemoveAll(u => u.ID == id);

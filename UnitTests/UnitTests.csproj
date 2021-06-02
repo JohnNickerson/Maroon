@@ -60,8 +60,11 @@
     <Compile Include="MergeDiskLedgerTests.cs" />
     <Compile Include="MergeDiskTimeLogTests.cs" />
     <Compile Include="NoteMapperTests.cs" />
-    <Compile Include="OriginDiskRepositoryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\MergeDiskRepositoryTests.cs" />
+    <Compile Include="Repositories\MockDiskMapper.cs" />
+    <Compile Include="Repositories\MockObj.cs" />
+    <Compile Include="Repositories\SingleOriginRepositoryTests.cs" />
     <Compile Include="TimeLogMapperTests.cs" />
     <Compile Include="LedgerMapperTests.cs" />
     <Compile Include="MergeDiskActionTests.cs" />

@@ -55,11 +55,9 @@ namespace UnitTests
         [TestMethod]
         public void Revert_Conflict()
         {
-            // Set up a conflict.
             var primaryFileName = "notes.txt";
-            var path = Path.GetDirectoryName(Path.GetFullPath(primaryFileName));
-
             var mapper = new NoteDiskMapper();
+            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), primaryFileName);
             Guid root = Guid.NewGuid();
             Guid rev1 = Guid.NewGuid();
             Guid rev2 = Guid.NewGuid();
@@ -99,24 +97,23 @@ namespace UnitTests
                     Tags = new List<string>{"tag"}
                 },
             };
+            repo.Create(data[0]);
+            var found = repo.Find(root);
+            Assert.IsNotNull(found);
+            found.Text = "edited text";
+            repo.Update(found);
+            var updated = repo.Find(root);
+            Assert.IsNotNull(updated);
+            Assert.AreEqual("edited text", updated.Text);
 
-            foreach (var n in data)
-            {
-                mapper.Save(n, $"update-{n.RevisionGuid}.txt");
-            }
+            repo.Revert(updated.ID);
+            var revved = repo.Find(updated.ID);
+            Assert.IsNotNull(revved);
+            Assert.AreEqual(data[0].Text, revved.Text);
 
-            Assert.AreEqual(3, Directory.GetFiles(path, "update-*.txt").Length);
-
-            // Get the conflicts into a repository.
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), primaryFileName);
-            repo.FindAll();
-            Assert.AreEqual(1, repo.Items.Count());
-            Assert.AreEqual(1, repo.FindConflicts().Count);
-
-            repo.Revert(root);
             repo.SaveChanges();
             Assert.AreEqual(1, repo.Items.Count());
-            Assert.AreEqual(1, Directory.GetFiles(path, "update-*.txt").Length);
+            Assert.AreEqual(1, Directory.GetFiles(".", "update-*.txt").Length);
             Assert.AreEqual(0, repo.FindConflicts().Count);
         }
     }

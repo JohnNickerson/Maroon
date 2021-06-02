@@ -26,7 +26,7 @@ namespace UnitTests
             var path = ".";
             var filename = Path.Combine(path, "TimeLogRepoBase.csv");
 
-            var mapper = new TimeLogCsvMapper(filename);
+            var mapper = new TimeLogCsvMapper();
             var repo = new MergeDiskRepository<TimeLogEntry>(mapper, filename);
 
             var log = new TimeLogEntry
@@ -54,11 +54,11 @@ namespace UnitTests
             Assert.AreEqual(0, repo.FindConflicts().Count);
             Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
 
-            repo.Delete(log);
+            repo.Delete(found);
             repo.SaveChanges();
             Assert.AreEqual(0, repo.FindConflicts().Count);
             repo.CommitChanges();
-            Assert.IsNull(repo.Find(log.ID), "Deleted item still in repository.");
+            Assert.IsNull(repo.Find(found.ID), "Deleted item still in repository.");
         }
     }
 }

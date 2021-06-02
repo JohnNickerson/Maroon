@@ -10,36 +10,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 {
     public class ActionItemTextMapper : IDiskMapper<ActionItem>
     {
-        protected List<ActionItem> Items;
-        private DateTime? _lastModTime;
-
-        public ActionItemTextMapper()
+        private IEnumerable<ActionItem> LoadAll(string filename)
         {
-            _lastModTime = null;
-        }
-
-        public ActionItem Load(Guid id, string filename)
-        {
-            Items = LoadAll(filename).ToList();
-            var filtered = from i in Items where i.ID == id select i;
-            return filtered.FirstOrDefault();
-        }
-
-        public IEnumerable<ActionItem> LoadAll(string filename)
-        {
-            if (File.Exists(filename))
-            {
-                // Check item cache. If the file hasn't changed since we last read it in full, just return the Items from memory.
-                if (new FileInfo(filename).LastWriteTime == _lastModTime)
-                {
-                    return Items;
-                }
-                // File changed since we last saw it. Read it again and note the time later.
-                _lastModTime = null;
-            }
             var lines = (File.Exists(filename) ? File.ReadAllLines(filename) : new string[] { });
 
-            Items = new List<ActionItem>();
             var context = string.Empty;
             var currentItem = new ActionItem { Context = context, Title = "(item out of order)", Done = false, ID = Guid.NewGuid() };
             foreach (var t in lines)
@@ -114,26 +88,17 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 {
                     // New item.
                     currentItem = new ActionItem { Context = context, Title = t.Trim(), ID = Guid.NewGuid() };
-                    Items.Add(currentItem);
+                    yield return (currentItem);
                 }
             }
-            // Note the last write time of the file for subsequent reads. If we can avoid reading it again, do that.
-            _lastModTime = new FileInfo(filename).LastWriteTime;
-            return Items;
         }
 
-        public void Save(ActionItem item, string filename, bool overwrite = false)
+        public IEnumerable<ActionItem> Read(params string[] fileNames)
         {
-            if (Items == null)
-            {
-                Items = LoadAll(filename).ToList();
-            }
-            Items.RemoveAll(i => i.ID == item.ID);
-            Items.Add(item);
-            SaveAll(Items, filename);
+            return fileNames.SelectMany(LoadAll);
         }
 
-        public void SaveAll(IEnumerable<ActionItem> items, string filename, bool overwrite = false)
+        public void Write(IEnumerable<ActionItem> items, string filename)
         {
             var file = new StringBuilder();
             var currentContext = string.Empty;
@@ -195,13 +160,9 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             File.WriteAllText(filename, file.ToString());
         }
 
-        public void Delete(ActionItem item, string filename)
+        public void Delete(string filename)
         {
-            var allItems = LoadAll(filename).ToList();
-
-            allItems.RemoveAll(i => i.ID == item.ID);
-
-            SaveAll(allItems, filename);
+            File.Delete(filename);
         }
     }
 }

@@ -37,10 +37,10 @@ namespace UnitTests
                 }
             };
             var filename = "TestTimeFile.csv";
-            var mapper = new TimeLogCsvMapper(filename);
+            var mapper = new TimeLogCsvMapper();
 
-            mapper.SaveAll(timeLog);
-            var fromDisk = mapper.LoadAll();
+            mapper.Write(timeLog, filename);
+            var fromDisk = mapper.Read(filename);
 
             Assert.IsNotNull(fromDisk );
             Assert.AreEqual(timeLog.Count, fromDisk.Count());
@@ -74,10 +74,10 @@ namespace UnitTests
                 }
             };
             var filename = "TestTimeFile.csv";
-            var mapper = new TimeLogCsvMapper(filename);
+            var mapper = new TimeLogCsvMapper();
 
-            mapper.SaveAll(timeLog);
-            var fromDisk = mapper.LoadAll();
+            mapper.Write(timeLog.OrderBy(t => t.StartTime), filename);
+            var fromDisk = mapper.Read(filename).ToArray();
 
             Assert.IsNotNull(fromDisk);
             Assert.AreEqual(timeLog.Count, fromDisk.Count());

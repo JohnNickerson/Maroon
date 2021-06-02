@@ -7,10 +7,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
 {
     public class TimeLogCsvMapper : CsvDiskMapper<TimeLogEntry>
     {
-        public TimeLogCsvMapper(string filename) : base(filename)
-        {
-        }
-
         public override string FieldsHeader => "Start,End,Client,Ticket,Notes,Chargeable,ID,Rev,Prev,Hash,Deleted";
 
         public override TimeLogEntry FromTokens(string[] tokens)
@@ -38,10 +34,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                 $"{obj.StartTime:s},{obj.EndTime:s},{obj.Client},{obj.Project},{obj.Note},{obj.Billable},{obj.ID},{obj.RevisionGuid},{obj.PrevRevision},{obj.ImportHash},{obj.IsDeleted}";
         }
 
-        public override void SaveAll(IEnumerable<TimeLogEntry> list)
-        {
-            // Just sort so that the file saves in order.
-            base.SaveAll(list.OrderBy(t => t.StartTime));
-        }
+        //public override void SaveAll(IEnumerable<TimeLogEntry> list)
+        //{
+        //    // Just sort so that the file saves in order.
+        //    base.SaveAll(list.OrderBy(t => t.StartTime));
+        //}
     }
 }

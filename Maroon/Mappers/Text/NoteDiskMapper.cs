@@ -11,10 +11,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 {
     public class NoteDiskMapper : IDiskMapper<Note>
     {
-        public NoteDiskMapper()
-        {
-        }
-
         private bool TryParseGuidLine(string line, out Guid? noteId, out Guid? revision, out Guid? parentId, out Guid? prevRevision)
         {
             var id = "([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})";  // SQL GUID 1
@@ -103,17 +99,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             return false;
         }
 
-        public Note Load(Guid id, string filename)
-        {
-            var items = LoadAll(filename);
-            return items.FirstOrDefault(i => i.ID == id);
-        }
-
-        public IEnumerable<Note> LoadAll(string filename)
+        private IEnumerable<Note> LoadAll(string filename)
         {
             var drafts = new List<Note>();
             Note current = null;
-            DateTime stamp;
             if (File.Exists(filename))
             {
                 foreach (var line in File.ReadAllLines(filename))
@@ -155,22 +144,25 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                                 current.PrevRevision = prevRevision;
                             }
                         }
-                        else if (DateTime.TryParse(line, out stamp))
-                        {
-                            current.Timestamp = stamp;
-                        }
-                        else if (line.Trim().Split(' ').All(t => t.StartsWith("#")))
-                        {
-                            // Tags.
-                            current.TagString = line;
-                        }
                         else
                         {
-                            if (!string.IsNullOrEmpty(current.Text))
+                            if (DateTime.TryParse(line, out var stamp))
                             {
-                                current.Text += Environment.NewLine;
+                                current.Timestamp = stamp;
                             }
-                            current.Text += line;
+                            else if (line.Trim().Split(' ').All(t => t.StartsWith("#")))
+                            {
+                                // Tags.
+                                current.TagString = line;
+                            }
+                            else
+                            {
+                                if (!string.IsNullOrEmpty(current.Text))
+                                {
+                                    current.Text += Environment.NewLine;
+                                }
+                                current.Text += line;
+                            }
                         }
                     }
                 }
@@ -178,64 +170,66 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
             return drafts;
         }
 
-        public void Save(Note item, string filename, bool overwrite = false)
+        public void Save(Note item, string filename)
         {
-            // TODO: Optimise.
-            var f = LoadAll(filename).ToList();
+            var f = Read(filename).ToList();
             f.Add(item);
-            SaveAll(f.OrderBy(e => e.Timestamp).ToList(), filename);
+            Write(f.OrderBy(e => e.Timestamp).ToList(), filename);
         }
 
-        public void SaveAll(IEnumerable<Note> items, string filename, bool overwrite = false)
+        public IEnumerable<Note> Read(params string[] fileNames)
         {
-            var filecontents = new StringBuilder();
+            return fileNames.SelectMany(LoadAll);
+        }
+
+        public void Write(IEnumerable<Note> items, string filename)
+        {
+            var fileContents = new StringBuilder();
             foreach (var d in items)
             {
-                filecontents.AppendLine(d.Timestamp.ToString("s"));
+                fileContents.AppendLine(d.Timestamp.ToString("s"));
 
-                filecontents.AppendLine(d.Text);
+                fileContents.AppendLine(d.Text);
 
                 // Tidy up tags before writing.
                 d.Tags?.RemoveAll(string.IsNullOrWhiteSpace);
                 if (d.Tags?.Count > 0)
                 {
-                    filecontents.AppendLine(d.TagString);
+                    fileContents.AppendLine(d.TagString);
                 }
 
-                filecontents.Append(d.ID.ToString());
+                fileContents.Append(d.ID.ToString());
                 if (d.PrevRevision.HasValue)
                 {
-                    filecontents.AppendFormat("[{0};{1}]", d.RevisionGuid, d.PrevRevision);
+                    fileContents.AppendFormat("[{0};{1}]", d.RevisionGuid, d.PrevRevision);
                 }
                 else
                 {
-                    filecontents.AppendFormat("[{0}]", d.RevisionGuid);
+                    fileContents.AppendFormat("[{0}]", d.RevisionGuid);
                 }
 
                 if (d.ParentId.HasValue)
                 {
-                    filecontents.AppendFormat(":{0}", d.ParentId);
+                    fileContents.AppendFormat(":{0}", d.ParentId);
                 }
 
-                filecontents.AppendLine();
-                filecontents.AppendLine();
+                fileContents.AppendLine();
+                fileContents.AppendLine();
             }
 
-            if (filecontents.Length == 0 && File.Exists(filename))
+            if (fileContents.Length == 0 && File.Exists(filename))
             {
                 File.Delete(filename);
             }
             else
             {
-                File.WriteAllText(filename, filecontents.ToString());
+                File.WriteAllText(filename, fileContents.ToString());
             }
         }
 
-        public void Delete(Note item, string filename)
+        public void Delete(string filename)
         {
-            var allitems = LoadAll(filename).ToList();
-            allitems.RemoveAll(i => i.ID == item.ID);
-            SaveAll(allitems, filename);
+            File.Delete(filename);
         }
     }
 }

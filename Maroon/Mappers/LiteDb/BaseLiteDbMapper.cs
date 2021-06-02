@@ -8,7 +8,7 @@ using LiteDB;
 
 namespace AssimilationSoftware.Maroon.Mappers.LiteDb
 {
-    public class BaseLiteDbMapper<T> : IMapper<T> where T : ModelObject
+    public class BaseLiteDbMapper<T> where T : ModelObject
     {
         private readonly LiteDatabase _liteDb;
         private readonly LiteCollection<T> _allTs;

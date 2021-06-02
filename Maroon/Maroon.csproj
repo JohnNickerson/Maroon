@@ -50,7 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interfaces\IDiskMapper.cs" />
-    <Compile Include="Interfaces\IMapper.cs" />
     <Compile Include="Interfaces\IMergeRepository.cs" />
     <Compile Include="Interfaces\IRepository.cs" />
     <Compile Include="Interfaces\ISourceReader.cs" />
@@ -69,7 +68,7 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\TimeLogEntry.cs" />
-    <Compile Include="Repositories\DiskRepository.cs" />
+    <Compile Include="Repositories\SingleOriginRepository.cs" />
     <Compile Include="Repositories\OriginDiskRepository.cs" />
     <Compile Include="Repositories\MergeDiskRepository.cs" />
     <Compile Include="Search\AndSpecification.cs" />

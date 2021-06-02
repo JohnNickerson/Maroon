@@ -17,10 +17,10 @@ namespace UnitTests
         [TestMethod]
         public void Resolve_By_Edit()
         {
-            var filename = @"D:\Temp\BudgetTracker Testing\spending_new.csv";
-            var mapper = new LedgerCsvMapper(filename);
+            var filename = @"spending_new.csv";
+            var mapper = new LedgerCsvMapper();
             var path = Path.GetDirectoryName(filename);
-            var repo = new MergeDiskRepository<AccountTransfer>(mapper, path);
+            var repo = new MergeDiskRepository<AccountTransfer>(mapper, filename);
         }
     }
 }

@@ -5,10 +5,6 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
 {
     public class LedgerCsvMapper : CsvDiskMapper<AccountTransfer>
     {
-        public LedgerCsvMapper(string filename) : base(filename)
-        {
-        }
-
         public override string FieldsHeader => "Date,FromAccount,ToAccount,Notes,Name,Amount,ID,Rev,Hash";
 
         public override AccountTransfer FromTokens(string[] tokens)
