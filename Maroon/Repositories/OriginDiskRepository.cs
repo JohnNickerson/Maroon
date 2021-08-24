@@ -119,12 +119,12 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
         }
 
-        public void SaveChanges()
+        public void SaveChanges(bool force = false)
         {
             lock (_mapper)
             {
                 // Only write changes if there are any to write.
-                if (_localUpdates.Count > 0 && _unsavedChanges)
+                if (force || _localUpdates.Count > 0 && _unsavedChanges)
                 {
                     _mapper.Write(_localUpdates, ThisMachineFile);
                     _unsavedChanges = false;

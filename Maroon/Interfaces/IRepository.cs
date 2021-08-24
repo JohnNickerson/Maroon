@@ -18,6 +18,6 @@ namespace AssimilationSoftware.Maroon.Interfaces
 
         void Update(T entity, bool isNew = false);
 
-        void SaveChanges();
+        void SaveChanges(bool force = false);
     }
 }
