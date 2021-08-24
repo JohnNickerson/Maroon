@@ -70,6 +70,7 @@
     <Compile Include="MergeDiskActionTests.cs" />
     <Compile Include="MergeDiskNoteTest.cs" />
     <Compile Include="NoteLiteDbTests.cs" />
+    <Compile Include="TokeniseTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

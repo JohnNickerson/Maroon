@@ -25,8 +25,9 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                             token.Append(c);
                             break;
                         case ',':
-                            // That wasn't an escape.
+                            // That wasn't an escape. Finish the token.
                             tokens.Add(token.ToString());
+                            token = new StringBuilder();
                             quoted = false;
                             escape = false;
                             break;
