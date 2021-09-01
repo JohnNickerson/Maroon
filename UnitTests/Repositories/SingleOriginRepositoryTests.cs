@@ -123,5 +123,19 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             Assert.IsNotNull(updated);
             Assert.AreEqual("changed", updated.ImportHash);
         }
+
+        [TestMethod]
+        public void UpdateBulkTest()
+        {
+            var mockFile = nameof(UpdateTest);
+            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
+            var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
+            for (var x = 0; x < 1000000; x++)
+            {
+                var entity = new MockObj();
+                mdr.Create(entity);
+            }
+            mdr.SaveChanges();
+        }
     }
 }
