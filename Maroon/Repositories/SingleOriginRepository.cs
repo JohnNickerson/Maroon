@@ -13,6 +13,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         private readonly string _filename;
         private Dictionary<Guid, T> _items;
         private bool _hasChanges;
+        private bool _loaded;
 
         public SingleOriginRepository(IDiskMapper<T> mapper, string filename)
         {
@@ -20,13 +21,27 @@ namespace AssimilationSoftware.Maroon.Repositories
             _filename = filename;
             _items = new Dictionary<Guid, T>();
             _hasChanges = false;
+            _loaded = false;
         }
 
         public IEnumerable<T> Items
         {
             get
             {
-                if (_items == null || _items.Count == 0) _items = _mapper.Read(_filename).ToDictionary(k => k.ID, v => v);
+                if (!_loaded)
+                {
+                    if (_hasChanges)
+                    {
+                        // Preserve the existing data.
+                        var onDisk = _mapper.Read(_filename);
+                        _items = onDisk.Union(_items.Values).ToDictionary(k => k.ID, v => v);
+                    }
+                    else
+                    {
+                        _items = _mapper.Read(_filename).ToDictionary(k => k.ID, v => v);
+                    }
+                    _loaded = true;
+                }
                 return _items.Values.Where(i => !i.IsDeleted);
             }
         }
@@ -42,14 +57,14 @@ namespace AssimilationSoftware.Maroon.Repositories
         {
             _items[entity.ID].IsDeleted = true;
             _items[entity.ID].UpdateRevision();
-            // Leave the item in memory or else deleting the last item causes a lazy-reload on Save.
             _hasChanges = true;
         }
 
         public T Find(Guid id)
         {
-            if (_items == null || _items.Count == 0) FindAll();
-            return _items.TryGetValue(id, out var result) ? result : null;
+            if (!_loaded) FindAll();
+            var hasValue = _items.TryGetValue(id, out var result);
+            return hasValue && !result.IsDeleted ? result : null;
         }
 
         public IEnumerable<T> FindAll()
