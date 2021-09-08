@@ -34,7 +34,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                     {
                         // Preserve the existing data.
                         var onDisk = _mapper.Read(_filename);
-                        _items = onDisk.Union(_items.Values).ToDictionary(k => k.ID, v => v);
+                        _items = _items.Values.Union(onDisk).ToDictionary(k => k.ID, v => v);
                     }
                     else
                     {

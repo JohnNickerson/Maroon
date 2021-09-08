@@ -21,3 +21,5 @@
 2020-10-29: Build 0.4.0.0
 	- Added IDiskMapper interface for mappers to specify file name on every operation.
 	- Updated MergeDiskRepository and OriginDiskRepository to use one IDiskMapper instance for main and change storage.
+2021-09-09: Build 0.4.3
+	- Fixed lazy-load in SingleOriginRepository.
