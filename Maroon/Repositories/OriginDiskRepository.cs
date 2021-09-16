@@ -11,7 +11,7 @@ namespace AssimilationSoftware.Maroon.Repositories
     {
         #region Fields
 
-        private IDiskMapper<T> _mapper;
+        private readonly IDiskMapper<T> _mapper;
         private readonly string _primaryFileName;
         private readonly string _thisMachineName;
         private const string MachineFileNameSearch = "updates-*.txt";
