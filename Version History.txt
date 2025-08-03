@@ -1,12 +1,12 @@
-2019-03-21: Build 0.1.2.1 released to Production
+2019-03-21: Build 0.1.2.1 
 	- Better conflict detection.
 	- Fixed path use in SharpListSerialiser.
-2019-03-27: Build 0.2.0.3 released to Production
+2019-03-27: Build 0.2.0.3
 	- Previous revision GUIDs rather than integers.
 	- Patched to fix conflict resolution.
 	- Patched to fix disk file management.
 	- Patched to optimise conflict detection algorithm.
-2019-06-03: Build 0.2.0.4 released to Production
+2019-06-03: Build 0.2.0.4 
 	- Patched to fix null reference in NoteDiskMapper.
 2019-06-13: Build 0.2.1.1
 	- ImportHash field.
