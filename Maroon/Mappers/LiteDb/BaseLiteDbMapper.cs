@@ -11,7 +11,7 @@ namespace AssimilationSoftware.Maroon.Mappers.LiteDb
     public class BaseLiteDbMapper<T> where T : ModelObject
     {
         private readonly LiteDatabase _liteDb;
-        private readonly LiteCollection<T> _allTs;
+        private readonly ILiteCollection<T> _allTs;
 
         public BaseLiteDbMapper(string filename, string collection)
         {
@@ -58,7 +58,7 @@ namespace AssimilationSoftware.Maroon.Mappers.LiteDb
 
         public void Delete(T item)
         {
-            _allTs.Delete(n => n.ID == item.ID);
+            _allTs.DeleteMany(n => n.ID == item.ID);
         }
     }
 }
