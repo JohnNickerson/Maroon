@@ -60,7 +60,7 @@ namespace UnitTests
             Cleanup();
             var primaryFileName = "notes.txt";
             var mapper = new NoteDiskMapper();
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), primaryFileName);
+            var repo = new MergeDiskRepository<Note>(mapper, primaryFileName);
             Guid root = Guid.NewGuid();
             Guid rev1 = Guid.NewGuid();
             Guid rev2 = Guid.NewGuid();

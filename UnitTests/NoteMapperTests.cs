@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
@@ -11,19 +12,10 @@ namespace UnitTests
     
     public class NoteMapperTests
     {
-        [Obsolete("Use file system abstraction")]
-        private void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
         [Fact]
         public void Round_Trip_Test()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var notebook = new List<Note>
             {
                 new Note
@@ -36,7 +28,7 @@ namespace UnitTests
                 }
             };
             var filename = "NotesOnDisk.txt";
-            var noteMapper = new NoteDiskMapper();
+            var noteMapper = new NoteDiskMapper(mockFileSystem);
             noteMapper.Write(notebook, filename);
 
             var fromDisk = noteMapper.Read(filename);
@@ -55,7 +47,6 @@ namespace UnitTests
                 Assert.Equal(n.Timestamp.Minute, i.Timestamp.Minute);
                 Assert.Equal(n.RevisionGuid, i.RevisionGuid);
             }
-            Cleanup();
         }
     }
 }
