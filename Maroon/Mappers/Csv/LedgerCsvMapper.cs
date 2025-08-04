@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.Abstractions;
 using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Mappers.Csv
@@ -6,6 +7,13 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
     public class LedgerCsvMapper : CsvDiskMapper<AccountTransfer>
     {
         public override string FieldsHeader => "Date,FromAccount,ToAccount,Notes,Name,Amount,ID,Rev,Hash";
+
+        public override IFileSystem FileSystem{ get; protected set; }
+
+        public LedgerCsvMapper(IFileSystem? fileSystem = null)
+        {
+            FileSystem = fileSystem ?? new FileSystem();
+        }
 
         public override AccountTransfer FromTokens(string[] tokens)
         {

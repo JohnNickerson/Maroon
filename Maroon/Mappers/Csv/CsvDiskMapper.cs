@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using AssimilationSoftware.Maroon.Interfaces;
 using AssimilationSoftware.Maroon.Model;
-// ReSharper disable MemberCanBeProtected.Global
 
 namespace AssimilationSoftware.Maroon.Mappers.Csv
 {
@@ -18,14 +17,15 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
         public abstract string FieldsHeader { get; }
 		public abstract T FromTokens(string[] tokens);
 		public abstract string ToCsv(T obj);
+        public abstract IFileSystem FileSystem { get; protected set; }
 
         private IEnumerable<T> LoadAll(string filename)
         {
-            if (!File.Exists(filename))
+            if (!FileSystem.File.Exists(filename))
             {
                 yield break;
             }
-            var lines = File.ReadAllLines(filename);
+            var lines = FileSystem.File.ReadAllLines(filename);
 
             for (var i = 1; i < lines.Length; i++)
             {
@@ -58,12 +58,12 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                 output.AppendLine(ToCsv(row));
             }
 
-            File.WriteAllText(filename, output.ToString());
+            FileSystem.File.WriteAllText(filename, output.ToString());
         }
 
         public void Delete(string filename)
         {
-            File.Delete(filename);
+            FileSystem.File.Delete(filename);
         }
     }
 }

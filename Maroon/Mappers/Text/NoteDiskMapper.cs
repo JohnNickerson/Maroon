@@ -110,9 +110,9 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
         {
             var drafts = new List<Note>();
             Note current = null;
-            if (File.Exists(filename))
+            if (_fileSystem.File.Exists(filename))
             {
-                foreach (var line in File.ReadAllLines(filename))
+                foreach (var line in _fileSystem.File.ReadAllLines(filename))
                 {
                     if (line.Trim().Length == 0)
                     {

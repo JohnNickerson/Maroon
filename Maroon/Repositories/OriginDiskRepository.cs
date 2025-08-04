@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using AssimilationSoftware.Maroon.Interfaces;
 using AssimilationSoftware.Maroon.Model;
@@ -15,6 +16,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         private readonly string _primaryFileName;
         private readonly string _thisMachineName;
         private const string MachineFileNameSearch = "updates-*.txt";
+        private IFileSystem _fileSystem;
 
         private List<T> _localUpdates;
         private List<T> _allUpdates;
@@ -25,8 +27,9 @@ namespace AssimilationSoftware.Maroon.Repositories
         #endregion
 
         #region Constructors
-        public OriginDiskRepository(IDiskMapper<T> primaryMapper, string primaryFileName, string thisMachineName)
+        public OriginDiskRepository(IDiskMapper<T> primaryMapper, string primaryFileName, string thisMachineName, IFileSystem? fileSystem = null)
         {
+            _fileSystem = fileSystem ?? new FileSystem();
             _mapper = primaryMapper;
             _primaryFileName = primaryFileName;
             _thisMachineName = thisMachineName;
@@ -160,7 +163,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                     // Clear pending lists on disk (delete files).
                     foreach (var updateFileName in UpdateFileNames)
                     {
-                        File.Delete(updateFileName);
+                        _fileSystem.File.Delete(updateFileName);
                     }
                 }
                 return pendingCount;
@@ -247,11 +250,11 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public IEnumerable<T> Items => _allUpdates.Where(u => !_allUpdates.Any(q => q.ID == u.ID && q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
 
-        private string ThisMachineFile => Path.Combine(PrimaryPath, $"updates-{_thisMachineName}.txt");
+        private string ThisMachineFile => _fileSystem.Path.Combine(PrimaryPath, $"updates-{_thisMachineName}.txt");
 
-        private string[] UpdateFileNames => Directory.GetFiles(PrimaryPath, MachineFileNameSearch, SearchOption.TopDirectoryOnly);
+        private string[] UpdateFileNames => _fileSystem.Directory.GetFiles(PrimaryPath, MachineFileNameSearch, SearchOption.TopDirectoryOnly);
 
-        private string PrimaryPath => Path.GetDirectoryName(Path.GetFullPath(_primaryFileName));
+        private string? PrimaryPath => _fileSystem.Path.GetDirectoryName(_fileSystem.Path.GetFullPath(_primaryFileName));
 
         #endregion
     }

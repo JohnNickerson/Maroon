@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using AssimilationSoftware.Maroon.Model;
 using Polenter.Serialization;
 
@@ -12,16 +12,18 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
         #region Fields
         private readonly SharpSerializer _serial;
         private string _path;
+        private IFileSystem _fileSystem;
 
         #endregion
 
         #region Constructors
-        public SharpListSerialiser(string path) : this(path, "{0}.xml")
+        public SharpListSerialiser(string path, IFileSystem? fileSystem = null) : this(path, "{0}.xml", fileSystem)
         {
         }
 
-        public SharpListSerialiser(string path, string fileNamePattern)
+        public SharpListSerialiser(string path, string fileNamePattern, IFileSystem? fileSystem = null)
         {
+            _fileSystem = fileSystem ?? new FileSystem();
             Path = path;
             FileNamePattern = fileNamePattern;
             _serial = new SharpSerializer();
@@ -33,9 +35,9 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
         {
             var result = new List<T>();
 
-            if (Directory.Exists(Path))
+            if (_fileSystem.Directory.Exists(Path))
             {
-                foreach (string file in Directory.GetFiles(Path, string.Format(FileNamePattern, "*")))
+                foreach (string file in _fileSystem.Directory.GetFiles(Path, string.Format(FileNamePattern, "*")))
                 {
                     try
                     {
@@ -55,16 +57,16 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
         {
             if (deleteFirst)
             {
-                foreach (var f in Directory.GetFiles(Path, SearchString))
+                foreach (var f in _fileSystem.Directory.GetFiles(Path, SearchString))
                 {
-                    File.Delete(f);
+                    _fileSystem.File.Delete(f);
                 }
             }
 
             foreach (var d in data)
             {
                 var fileName = System.IO.Path.Combine(Path, string.Format(FileNamePattern, d.RevisionGuid));
-                if (deleteFirst || !File.Exists(fileName))
+                if (deleteFirst || !_fileSystem.File.Exists(fileName))
                 {
                     _serial.Serialize(d, fileName);
                 }
@@ -84,7 +86,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Xml
         public void Delete(T data)
         {
             var fileName = System.IO.Path.Combine(Path, string.Format(FileNamePattern, data.RevisionGuid));
-            File.Delete(fileName);
+            _fileSystem.File.Delete(fileName);
         }
         #endregion
 

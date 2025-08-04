@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using AssimilationSoftware.Maroon.Model;
 
@@ -8,6 +9,13 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
     public class TimeLogCsvMapper : CsvDiskMapper<TimeLogEntry>
     {
         public override string FieldsHeader => "Start,End,Client,Ticket,Notes,Chargeable,ID,Rev,Prev,Hash,Deleted";
+
+        public override IFileSystem FileSystem{ get; protected set; }
+
+        public TimeLogCsvMapper(IFileSystem? fileSystem = null)
+        {
+            FileSystem = fileSystem ?? new FileSystem();
+        }
 
         public override TimeLogEntry FromTokens(string[] tokens)
         {
@@ -22,8 +30,8 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                 Billable = bool.Parse(tokens[5]),
                 ID = new Guid(tokens[6]),
                 RevisionGuid = Guid.Parse(tokens[7]),
-                PrevRevision = string.IsNullOrEmpty(tokens[8]) ? (Guid?) null : Guid.Parse(tokens[8]),
-                ImportHash = tokens.Length>8?tokens[9]:null,
+                PrevRevision = string.IsNullOrEmpty(tokens[8]) ? (Guid?)null : Guid.Parse(tokens[8]),
+                ImportHash = tokens.Length > 8 ? tokens[9] : null,
                 IsDeleted = bool.Parse(tokens[10])
             };
         }
