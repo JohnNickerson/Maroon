@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Csv;
 using AssimilationSoftware.Maroon.Model;
@@ -11,19 +12,10 @@ namespace UnitTests
     
     public class LedgerMapperTests
     {
-        [Obsolete("Use file system abstraction")]
-        private void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
         [Fact]
         public void Round_Trip_Test()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var ledger = new List<AccountTransfer>
             {
                 new AccountTransfer
@@ -40,13 +32,12 @@ namespace UnitTests
                 }
             };
             var filename = "TestLedger.csv";
-            var mapper = new LedgerCsvMapper();
+            var mapper = new LedgerCsvMapper(mockFileSystem);
             mapper.Write(ledger, filename);
             var fromDisk = mapper.Read(filename);
 
             Assert.NotNull(fromDisk);
             Assert.Equal(ledger.Count, fromDisk.Count());
-            Cleanup();
         }
     }
 }

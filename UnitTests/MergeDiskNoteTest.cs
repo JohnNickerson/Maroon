@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
@@ -13,21 +14,12 @@ namespace UnitTests
     
     public class MergeDiskNoteTest
     {
-        [Obsolete("use file system abstraction")]
-        private void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
         [Fact]
         public void Create_File_From_Scratch()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var fileName = "LogFile.txt";
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
+            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(mockFileSystem), fileName);
 
             repo.Create(new Note
             {
@@ -43,7 +35,7 @@ namespace UnitTests
 
             Assert.Single(repo.Items);
 
-            var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
+            var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(mockFileSystem), fileName);
             repo2.FindAll();
 
             Assert.Single(repo2.Items);
@@ -51,15 +43,14 @@ namespace UnitTests
             repo.CommitChanges();
 
             Assert.Single(repo2.Items);
-            Cleanup();
         }
 
         [Fact]
         public void Revert_Conflict()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var primaryFileName = "notes.txt";
-            var mapper = new NoteDiskMapper();
+            var mapper = new NoteDiskMapper(mockFileSystem);
             var repo = new MergeDiskRepository<Note>(mapper, primaryFileName);
             Guid root = Guid.NewGuid();
             Guid rev1 = Guid.NewGuid();
@@ -116,9 +107,8 @@ namespace UnitTests
 
             repo.SaveChanges();
             Assert.Single(repo.Items);
-            Assert.Single(Directory.GetFiles(".", "update-*.txt"));
+            Assert.Single(mockFileSystem.Directory.GetFiles(".", "update-*.txt"));
             Assert.Empty(repo.FindConflicts());
-            Cleanup();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
@@ -11,19 +12,10 @@ namespace UnitTests
     
     public class ActionItemMapperTests
     {
-        [Obsolete("Use file system abstraction")]
-        private void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
         [Fact]
         public void Round_Trip_Test()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var fileName = "TestFile.txt";
             var i = new List<ActionItem>
             {
@@ -55,7 +47,7 @@ namespace UnitTests
                 Title = "Child, depth 1",
                 Upvotes = 0
             });
-            var m = new ActionItemTextMapper();
+            var m = new ActionItemTextMapper(mockFileSystem);
 
             m.Write(i, fileName);
             var j = m.Read(fileName).ToArray();
@@ -70,7 +62,6 @@ namespace UnitTests
                 Assert.Equal(n.Context, s.Context);
                 Assert.Equal(n.RevisionGuid, s.RevisionGuid);
             }
-            Cleanup();
         }
     }
 }

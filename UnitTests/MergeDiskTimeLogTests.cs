@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using AssimilationSoftware.Maroon.Mappers.Csv;
 using AssimilationSoftware.Maroon.Model;
 using AssimilationSoftware.Maroon.Repositories;
@@ -11,23 +12,14 @@ namespace UnitTests
     
     public class MergeDiskTimeLogTests
     {
-        [Obsolete("Use file system abstraction")]
-        private void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
         [Fact]
         public void Round_Trip_Test()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var path = ".";
             var filename = Path.Combine(path, "TimeLogRepoBase.csv");
 
-            var mapper = new TimeLogCsvMapper();
+            var mapper = new TimeLogCsvMapper(mockFileSystem);
             var repo = new MergeDiskRepository<TimeLogEntry>(mapper, filename);
 
             var log = new TimeLogEntry
@@ -46,21 +38,20 @@ namespace UnitTests
 
             var found = repo.Find(log.ID);
             Assert.NotNull(found);
-            Assert.True(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.txt")));
+            Assert.True(mockFileSystem.File.Exists(mockFileSystem.Path.Combine(path, $"update-{log.RevisionGuid}.txt")));
 
             repo.CommitChanges();
 
             found = repo.Find(log.ID);
             Assert.NotNull(found);
             Assert.Empty(repo.FindConflicts());
-            Assert.False(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
+            Assert.False(mockFileSystem.File.Exists(mockFileSystem.Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
 
             repo.Delete(found);
             repo.SaveChanges();
             Assert.Empty(repo.FindConflicts());
             repo.CommitChanges();
             Assert.Null(repo.Find(found.ID));
-            Cleanup();
         }
     }
 }

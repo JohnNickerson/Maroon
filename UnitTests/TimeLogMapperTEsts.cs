@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Csv;
 using AssimilationSoftware.Maroon.Model;
@@ -11,19 +12,10 @@ namespace UnitTests
     
     public class TimeLogMapperTests
     {
-        [Obsolete("Use file system abstraction")]
-        private void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
         [Fact]
         public void Round_Trip_Test()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var timeLog = new List<TimeLogEntry>
             {
                 new TimeLogEntry
@@ -38,20 +30,19 @@ namespace UnitTests
                 }
             };
             var filename = "TestTimeFile.csv";
-            var mapper = new TimeLogCsvMapper();
+            var mapper = new TimeLogCsvMapper(mockFileSystem);
 
             mapper.Write(timeLog, filename);
             var fromDisk = mapper.Read(filename);
 
             Assert.NotNull(fromDisk );
             Assert.Equal(timeLog.Count, fromDisk.Count());
-            Cleanup();
         }
 
         [Fact]
         public void Sort_Saving_Test()
         {
-            Cleanup();
+            var mockFileSystem = new MockFileSystem();
             var timeLog = new List<TimeLogEntry>
             {
                 new TimeLogEntry
@@ -77,7 +68,7 @@ namespace UnitTests
                 }
             };
             var filename = "TestTimeFile.csv";
-            var mapper = new TimeLogCsvMapper();
+            var mapper = new TimeLogCsvMapper(mockFileSystem);
 
             mapper.Write(timeLog.OrderBy(t => t.StartTime), filename);
             var fromDisk = mapper.Read(filename).ToArray();
@@ -85,7 +76,6 @@ namespace UnitTests
             Assert.NotNull(fromDisk);
             Assert.Equal(timeLog.Count, fromDisk.Count());
             Assert.True(fromDisk.ElementAt(0).StartTime < fromDisk.ElementAt(1).StartTime);
-            Cleanup();
         }
     }
 }
