@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using AssimilationSoftware.Maroon.Repositories;
 using System.Linq;
 using System.Text;
@@ -7,10 +7,9 @@ using AssimilationSoftware.Maroon.Interfaces;
 
 namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
-    [TestClass()]
     public class MergeDiskRepositoryTests
     {
-        [TestMethod()]
+        [Fact]
         public void MergeDiskRepositoryTest()
         {
             var mockFile = nameof(MergeDiskRepositoryTest);
@@ -18,7 +17,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var mdr = new MergeDiskRepository<MockObj>(mockMapper, mockFile);
         }
 
-        [TestMethod()]
+        [Fact]
         public void CreateTest()
         {
             var mockFile = nameof(CreateTest);
@@ -27,7 +26,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.Create(new MockObj());
         }
 
-        [TestMethod()]
+        [Fact]
         public void FindTest()
         {
             var mockFile = nameof(FindTest);
@@ -36,10 +35,10 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
         }
 
-        [TestMethod()]
+        [Fact]
         public void FindAllTest()
         {
             var mockFile = nameof(FindAllTest);
@@ -50,11 +49,11 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.Create(entity);
             mdr.Create(entity2);
             var found = mdr.FindAll();
-            Assert.IsNotNull(found);
-            Assert.AreEqual(2, found.Count());
+            Assert.NotNull(found);
+            Assert.Equal(2, found.Count());
         }
 
-        [TestMethod()]
+        [Fact]
         public void DeleteTest()
         {
             var mockFile = nameof(DeleteTest);
@@ -63,13 +62,13 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             mdr.Delete(found);
             var notFound = mdr.Find(entity.ID);
-            Assert.IsNull(notFound);
+            Assert.Null(notFound);
         }
 
-        [TestMethod()]
+        [Fact]
         public void UpdateTest()
         {
             var mockFile = nameof(UpdateTest);
@@ -78,15 +77,15 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.ImportHash = "changed";
             mdr.Update(found);
             var updated = mdr.Find(entity.ID);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("changed", updated.ImportHash);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
         }
 
-        [TestMethod()]
+        [Fact]
         public void SaveChangesTest()
         {
             var mockFile = nameof(SaveChangesTest);
@@ -95,18 +94,18 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.ImportHash = "changed";
             mdr.Update(found);
             mdr.SaveChanges();
 
             var updated = mdr.Find(entity.ID);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("changed", updated.ImportHash);
-            Assert.AreEqual(1, mdr.GetPendingChanges().Count);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
+            Assert.Single(mdr.GetPendingChanges());
         }
 
-        [TestMethod()]
+        [Fact]
         public void CommitChangesTest()
         {
             var mockFile = nameof(CommitChangesTest);
@@ -115,19 +114,19 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.ImportHash = "changed";
             mdr.Update(found);
             mdr.SaveChanges();
             mdr.CommitChanges();
 
             var updated = mdr.Find(entity.ID);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("changed", updated.ImportHash);
-            Assert.AreEqual(0, mdr.GetPendingChanges().Count);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
+            Assert.Empty(mdr.GetPendingChanges());
         }
 
-        [TestMethod()]
+        [Fact]
         public void FindConflictsTest()
         {
             var mockFile = nameof(FindConflictsTest);
@@ -137,12 +136,12 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
             var found2 = (MockObj) mdr.Find(entity.ID).Clone();
-            Assert.IsNotNull(found);
-            Assert.IsNotNull(found2);
+            Assert.NotNull(found);
+            Assert.NotNull(found2);
 
             found.ImportHash = "changed";
             found2.ImportHash = "updated";
-            Assert.AreNotEqual(found.ImportHash, found2.ImportHash);
+            Assert.NotEqual(found.ImportHash, found2.ImportHash);
             
             mdr.Update(found);
             mdr.Update(found2);
@@ -150,10 +149,10 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.SaveChanges();
             var conflicts = mdr.FindConflicts();
 
-            Assert.AreEqual(1, conflicts.Count);
+            Assert.Single(conflicts);
         }
 
-        [TestMethod()]
+        [Fact]
         public void GetPendingChangesTest()
         {
             var mockFile = nameof(GetPendingChangesTest);
@@ -162,18 +161,18 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.ImportHash = "changed";
             mdr.Update(found);
             mdr.SaveChanges();
 
             var updated = mdr.Find(entity.ID);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("changed", updated.ImportHash);
-            Assert.AreEqual(1, mdr.GetPendingChanges().Count);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
+            Assert.Single(mdr.GetPendingChanges());
         }
 
-        [TestMethod()]
+        [Fact]
         public void ResolveConflictTest()
         {
             var mockFile = nameof(ResolveConflictTest);
@@ -183,12 +182,12 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
             var found2 = (MockObj)mdr.Find(entity.ID).Clone();
-            Assert.IsNotNull(found);
-            Assert.IsNotNull(found2);
+            Assert.NotNull(found);
+            Assert.NotNull(found2);
 
             found.ImportHash = "changed";
             found2.ImportHash = "updated";
-            Assert.AreNotEqual(found.ImportHash, found2.ImportHash);
+            Assert.NotEqual(found.ImportHash, found2.ImportHash);
 
             mdr.Update(found);
             mdr.Update(found2);
@@ -196,15 +195,15 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.SaveChanges();
             var conflicts = mdr.FindConflicts();
 
-            Assert.AreEqual(1, conflicts.Count);
+            Assert.Single(conflicts);
 
             mdr.ResolveConflict(found2);
             mdr.SaveChanges();
             conflicts = mdr.FindConflicts();
-            Assert.AreEqual(0, conflicts.Count);
+            Assert.Empty(conflicts);
         }
 
-        [TestMethod()]
+        [Fact]
         public void ResolveByDeleteTest()
         {
             var mockFile = nameof(ResolveConflictTest);
@@ -214,12 +213,12 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
             var found2 = (MockObj)mdr.Find(entity.ID).Clone();
-            Assert.IsNotNull(found);
-            Assert.IsNotNull(found2);
+            Assert.NotNull(found);
+            Assert.NotNull(found2);
 
             found.ImportHash = "changed";
             found2.ImportHash = "updated";
-            Assert.AreNotEqual(found.ImportHash, found2.ImportHash);
+            Assert.NotEqual(found.ImportHash, found2.ImportHash);
 
             mdr.Update(found);
             mdr.Update(found2);
@@ -227,16 +226,16 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.SaveChanges();
             var conflicts = mdr.FindConflicts();
 
-            Assert.AreEqual(1, conflicts.Count);
+            Assert.Single(conflicts);
 
             mdr.ResolveByDelete(found2.ID);
             mdr.SaveChanges();
             conflicts = mdr.FindConflicts();
-            Assert.AreEqual(0, conflicts.Count);
-            Assert.IsNull(mdr.Find(found2.ID));
+            Assert.Empty(conflicts);
+            Assert.Null(mdr.Find(found2.ID));
         }
 
-        [TestMethod()]
+        [Fact]
         public void RevertTest()
         {
             var mockFile = nameof(RevertTest);
@@ -245,17 +244,17 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.ImportHash = "changed";
             mdr.Update(found);
             var updated = mdr.Find(entity.ID);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("changed", updated.ImportHash);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
 
             mdr.Revert(updated.ID);
             var revved = mdr.Find(updated.ID);
-            Assert.IsNotNull(revved);
-            Assert.AreEqual(entity.ImportHash, revved.ImportHash);
+            Assert.NotNull(revved);
+            Assert.Equal(entity.ImportHash, revved.ImportHash);
         }
     }
 }

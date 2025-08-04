@@ -50,7 +50,7 @@ namespace AssimilationSoftware.Maroon.Model
         /// A representation of how the item looked when it was first imported, if applicable.
         /// </summary>
         /// <remarks>To help avoid importing duplicates.</remarks>
-        public string ImportHash { get; set; }
+        public string? ImportHash { get; set; }
         #endregion
 
         #region Methods

@@ -7,6 +7,15 @@ namespace AssimilationSoftware.Maroon.Model
 {
     public class Note : ModelObject
     {
+        #region Constructors
+
+        public Note() : base()
+        {
+            Tags = [];
+        }
+
+        #endregion
+
         #region Methods
 
         public Note GetParent(IRepository<Note> repository)
@@ -17,7 +26,7 @@ namespace AssimilationSoftware.Maroon.Model
         #endregion
 
         #region Properties
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public List<string> Tags { get; set; }
         public DateTime Timestamp { get; set; }
         public Guid? ParentId { get; set; }

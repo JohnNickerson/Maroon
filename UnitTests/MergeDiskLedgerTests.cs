@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 using AssimilationSoftware.Maroon.Mappers.Csv;
 using AssimilationSoftware.Maroon.Model;
 using AssimilationSoftware.Maroon.Repositories;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class MergeDiskLedgerTests
     {
-        [TestMethod]
+        [Fact]
         public void Resolve_By_Edit()
         {
             var filename = @"spending_new.csv";

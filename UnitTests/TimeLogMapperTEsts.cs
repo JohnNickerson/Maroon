@@ -4,15 +4,15 @@ using System.IO;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Csv;
 using AssimilationSoftware.Maroon.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class TimeLogMapperTests
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
+        [Obsolete("Use file system abstraction")]
+        private void Cleanup()
         {
             foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
             {
@@ -20,9 +20,10 @@ namespace UnitTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void Round_Trip_Test()
         {
+            Cleanup();
             var timeLog = new List<TimeLogEntry>
             {
                 new TimeLogEntry
@@ -42,13 +43,15 @@ namespace UnitTests
             mapper.Write(timeLog, filename);
             var fromDisk = mapper.Read(filename);
 
-            Assert.IsNotNull(fromDisk );
-            Assert.AreEqual(timeLog.Count, fromDisk.Count());
+            Assert.NotNull(fromDisk );
+            Assert.Equal(timeLog.Count, fromDisk.Count());
+            Cleanup();
         }
 
-        [TestMethod]
+        [Fact]
         public void Sort_Saving_Test()
         {
+            Cleanup();
             var timeLog = new List<TimeLogEntry>
             {
                 new TimeLogEntry
@@ -79,9 +82,10 @@ namespace UnitTests
             mapper.Write(timeLog.OrderBy(t => t.StartTime), filename);
             var fromDisk = mapper.Read(filename).ToArray();
 
-            Assert.IsNotNull(fromDisk);
-            Assert.AreEqual(timeLog.Count, fromDisk.Count());
-            Assert.IsTrue(fromDisk.ElementAt(0).StartTime < fromDisk.ElementAt(1).StartTime);
+            Assert.NotNull(fromDisk);
+            Assert.Equal(timeLog.Count, fromDisk.Count());
+            Assert.True(fromDisk.ElementAt(0).StartTime < fromDisk.ElementAt(1).StartTime);
+            Cleanup();
         }
     }
 }

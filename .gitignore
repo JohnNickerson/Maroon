@@ -3,4 +3,5 @@ obj
 *.suo
 *.user
 releases
+packages
 .vs

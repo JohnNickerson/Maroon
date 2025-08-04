@@ -6,15 +6,15 @@ using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
 using AssimilationSoftware.Maroon.Repositories;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class MergeDiskNoteTest
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
+        [Obsolete("use file system abstraction")]
+        private void Cleanup()
         {
             foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
             {
@@ -22,9 +22,10 @@ namespace UnitTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_File_From_Scratch()
         {
+            Cleanup();
             var fileName = "LogFile.txt";
             var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
 
@@ -40,21 +41,23 @@ namespace UnitTests
             });
             repo.SaveChanges();
 
-            Assert.AreEqual(1, repo.Items.Count(), "Empty after saving");
+            Assert.Single(repo.Items);
 
             var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
             repo2.FindAll();
 
-            Assert.AreEqual(1, repo2.Items.Count(), "Empty in new repository");
+            Assert.Single(repo2.Items);
 
             repo.CommitChanges();
 
-            Assert.AreEqual(1, repo2.Items.Count(), "Empty in new repository after commit");
+            Assert.Single(repo2.Items);
+            Cleanup();
         }
 
-        [TestMethod]
+        [Fact]
         public void Revert_Conflict()
         {
+            Cleanup();
             var primaryFileName = "notes.txt";
             var mapper = new NoteDiskMapper();
             var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), primaryFileName);
@@ -99,22 +102,23 @@ namespace UnitTests
             };
             repo.Create(data[0]);
             var found = repo.Find(root);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.Text = "edited text";
             repo.Update(found);
             var updated = repo.Find(root);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("edited text", updated.Text);
+            Assert.NotNull(updated);
+            Assert.Equal("edited text", updated.Text);
 
             repo.Revert(updated.ID);
             var revved = repo.Find(updated.ID);
-            Assert.IsNotNull(revved);
-            Assert.AreEqual(data[0].Text, revved.Text);
+            Assert.NotNull(revved);
+            Assert.Equal(data[0].Text, revved.Text);
 
             repo.SaveChanges();
-            Assert.AreEqual(1, repo.Items.Count());
-            Assert.AreEqual(1, Directory.GetFiles(".", "update-*.txt").Length);
-            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.Single(repo.Items);
+            Assert.Single(Directory.GetFiles(".", "update-*.txt"));
+            Assert.Empty(repo.FindConflicts());
+            Cleanup();
         }
     }
 }
