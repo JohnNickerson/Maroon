@@ -38,7 +38,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         #endregion
 
         #region Methods
-        public T Find(Guid id)
+        public T? Find(Guid id)
         {
             if (Items.Any(v => v.ID == id))
             {
@@ -93,8 +93,9 @@ namespace AssimilationSoftware.Maroon.Repositories
             _unsavedChanges = true;
         }
 
-        public void Delete(T entity)
+        public void Delete(T? entity)
         {
+            if (entity is null) return;
             var gone = (T)entity.Clone();
             gone.IsDeleted = true;
             gone.UpdateRevision();
@@ -213,7 +214,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void ResolveConflict(T item)
         {
             Revert(item.ID);
-            item.PrevRevision = Find(item.ID).RevisionGuid;
+            item.PrevRevision = Find(item.ID)?.RevisionGuid;
             _allUpdates.Add(item);
             _localUpdates.Add(item);
             _unsavedChanges = true;
@@ -251,7 +252,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         private string[] UpdateFileNames => Directory.GetFiles(PrimaryPath, MachineFileNameSearch, SearchOption.TopDirectoryOnly);
 
-        private string PrimaryPath => Path.GetDirectoryName(Path.GetFullPath(_primaryFileName));
+        private string? PrimaryPath => Path.GetDirectoryName(Path.GetFullPath(_primaryFileName));
 
         #endregion
     }

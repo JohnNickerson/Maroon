@@ -21,7 +21,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         protected readonly Dictionary<Guid, T> _unsavedUpdates; // Revision ID -> item
         protected Dictionary<Guid, PendingChange<T>> _pending; // ID -> pending change set, both saved and unsaved
-        protected Dictionary<Guid, T> _items; // ID -> item, including all pending changes.
+        protected Dictionary<Guid, T>? _items; // ID -> item, including all pending changes.
 
         #endregion
 
@@ -34,20 +34,21 @@ namespace AssimilationSoftware.Maroon.Repositories
             fileWatcher.Created += ExternalUpdate;
             fileWatcher.Deleted += ExternalCommit;
             _unsavedUpdates = new Dictionary<Guid, T>();
+            _pending = [];
         }
 
         #endregion
 
         #region Methods
-        public T Find(Guid id)
+        public T? Find(Guid id)
         {
             if (_items == null)
             {
                 LoadAll();
             }
-            if (_items.TryGetValue(id, out var result))
+            if (_items?.TryGetValue(id, out var result) ?? false)
             {
-                return result.IsDeleted ? null : result;
+                return result?.IsDeleted ?? false ? null : result;
             }
 
             return null;
@@ -106,12 +107,15 @@ namespace AssimilationSoftware.Maroon.Repositories
         {
             entity.UpdateRevision(true);
             if (_items == null) LoadAll();
-            _items[entity.ID] = entity;
+            if (_items != null)
+            {
+                _items[entity.ID] = entity;
+            }
             _unsavedUpdates.Add(entity.RevisionGuid, entity);
             AddPendingChange(entity);
         }
 
-        public void Delete(T entity)
+        public void Delete(T? entity)
         {
             if (entity == null) return;
             var gone = (T) entity.Clone();
@@ -223,9 +227,12 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void ResolveConflict(T item)
         {
             Revert(item.ID); // Removes all pending updates.
-            item.PrevRevision = Find(item.ID).RevisionGuid;
+            item.PrevRevision = Find(item.ID)?.RevisionGuid;
             if (_items == null) LoadAll();
-            _items[item.ID] = item;
+            if (_items != null)
+            {
+                _items[item.ID] = item;
+            }
             _unsavedUpdates.Add(item.RevisionGuid, item);
             AddPendingChange(item);
         }

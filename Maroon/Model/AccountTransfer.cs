@@ -12,7 +12,7 @@ namespace AssimilationSoftware.Maroon.Model
         /// <summary>
         /// The category to which the fund transfer belongs.
         /// </summary>
-        public string Category { get; set; }
+        public string? Category { get; set; }
 
         /// <summary>
         /// The dollar amount of the transfer.
@@ -22,16 +22,16 @@ namespace AssimilationSoftware.Maroon.Model
         /// <summary>
         /// A short description of the transfer.
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// The source account from which the transfer originated.
         /// </summary>
-        public string FromAccount { get; set; }
+        public string? FromAccount { get; set; }
 
         /// <summary>
         /// The destination account to which the transfer was sent.
         /// </summary>
-        public string ToAccount { get; set; }
+        public string? ToAccount { get; set; }
     }
 }

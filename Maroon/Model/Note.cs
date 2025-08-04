@@ -7,9 +7,18 @@ namespace AssimilationSoftware.Maroon.Model
 {
     public class Note : ModelObject
     {
+        #region Constructors
+
+        public Note() : base()
+        {
+            Tags = [];
+        }
+
+        #endregion
+
         #region Methods
 
-        public Note GetParent(IRepository<Note> repository)
+        public Note? GetParent(IRepository<Note> repository)
         {
             return ParentId == null ? null : repository.Find(ParentId.Value);
         }
@@ -17,7 +26,7 @@ namespace AssimilationSoftware.Maroon.Model
         #endregion
 
         #region Properties
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public List<string> Tags { get; set; }
         public DateTime Timestamp { get; set; }
         public Guid? ParentId { get; set; }
@@ -31,7 +40,7 @@ namespace AssimilationSoftware.Maroon.Model
                 }
                 return string.Join(" ", Tags.Select(t => $"#{t}"));
             }
-            set => Tags = value.Replace("#", "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            set => Tags = value.Replace("#", "").Split([' '], StringSplitOptions.RemoveEmptyEntries).ToList();
         }
         #endregion
     }

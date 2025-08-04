@@ -8,7 +8,7 @@ namespace AssimilationSoftware.Maroon.Interfaces
     {
         IEnumerable<T> Items { get; }
 
-        T Find(Guid id);
+        T? Find(Guid id);
 
         IEnumerable<T> FindAll();
 

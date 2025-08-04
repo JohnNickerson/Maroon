@@ -9,19 +9,21 @@ namespace AssimilationSoftware.Maroon.Model
         #region Constructors
         public ActionItem()
         {
-            Notes = new List<string>();
-            Tags = new Dictionary<string, string>();
+            Notes = [];
+            Tags = [];
+            Title = string.Empty;
         }
         #endregion
 
         #region Methods
 
-        public ActionItem GetProject(IRepository<ActionItem> repository)
+        // TODO: Refactor to repository.
+        public ActionItem? GetProject(IRepository<ActionItem> repository)
         {
             return ProjectId.HasValue ? repository.Find(ProjectId.Value) : null;
         }
 
-        public ActionItem GetParent(IRepository<ActionItem> repository)
+        public ActionItem? GetParent(IRepository<ActionItem> repository)
         {
             return ParentId.HasValue ? repository.Find(ParentId.Value) : null;
         }
@@ -30,7 +32,9 @@ namespace AssimilationSoftware.Maroon.Model
         {
             if (ParentId == null) return 0;
             // Recursive version would be simpler ("return Parent.RankDepth + 1;") but can get stuck on loops.
-            var ancestors = new List<ActionItem> {GetParent(repository)};
+            var ancestors = new List<ActionItem>();
+            var parent = GetParent(repository);
+            if (parent != null) ancestors.Add(parent);
             var cursor = GetParent(repository)?.GetParent(repository);
             while (cursor != null && !ancestors.Contains(cursor))
             {
@@ -45,8 +49,8 @@ namespace AssimilationSoftware.Maroon.Model
 
         #region Properties
         public string Title { get; set; }
-        public string Context { get; set; }
-        public string Status { get; set; }
+        public string? Context { get; set; }
+        public string? Status { get; set; }
         public List<string> Notes { get; set; }
         public DateTime? DoneDate { get; set; }
         public bool Done
@@ -64,7 +68,6 @@ namespace AssimilationSoftware.Maroon.Model
         public Guid? ParentId { get; set; }
 
         public Guid? ProjectId { get; set; }
-
 
         public int Upvotes { get; set; }
         #endregion

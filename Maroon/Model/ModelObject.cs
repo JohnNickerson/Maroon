@@ -6,7 +6,7 @@ namespace AssimilationSoftware.Maroon.Model
     {
         #region Constructors
 
-        public ModelObject(ModelObject toClone = null)
+        public ModelObject(ModelObject? toClone = null)
         {
             if (toClone != null)
             {
@@ -14,6 +14,7 @@ namespace AssimilationSoftware.Maroon.Model
                 LastModified = toClone.LastModified;
                 PrevRevision = toClone.PrevRevision;
                 RevisionGuid = toClone.RevisionGuid;
+                MergeRevisionGuid = toClone.MergeRevisionGuid;
                 IsDeleted = toClone.IsDeleted;
                 ImportHash = toClone.ImportHash;
             }
@@ -23,6 +24,7 @@ namespace AssimilationSoftware.Maroon.Model
                 LastModified = DateTime.Now;
                 PrevRevision = null;
                 RevisionGuid = Guid.NewGuid();
+                MergeRevisionGuid = null;
                 IsDeleted = false;
             }
         }
@@ -44,17 +46,19 @@ namespace AssimilationSoftware.Maroon.Model
         /// </summary>
         public Guid RevisionGuid { get; set; }
 
+        public Guid? MergeRevisionGuid { get; set; }
+
         public bool IsDeleted { get; set; }
 
         /// <summary>
         /// A representation of how the item looked when it was first imported, if applicable.
         /// </summary>
         /// <remarks>To help avoid importing duplicates.</remarks>
-        public string ImportHash { get; set; }
+        public string? ImportHash { get; set; }
         #endregion
 
         #region Methods
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ModelObject other && other.ID == ID;
         }
