@@ -29,6 +29,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                             tokens.Add(token.ToString());
                             quoted = false;
                             escape = false;
+                            token = new StringBuilder();
                             break;
                         default:
                             // Well-formed strings should not end up here.
