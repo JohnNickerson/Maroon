@@ -30,6 +30,7 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
                             token = new StringBuilder();
                             quoted = false;
                             escape = false;
+                            token = new StringBuilder();
                             break;
                         default:
                             // Well-formed strings should not end up here.
