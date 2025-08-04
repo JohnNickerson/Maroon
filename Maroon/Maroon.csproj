@@ -1,45 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{495A4E7D-4377-471C-AAED-D9F5D448A659}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <RootNamespace>AssimilationSoftware.Maroon</RootNamespace>
     <AssemblyName>Maroon</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <AssemblyCompany>Assimilation Software</AssemblyCompany>
+    <AssemblyProduct>Maroon</AssemblyProduct>
+    <AssemblyCopyright>Copyright © Assimilation Software 2025</AssemblyCopyright>
+    <AssemblyVersion>0.5.0.0</AssemblyVersion>
+    <AssemblyFileVersion>0.5.0.0</AssemblyFileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LiteDB, Version=4.1.4.0, Culture=neutral, PublicKeyToken=4ee40123013c9f27, processorArchitecture=MSIL">
-      <HintPath>..\packages\LiteDB.4.1.4\lib\net40\LiteDB.dll</HintPath>
-    </Reference>
-    <Reference Include="Polenter.SharpSerializer, Version=3.0.1.0, Culture=neutral, PublicKeyToken=8f4f20011571ee5f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpSerializer.3.0.1\lib\net452\Polenter.SharpSerializer.dll</HintPath>
-    </Reference>
+    <PackageReference Include="LiteDB" Version="5.0.21" />
+    <PackageReference Include="SharpSerializer" Version="4.0.2" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,49 +22,4 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Interfaces\IDiskMapper.cs" />
-    <Compile Include="Interfaces\IMergeRepository.cs" />
-    <Compile Include="Interfaces\IRepository.cs" />
-    <Compile Include="Interfaces\ISourceReader.cs" />
-    <Compile Include="Mappers\Csv\CsvDiskMapper.cs" />
-    <Compile Include="Mappers\Csv\Extensions.cs" />
-    <Compile Include="Mappers\Csv\LedgerCsvMapper.cs" />
-    <Compile Include="Mappers\Csv\TimeLogCsvMapper.cs" />
-    <Compile Include="Mappers\LiteDb\BaseLiteDbMapper.cs" />
-    <Compile Include="Mappers\Text\ActionItemTextMapper.cs" />
-    <Compile Include="Mappers\Text\NoteDiskMapper.cs" />
-    <Compile Include="Model\PendingChange.cs" />
-    <Compile Include="Model\ModelObject.cs" />
-    <Compile Include="Model\AccountTransfer.cs" />
-    <Compile Include="Model\ActionItem.cs" />
-    <Compile Include="Model\Note.cs" />
-    <Compile Include="Properties\Annotations.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Model\TimeLogEntry.cs" />
-    <Compile Include="Repositories\SingleOriginRepository.cs" />
-    <Compile Include="Repositories\OriginDiskRepository.cs" />
-    <Compile Include="Repositories\MergeDiskRepository.cs" />
-    <Compile Include="Search\AndSpecification.cs" />
-    <Compile Include="Search\FalseSpecification.cs" />
-    <Compile Include="Search\ISearchSpecification.cs" />
-    <Compile Include="Search\NoteDateSpecification.cs" />
-    <Compile Include="Search\NotSpecification.cs" />
-    <Compile Include="Search\OrSpecification.cs" />
-    <Compile Include="Search\SearchSpecificationExtensions.cs" />
-    <Compile Include="Search\TrueSpecification.cs" />
-    <Compile Include="Mappers\Xml\SharpListSerialiser.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
