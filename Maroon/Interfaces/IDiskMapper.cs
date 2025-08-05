@@ -28,5 +28,7 @@ namespace AssimilationSoftware.Maroon.Interfaces
         /// <param name="filename">The file to delete.</param>
         /// <remarks> To allow proper separation of the repository from disk operations, and to allow any base path redirection, if required.</remarks>
         void Delete(string filename);
+
+        string[] GetFiles(string primaryPath, string fileSearch, SearchOption searchOption);
     }
 }

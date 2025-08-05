@@ -15,8 +15,8 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
     public abstract class CsvDiskMapper<T> : IDiskMapper<T> where T : ModelObject
     {
         public abstract string FieldsHeader { get; }
-		public abstract T FromTokens(string[] tokens);
-		public abstract string ToCsv(T obj);
+        public abstract T FromTokens(string[] tokens);
+        public abstract string ToCsv(T obj);
         public abstract IFileSystem FileSystem { get; protected set; }
 
         private IEnumerable<T> LoadAll(string filename)
@@ -64,6 +64,11 @@ namespace AssimilationSoftware.Maroon.Mappers.Csv
         public void Delete(string filename)
         {
             FileSystem.File.Delete(filename);
+        }
+
+        public string[] GetFiles(string path, string search, SearchOption searchOption)
+        {
+            return FileSystem.Directory.GetFiles(path, search, searchOption);
         }
     }
 }

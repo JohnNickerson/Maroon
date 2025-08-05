@@ -17,6 +17,7 @@ namespace UnitTests
         public void Save_Changes_Test()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {
@@ -48,6 +49,7 @@ namespace UnitTests
         public void Double_Edit_No_Conflicts_Test()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {
@@ -81,6 +83,7 @@ namespace UnitTests
         public void Conflicting_Edits_Test()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {
@@ -123,6 +126,7 @@ namespace UnitTests
         public void Rank_Serialisation_Test()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var primaryFileName = "todo.txt";
             var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), primaryFileName);
             var item = new ActionItem
@@ -180,6 +184,7 @@ namespace UnitTests
         public void Double_Create_No_Conflicts_Test()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {

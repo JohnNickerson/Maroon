@@ -16,6 +16,7 @@ namespace UnitTests
         public void Round_Trip_Test()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var path = ".";
             var filename = Path.Combine(path, "TimeLogRepoBase.csv");
 
@@ -45,7 +46,7 @@ namespace UnitTests
             found = repo.Find(log.ID);
             Assert.NotNull(found);
             Assert.Empty(repo.FindConflicts());
-            Assert.False(mockFileSystem.File.Exists(mockFileSystem.Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
+            Assert.False(mockFileSystem.File.Exists(mockFileSystem.Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"Update file still exists after commit.");
 
             repo.Delete(found);
             repo.SaveChanges();

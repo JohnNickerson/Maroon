@@ -21,7 +21,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         protected readonly Dictionary<Guid, T> _unsavedUpdates; // Revision ID -> item
         protected Dictionary<Guid, PendingChange<T>> _pending; // ID -> pending change set, both saved and unsaved
-        protected Dictionary<Guid, T> _items; // ID -> item, including all pending changes.
+        protected Dictionary<Guid, T>? _items; // ID -> item, including all pending changes.
 
         #endregion
 
@@ -180,7 +180,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 FindAll();
 
                 // Only write changes if there are any to write.
-                if (_items.Any())
+                if (_items?.Any() ?? false)
                 {
                     // Verify no conflicts first. Caller must check and resolve conflicts if they exist.
                     if (FindConflicts().Count > 0) return 0;
@@ -276,7 +276,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
         }
 
-        private string[] UpdateFileNames => Directory.GetFiles(PrimaryPath, _updatesFileSearch, SearchOption.TopDirectoryOnly);
+        private string[] UpdateFileNames => _mapper.GetFiles(PrimaryPath, _updatesFileSearch, SearchOption.TopDirectoryOnly);
 
         private string PrimaryPath => Path.GetDirectoryName(Path.GetFullPath(_primaryFileName));
 

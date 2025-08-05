@@ -238,5 +238,10 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
         {
             _fileSystem.File.Delete(filename);
         }
+
+        public string[] GetFiles(string primaryPath, string fileSearch, SearchOption searchOption)
+        {
+            return _fileSystem.Directory.GetFiles(primaryPath, fileSearch, searchOption);
+        }
     }
 }

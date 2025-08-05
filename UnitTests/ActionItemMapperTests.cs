@@ -7,9 +7,8 @@ using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
 using Xunit;
 
-namespace UnitTests
+namespace AssimilationSoftware.Maroon.Mappers.Tests
 {
-    
     public class ActionItemMapperTests
     {
         [Fact]

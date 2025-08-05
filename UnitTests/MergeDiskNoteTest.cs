@@ -18,6 +18,7 @@ namespace UnitTests
         public void Create_File_From_Scratch()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var fileName = "LogFile.txt";
             var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(mockFileSystem), fileName);
 
@@ -49,6 +50,7 @@ namespace UnitTests
         public void Revert_Conflict()
         {
             var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var primaryFileName = "notes.txt";
             var mapper = new NoteDiskMapper(mockFileSystem);
             var repo = new MergeDiskRepository<Note>(mapper, primaryFileName);
