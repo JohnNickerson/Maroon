@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using AssimilationSoftware.Maroon.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class NoteLiteDbTests
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
+        [Obsolete("use file system abstraction")]
+        private void Cleanup()
         {
             foreach (var updateFile in Directory.GetFiles(".", "notes-test.db"))
             {
@@ -22,9 +22,10 @@ namespace UnitTests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void Round_Trip_Test()
         {
+            Cleanup();
             var filename = "notes-test.db";
             if (File.Exists(filename)) File.Delete(filename);
             var mapper = new AssimilationSoftware.Maroon.Mappers.LiteDb.BaseLiteDbMapper<Note>(filename, "notes");
@@ -45,7 +46,8 @@ namespace UnitTests
             mapper.Save(note);
 
             var loaded = mapper.Load(note.ID);
-            Assert.AreEqual(note.ID, loaded.ID);
+            Assert.Equal(note.ID, loaded.ID);
+            Cleanup();
         }
     }
 }

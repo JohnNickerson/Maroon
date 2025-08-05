@@ -1,26 +1,41 @@
 ﻿using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Text;
 using AssimilationSoftware.Maroon.Interfaces;
+using AssimilationSoftware.Maroon.Mappers.Csv;
 
 namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
-    public class MockDiskMapper : IDiskMapper<MockObj>
+    public class MockDiskMapper : CsvDiskMapper<MockObj>
     {
         private readonly Dictionary<string, List<MockObj>> _items = new Dictionary<string, List<MockObj>>();
 
-        public IEnumerable<MockObj> Read(params string[] fileNames)
+        public override string FieldsHeader => "ID,RevisionGuid,PrevRevision,LastModified";
+
+        public override IFileSystem FileSystem { get; protected set; }
+
+        public MockDiskMapper()
         {
-            return fileNames.SelectMany(f => _items.ContainsKey(f) ? _items[f] : new List<MockObj>());
+            FileSystem = new MockFileSystem();
+            FileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
         }
 
-        public void Write(IEnumerable<MockObj> items, string filename)
+        public override MockObj FromTokens(string[] tokens)
         {
-            _items[filename] = items.ToList();
+            return new MockObj
+            {
+                ID = Guid.Parse(tokens[0]),
+                RevisionGuid = Guid.Parse(tokens[1]),
+                PrevRevision = Guid.Parse(tokens[2]),
+                LastModified = DateTime.Parse(tokens[3])
+            };
         }
 
-        public void Delete(string filename)
+        public override string ToCsv(MockObj obj)
         {
-            _items.Remove(filename);
+            return $"{obj.ID},{obj.RevisionGuid},{obj.PrevRevision},{obj.LastModified}";
         }
     }
 }

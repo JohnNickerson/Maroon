@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,6 +11,13 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 {
     public class NoteDiskMapper : IDiskMapper<Note>
     {
+        private IFileSystem _fileSystem;
+
+        public NoteDiskMapper(IFileSystem? fileSystem = null)
+        {
+            _fileSystem = fileSystem ?? new FileSystem();
+        }
+
         private bool TryParseGuidLine(string line, out Guid? noteId, out Guid? revision, out Guid? parentId, out Guid? prevRevision)
         {
             var id = "([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})";  // SQL GUID 1
@@ -103,9 +110,9 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
         {
             var drafts = new List<Note>();
             Note current = null;
-            if (File.Exists(filename))
+            if (_fileSystem.File.Exists(filename))
             {
-                foreach (var line in File.ReadAllLines(filename))
+                foreach (var line in _fileSystem.File.ReadAllLines(filename))
                 {
                     if (line.Trim().Length == 0)
                     {
@@ -217,19 +224,24 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 fileContents.AppendLine();
             }
 
-            if (fileContents.Length == 0 && File.Exists(filename))
+            if (fileContents.Length == 0 && _fileSystem.File.Exists(filename))
             {
-                File.Delete(filename);
+                _fileSystem.File.Delete(filename);
             }
             else
             {
-                File.WriteAllText(filename, fileContents.ToString());
+                _fileSystem.File.WriteAllText(filename, fileContents.ToString());
             }
         }
 
         public void Delete(string filename)
         {
-            File.Delete(filename);
+            _fileSystem.File.Delete(filename);
+        }
+
+        public string[] GetFiles(string primaryPath, string fileSearch, SearchOption searchOption)
+        {
+            return _fileSystem.Directory.GetFiles(primaryPath, fileSearch, searchOption);
         }
     }
 }

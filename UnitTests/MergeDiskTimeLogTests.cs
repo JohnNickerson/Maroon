@@ -1,32 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using AssimilationSoftware.Maroon.Mappers.Csv;
 using AssimilationSoftware.Maroon.Model;
 using AssimilationSoftware.Maroon.Repositories;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class MergeDiskTimeLogTests
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
-        [TestMethod]
+        [Fact]
         public void Round_Trip_Test()
         {
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var path = ".";
             var filename = Path.Combine(path, "TimeLogRepoBase.csv");
 
-            var mapper = new TimeLogCsvMapper();
+            var mapper = new TimeLogCsvMapper(mockFileSystem);
             var repo = new MergeDiskRepository<TimeLogEntry>(mapper, filename);
 
             var log = new TimeLogEntry
@@ -44,21 +38,21 @@ namespace UnitTests
             repo.SaveChanges();
 
             var found = repo.Find(log.ID);
-            Assert.IsNotNull(found);
-            Assert.IsTrue(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.txt")));
+            Assert.NotNull(found);
+            Assert.True(mockFileSystem.File.Exists(mockFileSystem.Path.Combine(path, $"update-{log.RevisionGuid}.txt")));
 
             repo.CommitChanges();
 
             found = repo.Find(log.ID);
-            Assert.IsNotNull(found);
-            Assert.AreEqual(0, repo.FindConflicts().Count);
-            Assert.IsFalse(File.Exists(Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"File.Exists(Path.Combine({path}, $'update-{log.RevisionGuid}.xml'))");
+            Assert.NotNull(found);
+            Assert.Empty(repo.FindConflicts());
+            Assert.False(mockFileSystem.File.Exists(mockFileSystem.Path.Combine(path, $"update-{log.RevisionGuid}.txt")), $"Update file still exists after commit.");
 
             repo.Delete(found);
             repo.SaveChanges();
-            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.Empty(repo.FindConflicts());
             repo.CommitChanges();
-            Assert.IsNull(repo.Find(found.ID), "Deleted item still in repository.");
+            Assert.Null(repo.Find(found.ID));
         }
     }
 }

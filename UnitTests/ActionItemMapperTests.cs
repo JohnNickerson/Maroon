@@ -1,28 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
-namespace UnitTests
+namespace AssimilationSoftware.Maroon.Mappers.Tests
 {
-    [TestClass]
     public class ActionItemMapperTests
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
-        [TestMethod]
+        [Fact]
         public void Round_Trip_Test()
         {
+            var mockFileSystem = new MockFileSystem();
             var fileName = "TestFile.txt";
             var i = new List<ActionItem>
             {
@@ -54,20 +46,20 @@ namespace UnitTests
                 Title = "Child, depth 1",
                 Upvotes = 0
             });
-            var m = new ActionItemTextMapper();
+            var m = new ActionItemTextMapper(mockFileSystem);
 
             m.Write(i, fileName);
             var j = m.Read(fileName).ToArray();
 
-            Assert.IsNotNull(j);
-            Assert.AreEqual(i.Count, j.Count());
+            Assert.NotNull(j);
+            Assert.Equal(i.Count, j.Count());
             foreach (var n in i)
             {
                 var s = j.FirstOrDefault(x => x.ID == n.ID);
-                Assert.IsNotNull(s);
-                Assert.AreEqual(n.Title, s.Title);
-                Assert.AreEqual(n.Context, s.Context);
-                Assert.AreEqual(n.RevisionGuid, s.RevisionGuid);
+                Assert.NotNull(s);
+                Assert.Equal(n.Title, s.Title);
+                Assert.Equal(n.Context, s.Context);
+                Assert.Equal(n.RevisionGuid, s.RevisionGuid);
             }
         }
     }

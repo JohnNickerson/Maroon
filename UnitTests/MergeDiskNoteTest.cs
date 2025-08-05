@@ -1,32 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
 using AssimilationSoftware.Maroon.Repositories;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class MergeDiskNoteTest
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
-        [TestMethod]
+        [Fact]
         public void Create_File_From_Scratch()
         {
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var fileName = "LogFile.txt";
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
+            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(mockFileSystem), fileName);
 
             repo.Create(new Note
             {
@@ -40,24 +34,26 @@ namespace UnitTests
             });
             repo.SaveChanges();
 
-            Assert.AreEqual(1, repo.Items.Count(), "Empty after saving");
+            Assert.Single(repo.Items);
 
-            var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(), fileName);
+            var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(mockFileSystem), fileName);
             repo2.FindAll();
 
-            Assert.AreEqual(1, repo2.Items.Count(), "Empty in new repository");
+            Assert.Single(repo2.Items);
 
             repo.CommitChanges();
 
-            Assert.AreEqual(1, repo2.Items.Count(), "Empty in new repository after commit");
+            Assert.Single(repo2.Items);
         }
 
-        [TestMethod]
+        [Fact]
         public void Revert_Conflict()
         {
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var primaryFileName = "notes.txt";
-            var mapper = new NoteDiskMapper();
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(), primaryFileName);
+            var mapper = new NoteDiskMapper(mockFileSystem);
+            var repo = new MergeDiskRepository<Note>(mapper, primaryFileName);
             Guid root = Guid.NewGuid();
             Guid rev1 = Guid.NewGuid();
             Guid rev2 = Guid.NewGuid();
@@ -99,22 +95,22 @@ namespace UnitTests
             };
             repo.Create(data[0]);
             var found = repo.Find(root);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.Text = "edited text";
             repo.Update(found);
             var updated = repo.Find(root);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("edited text", updated.Text);
+            Assert.NotNull(updated);
+            Assert.Equal("edited text", updated.Text);
 
             repo.Revert(updated.ID);
             var revved = repo.Find(updated.ID);
-            Assert.IsNotNull(revved);
-            Assert.AreEqual(data[0].Text, revved.Text);
+            Assert.NotNull(revved);
+            Assert.Equal(data[0].Text, revved.Text);
 
             repo.SaveChanges();
-            Assert.AreEqual(1, repo.Items.Count());
-            Assert.AreEqual(1, Directory.GetFiles(".", "update-*.txt").Length);
-            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.Single(repo.Items);
+            Assert.Single(mockFileSystem.Directory.GetFiles(".", "update-*.txt"));
+            Assert.Empty(repo.FindConflicts());
         }
     }
 }

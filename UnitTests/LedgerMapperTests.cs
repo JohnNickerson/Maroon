@@ -1,28 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Csv;
 using AssimilationSoftware.Maroon.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class LedgerMapperTests
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.csv"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
-        [TestMethod]
+        [Fact]
         public void Round_Trip_Test()
         {
+            var mockFileSystem = new MockFileSystem();
             var ledger = new List<AccountTransfer>
             {
                 new AccountTransfer
@@ -39,12 +32,12 @@ namespace UnitTests
                 }
             };
             var filename = "TestLedger.csv";
-            var mapper = new LedgerCsvMapper();
+            var mapper = new LedgerCsvMapper(mockFileSystem);
             mapper.Write(ledger, filename);
             var fromDisk = mapper.Read(filename);
 
-            Assert.IsNotNull(fromDisk);
-            Assert.AreEqual(ledger.Count, fromDisk.Count());
+            Assert.NotNull(fromDisk);
+            Assert.Equal(ledger.Count, fromDisk.Count());
         }
     }
 }

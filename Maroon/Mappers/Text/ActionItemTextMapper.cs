@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using AssimilationSoftware.Maroon.Interfaces;
@@ -10,9 +10,16 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
 {
     public class ActionItemTextMapper : IDiskMapper<ActionItem>
     {
+        private IFileSystem _fileSystem;
+
+        public ActionItemTextMapper(IFileSystem? fileSystem = null)
+        {
+            _fileSystem = fileSystem ?? new FileSystem();
+        }
+
         private IEnumerable<ActionItem> LoadAll(string filename)
         {
-            var lines = (File.Exists(filename) ? File.ReadAllLines(filename) : new string[] { });
+            var lines = (_fileSystem.File.Exists(filename) ? _fileSystem.File.ReadAllLines(filename) : new string[] { });
 
             var context = string.Empty;
             var currentItem = new ActionItem { Context = context, Title = "(item out of order)", Done = false, ID = Guid.NewGuid() };
@@ -157,12 +164,17 @@ namespace AssimilationSoftware.Maroon.Mappers.Text
                 }
             }
 
-            File.WriteAllText(filename, file.ToString());
+            _fileSystem.File.WriteAllText(filename, file.ToString());
         }
 
         public void Delete(string filename)
         {
-            File.Delete(filename);
+            _fileSystem.File.Delete(filename);
+        }
+
+        public string[] GetFiles(string primaryPath, string fileSearch, SearchOption searchOption)
+        {
+            return _fileSystem.Directory.GetFiles(primaryPath, fileSearch, searchOption);
         }
     }
 }

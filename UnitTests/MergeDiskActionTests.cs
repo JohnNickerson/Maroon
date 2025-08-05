@@ -1,30 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using AssimilationSoftware.Maroon.Mappers.Text;
 using AssimilationSoftware.Maroon.Model;
 using AssimilationSoftware.Maroon.Repositories;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace UnitTests
 {
-    [TestClass]
+    
     public class MergeDiskActionTests
     {
-        [TestCleanup, TestInitialize]
-        public void Cleanup()
-        {
-            foreach (var updateFile in Directory.GetFiles(".", "*.txt"))
-            {
-                File.Delete(updateFile);
-            }
-        }
-
-        [TestMethod]
+        [Fact]
         public void Save_Changes_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -48,13 +42,15 @@ namespace UnitTests
             repo.Create(item);
             repo.SaveChanges();
 
-            Assert.IsTrue(File.Exists($".\\update-{item.RevisionGuid}.txt"));
+            Assert.True(mockFileSystem.File.Exists($".\\update-{item.RevisionGuid}.txt"));
         }
 
-        [TestMethod]
+        [Fact]
         public void Double_Edit_No_Conflicts_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -80,13 +76,15 @@ namespace UnitTests
             item.Context = "moved";
             repo.Update(item);
 
-            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.Empty(repo.FindConflicts());
         }
 
-        [TestMethod]
+        [Fact]
         public void Conflicting_Edits_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -109,26 +107,28 @@ namespace UnitTests
             };
             repo.Create((ActionItem)item.Clone());
 
-            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.Empty(repo.FindConflicts());
 
             item = repo.Find(item.ID);
             item.Context = "moved";
             repo.Update((ActionItem)item.Clone());
 
-            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.Empty(repo.FindConflicts());
 
             item.Context = "conflicted";
             repo.Update((ActionItem)item.Clone());
 
-            Assert.AreEqual(1, repo.Items.Count());
-            Assert.AreEqual(1, repo.FindConflicts().Count);
+            Assert.Single(repo.Items);
+            Assert.Single(repo.FindConflicts());
         }
 
-        [TestMethod]
+        [Fact]
         public void Rank_Serialisation_Test()
         {
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
             var primaryFileName = "todo.txt";
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), primaryFileName);
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), primaryFileName);
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -175,15 +175,17 @@ namespace UnitTests
 
             var testrepo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), primaryFileName);
             var i = testrepo.Find(item2.ID);
-            Assert.IsNotNull(i);
-            Assert.AreEqual(item2.ParentId, i.ParentId);
-            Assert.IsNotNull(i.ParentId);
+            Assert.NotNull(i);
+            Assert.Equal(item2.ParentId, i.ParentId);
+            Assert.NotNull(i.ParentId);
         }
 
-        [TestMethod]
+        [Fact]
         public void Double_Create_No_Conflicts_Test()
         {
-            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(), ".");
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
+            var repo = new MergeDiskRepository<ActionItem>(new ActionItemTextMapper(mockFileSystem), ".");
             var item = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -205,7 +207,7 @@ namespace UnitTests
                 TickleDate = null
             };
             repo.Create((ActionItem)item.Clone());
-            Assert.AreEqual(1, repo.Items.Count());
+            Assert.Single(repo.Items);
             var item2 = new ActionItem
             {
                 ID = Guid.NewGuid(),
@@ -227,9 +229,9 @@ namespace UnitTests
                 TickleDate = null
             };
             repo.Create((ActionItem)item2.Clone());
-            Assert.AreEqual(2, repo.Items.Count());
-            Assert.AreEqual(2, repo.GetPendingChanges().Count);
-            Assert.AreEqual(0, repo.FindConflicts().Count);
+            Assert.Equal(2, repo.Items.Count());
+            Assert.Equal(2, repo.GetPendingChanges().Count);
+            Assert.Empty(repo.FindConflicts());
         }
     }
 }

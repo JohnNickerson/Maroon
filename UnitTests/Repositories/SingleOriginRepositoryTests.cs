@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using AssimilationSoftware.Maroon.Repositories;
 using System;
 using System.Collections.Generic;
@@ -9,10 +9,9 @@ using AssimilationSoftware.Maroon.Interfaces;
 
 namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
-    [TestClass()]
     public class SingleOriginRepositoryTests
     {
-        [TestMethod()]
+        [Fact]
         public void SingleOriginRepositoryTest()
         {
             var mockFile = nameof(SingleOriginRepositoryTest);
@@ -20,7 +19,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
         }
 
-        [TestMethod()]
+        [Fact]
         public void CreateTest()
         {
             var mockFile = nameof(CreateTest);
@@ -29,7 +28,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.Create(new MockObj());
         }
 
-        [TestMethod()]
+        [Fact]
         public void DeleteTest()
         {
             var mockFile = nameof(DeleteTest);
@@ -38,13 +37,13 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             mdr.Delete(found);
             var notFound = mdr.Find(found.ID);
-            Assert.IsNull(notFound);
+            Assert.Null(notFound);
         }
 
-        [TestMethod()]
+        [Fact]
         public void SaveDeleteTest()
         {
             var mockFile = nameof(DeleteTest);
@@ -53,15 +52,15 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             mdr.Delete(found);
             mdr.SaveChanges();
             var notFound = mdr.Find(found.ID);
-            Assert.IsNull(notFound);
-            Assert.IsFalse(mdr.Items.Any(e => e.ID == found.ID));
+            Assert.Null(notFound);
+            Assert.DoesNotContain(mdr.Items, e => e.ID == found.ID);
         }
 
-        [TestMethod()]
+        [Fact]
         public void FindTest()
         {
             var mockFile = nameof(FindTest);
@@ -70,10 +69,10 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
         }
 
-        [TestMethod()]
+        [Fact]
         public void FindAllTest()
         {
             var mockFile = nameof(FindAllTest);
@@ -84,11 +83,11 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             mdr.Create(entity);
             mdr.Create(entity2);
             var found = mdr.FindAll();
-            Assert.IsNotNull(found);
-            Assert.AreEqual(2, found.Count());
+            Assert.NotNull(found);
+            Assert.Equal(2, found.Count());
         }
 
-        [TestMethod()]
+        [Fact]
         public void SaveChangesTest()
         {
             var mockFile = nameof(SaveChangesTest);
@@ -97,17 +96,17 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.ImportHash = "changed";
             mdr.Update(found);
             mdr.SaveChanges();
 
             var updated = mdr.Find(entity.ID);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("changed", updated.ImportHash);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
         }
 
-        [TestMethod()]
+        [Fact]
         public void UpdateTest()
         {
             var mockFile = nameof(UpdateTest);
@@ -116,15 +115,15 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
-            Assert.IsNotNull(found);
+            Assert.NotNull(found);
             found.ImportHash = "changed";
             mdr.Update(found);
             var updated = mdr.Find(entity.ID);
-            Assert.IsNotNull(updated);
-            Assert.AreEqual("changed", updated.ImportHash);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpdateBulkTest()
         {
             var mockFile = nameof(UpdateTest);
