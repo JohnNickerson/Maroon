@@ -6,6 +6,15 @@ Maroon will write data to one file per machine, and keeps a history of edits as 
 If apps are working from an old version of another machine's history, there may be gaps in the revision chain, or an old revision may be mistakenly used as the basis for an edit. As such, there is also a
 mechanism for merging conflicting revisions together into a new revision.
 
+## Why is it called "Maroon"?
+
+Two reasons. One, on the colour wheel, maroon is opposite sky blue, also known as "azure". Since Maroon is meant to be a data storage option that doesn't rely on
+the cloud or even on servers, it is opposite that. Two, I'm from Queensland, where maroon is our state colour. :)
+
+## Why use it?
+
+Because sometimes the internet isn't available, or sometimes the servers are down. If your data is local, you're still able to work, and synchronisation can happen later.
+
 ## History
 
 - 2019-03-21: Build 0.1.2.1 
