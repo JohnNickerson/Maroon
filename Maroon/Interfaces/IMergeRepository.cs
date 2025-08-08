@@ -4,6 +4,7 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Interfaces
 {
+    [Obsolete("Unifying this with IRepository")]
     public interface IMergeRepository<T> : IRepository<T> where T : ModelObject
     {
         /// <summary>

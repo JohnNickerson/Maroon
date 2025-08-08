@@ -12,12 +12,27 @@ namespace AssimilationSoftware.Maroon.Interfaces
 
         IEnumerable<T> FindAll();
 
+        IEnumerable<HashSet<T>> FindConflicts();
+
         void Create(T entity);
 
         void Delete(T entity);
 
         void Update(T entity, bool isNew = false);
 
+        void Merge(T entity, Guid mergeId);
+
+        [Obsolete("Save should be done automatically now.")]
         void SaveChanges(bool force = false);
+
+        /// <summary>
+        /// Shrink the size of the repository appropriately by storage pattern.
+        /// </summary>
+        /// <remarks>
+        /// For single-origin repositories, purge obsolete revisions.
+        /// For origin-shard repositories, purge obsolete revisions known to all other sources.
+        /// For revision-shard repositories, rewrite the main file to contain only current revisions and purge individual revision files.
+        /// </remarks>
+        void Compress();
     }
 }

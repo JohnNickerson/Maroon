@@ -40,9 +40,14 @@ namespace AssimilationSoftware.Maroon.Model
         public Guid? PrevRevision { get; set; }
 
         /// <summary>
-        /// A unique ID assigned just to this revision of this object, used mostly for serialisation.
+        /// A unique ID assigned just to this revision of this object.
         /// </summary>
-        public Guid RevisionGuid { get; set; }
+        public Guid? RevisionGuid { get; set; }
+
+        /// <summary>
+        /// A previous revision ID that has been merged with this one to resolve a conflicting edit.
+        /// </summary>
+        public Guid? MergeRevision { get; set; }
 
         public bool IsDeleted { get; set; }
 

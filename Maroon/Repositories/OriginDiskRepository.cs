@@ -191,11 +191,11 @@ namespace AssimilationSoftware.Maroon.Repositories
             var seenRevs = new HashSet<Guid>();
             foreach (var i in _items)
             {
-                knownRevs.Add(i.RevisionGuid);
+                knownRevs.Add(i.RevisionGuid.Value);
             }
             foreach (var u in _allUpdates)
             {
-                knownRevs.Add(u.RevisionGuid);
+                knownRevs.Add(u.RevisionGuid.Value);
             }
 
             // Get the list of IDs to check.
@@ -243,6 +243,21 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
             _localUpdates.RemoveAll(u => u.ID == id);
             _unsavedChanges = _localUpdates.Any();
+        }
+
+        IEnumerable<HashSet<T>> IRepository<T>.FindConflicts()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Merge(T entity, Guid mergeId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Compress()
+        {
+            throw new NotImplementedException();
         }
         #endregion
 

@@ -46,6 +46,11 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
         }
 
+        public void Compress()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Create(T entity)
         {
             entity.UpdateRevision(true);
@@ -70,6 +75,16 @@ namespace AssimilationSoftware.Maroon.Repositories
         public IEnumerable<T> FindAll()
         {
             return Items;
+        }
+
+        public IEnumerable<HashSet<T>> FindConflicts()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Merge(T entity, Guid mergeId)
+        {
+            throw new NotImplementedException();
         }
 
         public void SaveChanges(bool force = false)

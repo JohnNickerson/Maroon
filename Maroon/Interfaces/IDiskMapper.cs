@@ -7,6 +7,7 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Interfaces
 {
+    [Obsolete("Replacing this with IDataSource")]
     public interface IDiskMapper<T> where T : ModelObject
     {
         /// <summary>

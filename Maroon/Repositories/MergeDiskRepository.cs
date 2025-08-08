@@ -107,7 +107,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             entity.UpdateRevision(true);
             if (_items == null) LoadAll();
             _items[entity.ID] = entity;
-            _unsavedUpdates.Add(entity.RevisionGuid, entity);
+            _unsavedUpdates.Add(entity.RevisionGuid.Value, entity);
             AddPendingChange(entity);
         }
 
@@ -118,7 +118,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             gone.IsDeleted = true;
             gone.UpdateRevision();
             if (_items == null) LoadAll();
-            _unsavedUpdates.Add(gone.RevisionGuid, gone);
+            _unsavedUpdates.Add(gone.RevisionGuid.Value, gone);
             AddPendingChange(gone);
         }
 
@@ -147,7 +147,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 updated.UpdateRevision(isNew);
                 if (_items == null) LoadAll();
                 AddPendingChange(updated);
-                _unsavedUpdates.Add(updated.RevisionGuid, updated);
+                _unsavedUpdates.Add(updated.RevisionGuid.Value, updated);
             }
             else
             {
@@ -226,7 +226,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             item.PrevRevision = Find(item.ID).RevisionGuid;
             if (_items == null) LoadAll();
             _items[item.ID] = item;
-            _unsavedUpdates.Add(item.RevisionGuid, item);
+            _unsavedUpdates.Add(item.RevisionGuid.Value, item);
             AddPendingChange(item);
         }
 
@@ -261,6 +261,21 @@ namespace AssimilationSoftware.Maroon.Repositories
             // Wait a moment.
             Thread.Sleep(TimeSpan.FromMilliseconds(200));
             ApplyChangesFromDisk(e.FullPath);
+        }
+
+        IEnumerable<HashSet<T>> IRepository<T>.FindConflicts()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Merge(T entity, Guid mergeId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Compress()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
