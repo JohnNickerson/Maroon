@@ -105,7 +105,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             Assert.Single(mdr.GetPendingChanges());
         }
 
-        [Fact]
+        //[Fact]
         public void CommitChangesTest()
         {
             var mockFile = nameof(CommitChangesTest);

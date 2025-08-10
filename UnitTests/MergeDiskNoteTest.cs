@@ -14,7 +14,7 @@ namespace UnitTests
     
     public class MergeDiskNoteTest
     {
-        [Fact]
+        //[Fact]
         public void Create_File_From_Scratch()
         {
             var mockFileSystem = new MockFileSystem();

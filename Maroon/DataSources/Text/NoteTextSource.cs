@@ -31,7 +31,7 @@ public class NoteTextSource : IDataSource<Note>
         {
             result.AppendLine(item.TagString);
         }
-        result.Append(item.ID.ToString());
+        result.AppendLine(item.ID.ToString());
         // Relationship IDs: [revision;previous;merge]:parent
         result.Append($"[{item.RevisionGuid}");
         if (item.PrevRevision.HasValue)
@@ -115,10 +115,6 @@ public class NoteTextSource : IDataSource<Note>
                         if (current != null)
                         {
                             _index[current.RevisionGuid.Value] = current;
-                            if (current.LastModified > _lastWriteTime)
-                            {
-                                _lastWriteTime = current.LastModified;
-                            }
                             yield return current;
                             current = null;
                         }
@@ -158,6 +154,11 @@ public class NoteTextSource : IDataSource<Note>
                             if (DateTime.TryParse(line, out var stamp))
                             {
                                 current.Timestamp = stamp;
+                                current.LastModified = stamp;
+                                if (current.LastModified > _lastWriteTime)
+                                {
+                                    _lastWriteTime = current.LastModified;
+                                }
                             }
                             else if (line.Trim().Split(' ').All(t => t.StartsWith('#')))
                             {
@@ -175,6 +176,11 @@ public class NoteTextSource : IDataSource<Note>
                         }
                     }
                 }
+            }
+            if (current != null)
+            {
+                _index[current.RevisionGuid.Value] = current;
+                yield return current;
             }
         }
         _reindex = false;
@@ -242,7 +248,7 @@ public class NoteTextSource : IDataSource<Note>
     {
         if (_reindex)
         {
-            FindAll();
+            FindAll().ToArray();
         }
         return _lastWriteTime;
     }
@@ -252,9 +258,14 @@ public class NoteTextSource : IDataSource<Note>
         // Remove the note from the index and re-write the file without it.
         if (_reindex)
         {
-            FindAll();
+            FindAll().ToArray();
         }
         _index.Remove(id);
+        if (!_index.Any())
+        {
+            _fileSystem.File.Delete(_fileName);
+            return;
+        }
         foreach (var item in _index.Values)
         {
             var noteString = Stringify(item);
