@@ -8,6 +8,7 @@ namespace AssimilationSoftware.Maroon.DataSources.Text;
 
 public class AccountTransferCsvSource : IDataSource<AccountTransfer>
 {
+    private const string ColumnHeaders = "Date,FromAccount,ToAccount,Description,Category,Amount,LastModified,ID,IsDeleted,RevisionGuid,PrevRevision,MergeRevision,ImportHash";
     private IFileSystem _fileSystem;
     private string _fileName;
     private Dictionary<Guid, AccountTransfer> _index;
@@ -24,7 +25,7 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
 
     private string Stringify(AccountTransfer obj)
     {
-        return $"{obj.Date:yyyy-MM-dd},{obj.FromAccount},{obj.ToAccount},{obj.Description},{obj.Category},{obj.Amount},{obj.LastModified:O},{obj.ID},{obj.IsDeleted},{obj.RevisionGuid},{obj.ImportHash}";
+        return $"{obj.Date:yyyy-MM-dd},{obj.FromAccount},{obj.ToAccount},{obj.Description},{obj.Category},{obj.Amount},{obj.LastModified:O},{obj.ID},{obj.IsDeleted},{obj.RevisionGuid},{obj.PrevRevision},{obj.MergeRevision},{obj.ImportHash}";
     }
 
     public AccountTransfer Create(AccountTransfer item)
@@ -35,9 +36,18 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         item.MergeRevision = null;
         item.IsDeleted = false;
         var csvLine = Stringify(item);
+        EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
         _index[item.RevisionGuid.Value] = item;
         return item;
+    }
+
+    private void EnsureFileExists()
+    {
+        if (!_fileSystem.File.Exists(_fileName))
+        {
+            _fileSystem.File.WriteAllText(_fileName, ColumnHeaders + Environment.NewLine);
+        }
     }
 
     public AccountTransfer Update(AccountTransfer item)
@@ -48,6 +58,7 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         // Merge revision ID is not set, in case this is a merge
         item.IsDeleted = false;
         var csvLine = Stringify(item);
+        EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
         _index[item.RevisionGuid.Value] = item;
         return item;
@@ -70,7 +81,7 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         {
             yield break;
         }
-        foreach (var line in _fileSystem.File.ReadAllLines(_fileName))
+        foreach (var line in _fileSystem.File.ReadAllLines(_fileName).Skip(1))
         {
             var parts = line.Tokenise();
             if (parts.Count < 10)
@@ -89,7 +100,9 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
                 ID = Guid.Parse(parts[7]),
                 IsDeleted = bool.Parse(parts[8]),
                 RevisionGuid = Guid.Parse(parts[9]),
-                ImportHash = parts[10]
+                PrevRevision = Guid.TryParse(parts[10], out var prevRev) ? prevRev : (Guid?)null,
+                MergeRevision = Guid.TryParse(parts[11], out var mergeRev) ? mergeRev : (Guid?)null,
+                ImportHash = parts[12]
             };
             _index[transfer.RevisionGuid.Value] = transfer;
             if (_lastWriteTime < transfer.LastModified)
@@ -121,6 +134,7 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
             MergeRevision : null
         );
         var csvLine = Stringify(deletedItem);
+        EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
         _index[deletedItem.RevisionGuid.Value] = item;
         return deletedItem;
@@ -140,7 +154,11 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         else
         {
             // Rewrite the file without the purged item
-            var lines = _index.Values.Select(Stringify).ToList();
+            var lines = new List<string>
+            {
+                ColumnHeaders
+            };
+            lines.AddRange(_index.Values.Select(Stringify));
             _fileSystem.File.WriteAllLines(_fileName, lines);
         }
     }
