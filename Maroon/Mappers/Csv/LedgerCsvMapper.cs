@@ -4,11 +4,12 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Mappers.Csv
 {
+    [Obsolete("To be replaced with AccountTransferCsvSource")]
     public class LedgerCsvMapper : CsvDiskMapper<AccountTransfer>
     {
         public override string FieldsHeader => "Date,FromAccount,ToAccount,Notes,Name,Amount,ID,Rev,Hash";
 
-        public override IFileSystem FileSystem{ get; protected set; }
+        public override IFileSystem FileSystem { get; protected set; }
 
         public LedgerCsvMapper(IFileSystem? fileSystem = null)
         {

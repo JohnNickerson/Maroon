@@ -9,6 +9,7 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Mappers.Text
 {
+    [Obsolete("To be replaced with NoteTextSource")]
     public class NoteDiskMapper : IDiskMapper<Note>
     {
         private IFileSystem _fileSystem;

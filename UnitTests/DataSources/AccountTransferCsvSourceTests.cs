@@ -232,6 +232,51 @@ public class AccountTransferCsvSourceTests
         Assert.Null(foundTransfer);
         Assert.False(_fileSystem.FileExists("D:\\Temp\\test.csv"));
     }
+
+    [Fact]
+    public void Purge_Should_Retain_Previous_Entries()
+    {
+        Setup();
+        var transfer1 = _source.Create(new AccountTransfer
+        {
+            Date = DateTime.Now,
+            FromAccount = "Account1",
+            ToAccount = "Account2",
+            Description = "Test Transfer 1",
+            Category = "Test Category 1",
+            Amount = 100.00m,
+            ImportHash = "hash123"
+        });
+
+        var transfer2 = _source.Create(new AccountTransfer
+        {
+            Date = DateTime.Now.AddDays(1),
+            FromAccount = "Account3",
+            ToAccount = "Account4",
+            Description = "Test Transfer 2",
+            Category = "Test Category 2",
+            Amount = 200.00m,
+            ImportHash = "hash456"
+        });
+
+        // Purge the first transfer
+        _source.Purge(transfer1.RevisionGuid.Value);
+
+        // Verify that the second transfer is still found
+        var foundTransfer2 = _source.FindRevision(transfer2.RevisionGuid.Value);
+        Assert.NotNull(foundTransfer2);
+        Assert.Equal(transfer2.ID, foundTransfer2.ID);
+        Assert.True(_fileSystem.FileExists("D:\\Temp\\test.csv"));
+        var content = _fileSystem.File.ReadAllText("D:\\Temp\\test.csv");
+        Assert.Contains(transfer2.FromAccount, content);
+        Assert.Contains(transfer2.ToAccount, content);
+        Assert.Contains(transfer2.Description, content);
+        Assert.Contains(transfer2.Category, content);
+        Assert.Contains(transfer2.Amount.ToString(), content);
+        Assert.Contains(transfer2.ImportHash, content);
+        Assert.Contains(transfer2.RevisionGuid.ToString(), content);
+        Assert.Contains(transfer2.PrevRevision.ToString(), content);
+    }
 }
 
     
