@@ -1,0 +1,156 @@
+using System.IO.Abstractions;
+using System.Text;
+using AssimilationSoftware.Maroon.Interfaces;
+using AssimilationSoftware.Maroon.Mappers.Csv;
+using AssimilationSoftware.Maroon.Model;
+
+namespace AssimilationSoftware.Maroon.DataSources.Text;
+
+public class AccountTransferCsvSource : IDataSource<AccountTransfer>
+{
+    private IFileSystem _fileSystem;
+    private string _fileName;
+    private Dictionary<Guid, AccountTransfer> _index;
+    private bool _reindex;
+    private DateTime _lastWriteTime;
+
+    public AccountTransferCsvSource(string fileName, IFileSystem? fileSystem = null)
+    {
+        this._fileSystem = fileSystem ?? new FileSystem();
+        this._fileName = Environment.ExpandEnvironmentVariables(fileName);
+        _index = [];
+        _reindex = true;
+    }
+
+    private string Stringify(AccountTransfer obj)
+    {
+        return $"{obj.Date:yyyy-MM-dd},{obj.FromAccount},{obj.ToAccount},{obj.Description},{obj.Category},{obj.Amount},{obj.LastModified:O},{obj.ID},{obj.IsDeleted},{obj.RevisionGuid},{obj.ImportHash}";
+    }
+
+    public AccountTransfer Create(AccountTransfer item)
+    {
+        item.PrevRevision = null;
+        item.RevisionGuid = Guid.NewGuid();
+        item.LastModified = DateTime.Now;
+        item.MergeRevision = null;
+        item.IsDeleted = false;
+        var csvLine = Stringify(item);
+        _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
+        _index[item.RevisionGuid.Value] = item;
+        return item;
+    }
+
+    public AccountTransfer Update(AccountTransfer item)
+    {
+        item.PrevRevision = item.RevisionGuid;
+        item.RevisionGuid = Guid.NewGuid();
+        item.LastModified = DateTime.Now;
+        // Merge revision ID is not set, in case this is a merge
+        item.IsDeleted = false;
+        var csvLine = Stringify(item);
+        _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
+        _index[item.RevisionGuid.Value] = item;
+        return item;
+    }
+
+    public IEnumerable<AccountTransfer> FindAll()
+    {
+        if (!_reindex)
+        {
+            foreach (var item in _index.Values)
+            {
+                yield return item;
+            }
+            yield break;
+        }
+
+        _index = [];
+        _lastWriteTime = DateTime.MinValue;
+        if (!_fileSystem.File.Exists(_fileName))
+        {
+            yield break;
+        }
+        foreach (var line in _fileSystem.File.ReadAllLines(_fileName))
+        {
+            var parts = line.Tokenise();
+            if (parts.Count < 10)
+            {
+                continue; // Skip malformed lines
+            }
+            var transfer = new AccountTransfer
+            {
+                Date = DateTime.Parse(parts[0]),
+                FromAccount = parts[1],
+                ToAccount = parts[2],
+                Description = parts[3],
+                Category = parts[4],
+                Amount = decimal.Parse(parts[5]),
+                LastModified = DateTime.Parse(parts[6]),
+                ID = Guid.Parse(parts[7]),
+                IsDeleted = bool.Parse(parts[8]),
+                RevisionGuid = Guid.Parse(parts[9]),
+                ImportHash = parts[10]
+            };
+            _index[transfer.RevisionGuid.Value] = transfer;
+            if (_lastWriteTime < transfer.LastModified)
+            {
+                _lastWriteTime = transfer.LastModified;
+            }
+            yield return transfer;
+        }
+        _reindex = false;
+    }
+
+    public AccountTransfer? FindRevision(Guid id)
+    {
+        if (_reindex)
+        {
+            FindAll().ToList(); // Ensure index is populated
+        }
+        _index.TryGetValue(id, out var transfer);
+        return transfer;
+    }
+
+    public AccountTransfer Delete(AccountTransfer item)
+    {
+        var deletedItem = item.With
+        (
+            IsDeleted : true,
+            PrevRevision : item.RevisionGuid,
+            RevisionGuid : Guid.NewGuid(),
+            MergeRevision : null
+        );
+        var csvLine = Stringify(deletedItem);
+        _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
+        _index[deletedItem.RevisionGuid.Value] = item;
+        return deletedItem;
+    }
+
+    public void Purge(Guid id)
+    {
+        if (_reindex)
+        {
+            FindAll().ToList(); // Ensure index is populated
+        }
+        _index.Remove(id);
+        if (!_index.Any())
+        {
+            _fileSystem.File.Delete(_fileName);
+        }
+        else
+        {
+            // Rewrite the file without the purged item
+            var lines = _index.Values.Select(Stringify).ToList();
+            _fileSystem.File.WriteAllLines(_fileName, lines);
+        }
+    }
+
+    public DateTime GetLastWriteTime()
+    {
+        if (_reindex)
+        {
+            FindAll().ToList(); // Ensure index is populated
+        }
+        return _lastWriteTime;
+    }
+}

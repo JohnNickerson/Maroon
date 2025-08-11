@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
+using AssimilationSoftware.Maroon.DataSources.Text;
 
-namespace AssimilationSoftware.Maroon.UnitTests;
+namespace AssimilationSoftware.Maroon.UnitTests.DataSources;
 
 public class NoteTextSourceTests
 {
@@ -8,7 +9,7 @@ public class NoteTextSourceTests
     public void ParseGuidLineFalse()
     {
         var line = "This is not a guid";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.False(result);
         Assert.Null(guid);
@@ -22,7 +23,7 @@ public class NoteTextSourceTests
     public void ParseGuidLine_IdOnly()
     {
         var line = "12345678-1234-1234-1234-123456789012";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.True(result);
         Assert.Equal(new Guid("12345678-1234-1234-1234-123456789012"), guid);
@@ -36,7 +37,7 @@ public class NoteTextSourceTests
     public void ParseGuidLine_RevisionOnly()
     {
         var line = "[12345678-1234-1234-1234-123456789012]";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.True(result);
         Assert.Null(guid);
@@ -50,7 +51,7 @@ public class NoteTextSourceTests
     public void ParseGuidLine_RevisionAndPrev()
     {
         var line = "[12345678-1234-1234-1234-123456789012;23456789-2345-2345-2345-234567890123]";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.True(result);
         Assert.Null(guid);
@@ -64,7 +65,7 @@ public class NoteTextSourceTests
     public void ParseGuidLine_RevisionPrevAndMerge()
     {
         var line = "[12345678-1234-1234-1234-123456789012;23456789-2345-2345-2345-234567890123;34567890-3456-3456-3456-345678901234]";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.True(result);
         Assert.Null(guid);
@@ -78,7 +79,7 @@ public class NoteTextSourceTests
     public void ParseGuidLine_RevisionPrevMergeAndParent()
     {
         var line = "[12345678-1234-1234-1234-123456789012;23456789-2345-2345-2345-234567890123;34567890-3456-3456-3456-345678901234]:67890123-4567-4567-4567-456789012345";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.True(result);
         Assert.Null(guid);
@@ -92,7 +93,7 @@ public class NoteTextSourceTests
     public void ParseGuidLine_RevisionPrevAndParent()
     {
         var line = "[12345678-1234-1234-1234-123456789012;23456789-2345-2345-2345-234567890123]:67890123-4567-4567-4567-456789012345";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.True(result);
         Assert.Null(guid);
@@ -106,7 +107,7 @@ public class NoteTextSourceTests
     public void ParseGuidLine_RevisionAndParent()
     {
         var line = "[12345678-1234-1234-1234-123456789012]:67890123-4567-4567-4567-456789012345";
-        var noteTextSource = new DataSources.Text.NoteTextSource("dummy.txt");
+        var noteTextSource = new NoteTextSource("dummy.txt");
         var result = noteTextSource.TryParseGuidLine(line, out var guid, out var revision, out var prevRevision, out var mergeRevision, out var parentId);
         Assert.True(result);
         Assert.Null(guid);
@@ -120,7 +121,7 @@ public class NoteTextSourceTests
     public void CreateNote()
     {
         MockFileSystem fileSystem = new();
-        var noteTextSource = new DataSources.Text.NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
+        var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
         var note = noteTextSource.Create(new Model.Note()
         {
@@ -144,7 +145,7 @@ public class NoteTextSourceTests
     public void UpdateNote()
     {
         MockFileSystem fileSystem = new();
-        var noteTextSource = new DataSources.Text.NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
+        var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
         var note = noteTextSource.Create(new Model.Note()
         {
@@ -178,7 +179,7 @@ public class NoteTextSourceTests
     public void DeleteNote()
     {
         MockFileSystem fileSystem = new();
-        var noteTextSource = new DataSources.Text.NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
+        var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
         var note = noteTextSource.Create(new Model.Note()
         {
@@ -202,7 +203,7 @@ public class NoteTextSourceTests
     public void FindAllNotes()
     {
         MockFileSystem fileSystem = new();
-        var noteTextSource = new DataSources.Text.NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
+        var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
         noteTextSource.Create(new Model.Note()
         {
@@ -224,7 +225,7 @@ public class NoteTextSourceTests
     public void FindNoteByRevisionId()
     {
         MockFileSystem fileSystem = new();
-        var noteTextSource = new DataSources.Text.NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
+        var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
         var note = noteTextSource.Create(new Model.Note()
         {
@@ -241,7 +242,7 @@ public class NoteTextSourceTests
     public void GetLastWriteTime()
     {
         MockFileSystem fileSystem = new();
-        var noteTextSource = new DataSources.Text.NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
+        var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
         fileSystem.AddFile("D:\\Temp\\dummy.txt", new MockFileData(@"2023-10-01T12:00:00
 This is a test note
@@ -256,7 +257,7 @@ This is a test note
     public void TestPurgeRevision()
     {
         MockFileSystem fileSystem = new();
-        var noteTextSource = new DataSources.Text.NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
+        var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
         var note = noteTextSource.Create(new Model.Note()
         {

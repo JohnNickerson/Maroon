@@ -33,5 +33,25 @@ namespace AssimilationSoftware.Maroon.Model
         /// The destination account to which the transfer was sent.
         /// </summary>
         public string ToAccount { get; set; }
+
+        internal AccountTransfer With(bool? IsDeleted, Guid? PrevRevision, Guid? RevisionGuid, Guid? MergeRevision)
+        {
+            return new AccountTransfer
+            {
+                ID = this.ID,
+                Date = this.Date,
+                Category = this.Category,
+                Amount = this.Amount,
+                Description = this.Description,
+                FromAccount = this.FromAccount,
+                ToAccount = this.ToAccount,
+                IsDeleted = IsDeleted ?? this.IsDeleted,
+                PrevRevision = PrevRevision ?? this.PrevRevision,
+                RevisionGuid = RevisionGuid ?? this.RevisionGuid,
+                LastModified = DateTime.Now,
+                MergeRevision = MergeRevision ?? this.MergeRevision,
+                ImportHash = this.ImportHash
+            };
+        }
     }
 }
