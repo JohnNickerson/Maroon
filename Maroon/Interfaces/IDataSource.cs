@@ -35,7 +35,7 @@ public interface IDataSource<T> where T : ModelObject
     /// Remove a revision from the data source. This should only be used in the "compress" operation.
     /// </summary>
     /// <param name="id"></param>
-    void Purge(Guid id);
+    void Purge(params Guid[] ids);
 
     /// <summary>
     /// Get the last known write time for the source.

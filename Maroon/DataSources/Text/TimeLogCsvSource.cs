@@ -119,13 +119,16 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         return item;
     }
 
-    public void Purge(Guid id)
+    public void Purge(params Guid[] ids)
     {
         if (_reindex)
         {
             FindAll().ToList(); // Ensure index is populated
         }
-        _index.Remove(id);
+        foreach (var id in ids)
+        {
+            _index.Remove(id);
+        }
         if (!_index.Any())
         {
             _fileSystem.File.Delete(_fileName);

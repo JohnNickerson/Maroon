@@ -140,13 +140,16 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         return deletedItem;
     }
 
-    public void Purge(Guid id)
+    public void Purge(params Guid[] ids)
     {
         if (_reindex)
         {
             FindAll().ToList(); // Ensure index is populated
         }
-        _index.Remove(id);
+        foreach (var guid in ids)
+        {
+            _index.Remove(guid);
+        }
         if (!_index.Any())
         {
             _fileSystem.File.Delete(_fileName);

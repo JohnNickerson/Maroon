@@ -303,14 +303,17 @@ public class ActionItemTextSource : IDataSource<ActionItem>
         return _lastWriteTime;
     }
 
-    public void Purge(Guid id)
+    public void Purge(params Guid[] ids)
     {
         // Remove the note from the index and re-write the file without it.
         if (_reindex)
         {
             FindAll().ToArray();
         }
-        _index.Remove(id);
+        foreach (var id in ids)
+        {
+            _index.Remove(id);
+        }
         if (!_index.Any())
         {
             _fileSystem.File.Delete(_fileName);

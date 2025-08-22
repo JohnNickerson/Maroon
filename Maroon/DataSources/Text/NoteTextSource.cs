@@ -55,7 +55,7 @@ public class NoteTextSource : IDataSource<Note>
     public Note Create(Note item)
     {
         item.PrevRevision = null;
-        item.RevisionGuid ??= new Guid();
+        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
         item.MergeRevision = null;
         item.IsDeleted = false;
@@ -68,7 +68,7 @@ public class NoteTextSource : IDataSource<Note>
     public Note Update(Note item)
     {
         item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid ??= new Guid();
+        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
         // Merge revision ID is not set, in case this is a merge.
         item.IsDeleted = false;
@@ -81,7 +81,7 @@ public class NoteTextSource : IDataSource<Note>
     public Note Delete(Note item)
     {
         item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid ??= new Guid();
+        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
         item.MergeRevision = null;
         item.IsDeleted = true;
@@ -253,14 +253,17 @@ public class NoteTextSource : IDataSource<Note>
         return _lastWriteTime;
     }
 
-    public void Purge(Guid id)
+    public void Purge(params Guid[] ids)
     {
         // Remove the note from the index and re-write the file without it.
         if (_reindex)
         {
             FindAll().ToArray();
         }
-        _index.Remove(id);
+        foreach (var id in ids)
+        {
+            _index.Remove(id);
+        }
         if (!_index.Any())
         {
             _fileSystem.File.Delete(_fileName);
