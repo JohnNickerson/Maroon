@@ -158,7 +158,7 @@ public class ActionItemTextSourceTests
         };
         _textSource.Create(actionItem);
         // Act
-        var foundItem = _textSource.FindRevision(actionItem.RevisionGuid.Value);
+        var foundItem = _textSource.FindRevision(actionItem.RevisionGuid);
         // Assert
         Assert.NotNull(foundItem);
         Assert.Equal(actionItem.ID, foundItem.ID);
@@ -215,9 +215,9 @@ public class ActionItemTextSourceTests
         };
         _textSource.Create(actionItem);
         // Act
-        _textSource.Purge(actionItem.RevisionGuid.Value);
+        _textSource.Purge(actionItem.RevisionGuid);
         // Assert
-        var foundItem = _textSource.FindRevision(actionItem.RevisionGuid.Value);
+        var foundItem = _textSource.FindRevision(actionItem.RevisionGuid);
         Assert.Null(foundItem);
         Assert.False(_fileSystem.File.Exists(TestFileName));
     }

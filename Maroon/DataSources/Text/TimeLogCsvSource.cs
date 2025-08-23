@@ -32,7 +32,7 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         item.LastModified = DateTime.Now;
         var csvLine = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
@@ -71,9 +71,9 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
                 IsDeleted = bool.Parse(parts[7]),
                 ID = Guid.Parse(parts[8]),
                 RevisionGuid = Guid.Parse(parts[9]),
-                PrevRevision = String.IsNullOrEmpty( parts[10]) ? null : Guid.Parse(parts[10])
+                PrevRevision = String.IsNullOrEmpty(parts[10]) ? null : Guid.Parse(parts[10])
             };
-            _index[entry.RevisionGuid.Value] = entry;
+            _index[entry.RevisionGuid] = entry;
             if (_lastWriteTime < entry.LastModified)
             {
                 _lastWriteTime = entry.LastModified;
@@ -103,7 +103,7 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         );
         var csvLine = Stringify(updatedLog);
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[updatedLog.RevisionGuid.Value] = updatedLog;
+        _index[updatedLog.RevisionGuid] = updatedLog;
         return updatedLog;
     }
 
@@ -115,7 +115,7 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         item.RevisionGuid = Guid.NewGuid();
         var csvLine = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 

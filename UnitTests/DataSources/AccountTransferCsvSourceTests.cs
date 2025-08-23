@@ -166,7 +166,7 @@ public class AccountTransferCsvSourceTests
             ImportHash = "hash123"
         });
 
-        var foundTransfer = _source.FindRevision(transfer.RevisionGuid.Value);
+        var foundTransfer = _source.FindRevision(transfer.RevisionGuid);
         Assert.NotNull(foundTransfer);
         Assert.Equal(transfer.ID, foundTransfer.ID);
     }
@@ -225,10 +225,10 @@ public class AccountTransferCsvSourceTests
         });
 
         // Purge the transfer
-        _source.Purge(transfer.RevisionGuid.Value);
+        _source.Purge(transfer.RevisionGuid);
 
         // Verify that the transfer is no longer found
-        var foundTransfer = _source.FindRevision(transfer.RevisionGuid.Value);
+        var foundTransfer = _source.FindRevision(transfer.RevisionGuid);
         Assert.Null(foundTransfer);
         Assert.False(_fileSystem.FileExists("D:\\Temp\\test.csv"));
     }
@@ -260,10 +260,10 @@ public class AccountTransferCsvSourceTests
         });
 
         // Purge the first transfer
-        _source.Purge(transfer1.RevisionGuid.Value);
+        _source.Purge(transfer1.RevisionGuid);
 
         // Verify that the second transfer is still found
-        var foundTransfer2 = _source.FindRevision(transfer2.RevisionGuid.Value);
+        var foundTransfer2 = _source.FindRevision(transfer2.RevisionGuid);
         Assert.NotNull(foundTransfer2);
         Assert.Equal(transfer2.ID, foundTransfer2.ID);
         Assert.True(_fileSystem.FileExists("D:\\Temp\\test.csv"));
@@ -279,4 +279,3 @@ public class AccountTransferCsvSourceTests
     }
 }
 
-    

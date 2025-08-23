@@ -61,7 +61,7 @@ public class NoteTextSource : IDataSource<Note>
         item.IsDeleted = false;
         var noteString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, noteString);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
@@ -74,7 +74,7 @@ public class NoteTextSource : IDataSource<Note>
         item.IsDeleted = false;
         var noteString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, noteString);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
@@ -87,7 +87,7 @@ public class NoteTextSource : IDataSource<Note>
         item.IsDeleted = true;
         var noteString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, noteString);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
@@ -114,7 +114,7 @@ public class NoteTextSource : IDataSource<Note>
                     {
                         if (current != null)
                         {
-                            _index[current.RevisionGuid.Value] = current;
+                            _index[current.RevisionGuid] = current;
                             yield return current;
                             current = null;
                         }
@@ -134,7 +134,7 @@ public class NoteTextSource : IDataSource<Note>
                             }
                             if (rev.HasValue)
                             {
-                                current.RevisionGuid = rev;
+                                current.RevisionGuid = rev.Value;
                             }
                             if (prev.HasValue)
                             {
@@ -179,7 +179,7 @@ public class NoteTextSource : IDataSource<Note>
             }
             if (current != null)
             {
-                _index[current.RevisionGuid.Value] = current;
+                _index[current.RevisionGuid] = current;
                 yield return current;
             }
         }

@@ -38,7 +38,7 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         var csvLine = Stringify(item);
         EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
@@ -60,7 +60,7 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         var csvLine = Stringify(item);
         EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
@@ -104,7 +104,7 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
                 MergeRevision = Guid.TryParse(parts[11], out var mergeRev) ? mergeRev : (Guid?)null,
                 ImportHash = parts[12]
             };
-            _index[transfer.RevisionGuid.Value] = transfer;
+            _index[transfer.RevisionGuid] = transfer;
             if (_lastWriteTime < transfer.LastModified)
             {
                 _lastWriteTime = transfer.LastModified;
@@ -128,15 +128,15 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
     {
         var deletedItem = item.With
         (
-            IsDeleted : true,
-            PrevRevision : item.RevisionGuid,
-            RevisionGuid : Guid.NewGuid(),
-            MergeRevision : null
+            IsDeleted: true,
+            PrevRevision: item.RevisionGuid,
+            RevisionGuid: Guid.NewGuid(),
+            MergeRevision: null
         );
         var csvLine = Stringify(deletedItem);
         EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[deletedItem.RevisionGuid.Value] = item;
+        _index[deletedItem.RevisionGuid] = item;
         return deletedItem;
     }
 

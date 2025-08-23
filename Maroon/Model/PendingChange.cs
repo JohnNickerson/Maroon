@@ -15,12 +15,12 @@ namespace AssimilationSoftware.Maroon.Model
         public PendingChange(T item) : this()
         {
             OriginalVersion = item;
-            Updates[item.RevisionGuid.Value] = item;
+            Updates[item.RevisionGuid] = item;
         }
 
         public void AddRevision(T item)
         {
-            Updates[item.RevisionGuid.Value] = item;
+            Updates[item.RevisionGuid] = item;
             Validate();
         }
 

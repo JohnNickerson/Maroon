@@ -86,26 +86,26 @@ public class ActionItemTextSource : IDataSource<ActionItem>
     public ActionItem Create(ActionItem item)
     {
         item.PrevRevision = null;
-        item.RevisionGuid ??= new Guid();
+        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
         item.MergeRevision = null;
         item.IsDeleted = false;
         var itemString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, itemString);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
     public ActionItem Delete(ActionItem item)
     {
         item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = new Guid();
+        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
         item.MergeRevision = null;
         item.IsDeleted = true;
         var itemString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, itemString);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 
@@ -155,7 +155,7 @@ public class ActionItemTextSource : IDataSource<ActionItem>
                             if (current != null)
                             {
                                 current.RevisionGuid = Guid.Parse(parts[1]);
-                                _index[current.RevisionGuid.Value] = current;
+                                _index[current.RevisionGuid] = current;
                             }
                             break;
                         case "prev-revision":
@@ -331,12 +331,12 @@ public class ActionItemTextSource : IDataSource<ActionItem>
     public ActionItem Update(ActionItem item)
     {
         item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = new Guid();
+        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
         item.IsDeleted = false;
         var itemString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, itemString);
-        _index[item.RevisionGuid.Value] = item;
+        _index[item.RevisionGuid] = item;
         return item;
     }
 }

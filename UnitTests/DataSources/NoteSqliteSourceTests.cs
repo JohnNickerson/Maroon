@@ -90,7 +90,7 @@ public class NoteSqliteSourceTests
         var deletedNote = _source.Delete(note);
         Assert.NotNull(deletedNote);
         Assert.True(deletedNote.IsDeleted);
-        var foundNote = _source.FindRevision(deletedNote.RevisionGuid!.Value);
+        var foundNote = _source.FindRevision(deletedNote.RevisionGuid);
         Assert.NotNull(foundNote);
         Assert.Equal(deletedNote.Text, foundNote.Text);
         Assert.Equal(deletedNote.Tags, foundNote.Tags);
@@ -151,7 +151,7 @@ public class NoteSqliteSourceTests
 
         _source.Create(note);
 
-        var foundNote = _source.FindRevision(note.RevisionGuid.Value);
+        var foundNote = _source.FindRevision(note.RevisionGuid);
         Assert.NotNull(foundNote);
         Assert.Equal(note.Text, foundNote.Text);
         Assert.Equal(note.Tags, foundNote.Tags);
@@ -194,9 +194,9 @@ public class NoteSqliteSourceTests
         };
 
         note = _source.Create(note);
-        _source.Purge(note.RevisionGuid.Value);
+        _source.Purge(note.RevisionGuid);
 
-        var foundNote = _source.FindRevision(note.RevisionGuid.Value);
+        var foundNote = _source.FindRevision(note.RevisionGuid);
         Assert.Null(foundNote); // The note should be purged and not found
     }
 
@@ -232,10 +232,10 @@ public class NoteSqliteSourceTests
         note1 = _source.Create(note1);
         note2 = _source.Create(note2);
 
-        _source.Purge(note1.RevisionGuid.Value, note2.RevisionGuid.Value);
+        _source.Purge(note1.RevisionGuid, note2.RevisionGuid);
 
-        var foundNote1 = _source.FindRevision(note1.RevisionGuid.Value);
-        var foundNote2 = _source.FindRevision(note2.RevisionGuid.Value);
+        var foundNote1 = _source.FindRevision(note1.RevisionGuid);
+        var foundNote2 = _source.FindRevision(note2.RevisionGuid);
         Assert.Null(foundNote1); // The note should be purged and not found
         Assert.Null(foundNote2); // The note should be purged and not found
     }

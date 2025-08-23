@@ -191,11 +191,11 @@ namespace AssimilationSoftware.Maroon.Repositories
             var seenRevs = new HashSet<Guid>();
             foreach (var i in _items)
             {
-                knownRevs.Add(i.RevisionGuid.Value);
+                knownRevs.Add(i.RevisionGuid);
             }
             foreach (var u in _allUpdates)
             {
-                knownRevs.Add(u.RevisionGuid.Value);
+                knownRevs.Add(u.RevisionGuid);
             }
 
             // Get the list of IDs to check.

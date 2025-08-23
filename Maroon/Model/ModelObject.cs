@@ -42,7 +42,7 @@ namespace AssimilationSoftware.Maroon.Model
         /// <summary>
         /// A unique ID assigned just to this revision of this object.
         /// </summary>
-        public Guid? RevisionGuid { get; set; }
+        public Guid RevisionGuid { get; set; }
 
         /// <summary>
         /// A previous revision ID that has been merged with this one to resolve a conflicting edit.

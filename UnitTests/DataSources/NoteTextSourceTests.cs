@@ -232,7 +232,7 @@ public class NoteTextSourceTests
             Text = "This is a test note",
             Tags = new List<string> { "test", "note" },
         });
-        var foundNote = noteTextSource.FindRevision(note.RevisionGuid.Value);
+        var foundNote = noteTextSource.FindRevision(note.RevisionGuid);
         Assert.NotNull(foundNote);
         Assert.Equal(note.ID, foundNote.ID);
         Assert.Equal(note.Text, foundNote.Text);
@@ -264,7 +264,7 @@ This is a test note
             Text = "This is a test note",
             Tags = new List<string> { "test", "note" },
         });
-        var revisionId = note.RevisionGuid.Value;
+        var revisionId = note.RevisionGuid;
         noteTextSource.Purge(revisionId);
         var foundNote = noteTextSource.FindRevision(revisionId);
         Assert.Null(foundNote);

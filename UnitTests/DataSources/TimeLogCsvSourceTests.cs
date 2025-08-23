@@ -128,7 +128,7 @@ public class TimeLogCsvSourceTests
             Project = "Test Project",
             Note = "Test Log",
         });
-        var foundEntry = _source.FindRevision(timeLog.RevisionGuid.Value);
+        var foundEntry = _source.FindRevision(timeLog.RevisionGuid);
         Assert.NotNull(foundEntry);
         Assert.Equal(timeLog.RevisionGuid, foundEntry.RevisionGuid);
         Assert.Equal(timeLog.ID, foundEntry.ID);
@@ -172,8 +172,8 @@ public class TimeLogCsvSourceTests
             Project = "Test Project",
             Note = "Test Log",
         });
-        _source.Purge(timeLog.RevisionGuid.Value);
-        var foundEntry = _source.FindRevision(timeLog.RevisionGuid.Value);
+        _source.Purge(timeLog.RevisionGuid);
+        var foundEntry = _source.FindRevision(timeLog.RevisionGuid);
         Assert.Null(foundEntry);
         Assert.False(_fileSystem.FileExists("D:\\Temp\\timelog.csv"));
     }
@@ -194,7 +194,7 @@ public class TimeLogCsvSourceTests
         timeLog1.Project = "Updated Project A";
         var timeLog2 = _source.Update(timeLog1);
 
-        _source.Purge(timeLog1.RevisionGuid.Value);
+        _source.Purge(timeLog1.RevisionGuid);
         var allEntries = _source.FindAll().ToList();
         Assert.Single(allEntries);
         Assert.Contains(allEntries, e => e.ID == timeLog2.ID);

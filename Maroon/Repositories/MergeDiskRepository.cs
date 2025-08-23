@@ -107,18 +107,18 @@ namespace AssimilationSoftware.Maroon.Repositories
             entity.UpdateRevision(true);
             if (_items == null) LoadAll();
             _items[entity.ID] = entity;
-            _unsavedUpdates.Add(entity.RevisionGuid.Value, entity);
+            _unsavedUpdates.Add(entity.RevisionGuid, entity);
             AddPendingChange(entity);
         }
 
         public void Delete(T entity)
         {
             if (entity == null) return;
-            var gone = (T) entity.Clone();
+            var gone = (T)entity.Clone();
             gone.IsDeleted = true;
             gone.UpdateRevision();
             if (_items == null) LoadAll();
-            _unsavedUpdates.Add(gone.RevisionGuid.Value, gone);
+            _unsavedUpdates.Add(gone.RevisionGuid, gone);
             AddPendingChange(gone);
         }
 
@@ -147,7 +147,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 updated.UpdateRevision(isNew);
                 if (_items == null) LoadAll();
                 AddPendingChange(updated);
-                _unsavedUpdates.Add(updated.RevisionGuid.Value, updated);
+                _unsavedUpdates.Add(updated.RevisionGuid, updated);
             }
             else
             {
@@ -164,7 +164,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 {
                     foreach (var u in _unsavedUpdates)
                     {
-                        _mapper.Write(new [] {u.Value}, $"update-{u.Value.RevisionGuid}.txt");
+                        _mapper.Write(new[] { u.Value }, $"update-{u.Value.RevisionGuid}.txt");
                     }
                     _unsavedUpdates.Clear();
                 }
@@ -226,7 +226,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             item.PrevRevision = Find(item.ID).RevisionGuid;
             if (_items == null) LoadAll();
             _items[item.ID] = item;
-            _unsavedUpdates.Add(item.RevisionGuid.Value, item);
+            _unsavedUpdates.Add(item.RevisionGuid, item);
             AddPendingChange(item);
         }
 
