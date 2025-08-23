@@ -220,16 +220,10 @@ namespace AssimilationSoftware.Maroon.DataSources.SQLite
         {
             using var conn = _connectionFactory.GetConnection();
             using var cmd = conn.CreateCommand();
-            // TODO: Improve this to use a single command with IN clause for better performance.
-            // var revisionGuids = "[" + string.Join(",", ids.Select(id => $"'{id}'")) + "]";
-            // DELETE FROM Notes WHERE RevisionGuid IN (SELECT value FROM json_each(@revisionGuids));
-            cmd.CommandText = @"DELETE FROM Notes WHERE RevisionGuid = @revisionGuid;";
-            foreach (var id in ids)
-            {
-                cmd.Parameters.Clear();
-                cmd.Parameters.AddWithValue("@revisionGuid", id.ToString());
-                cmd.ExecuteNonQuery();
-            }
+            var revisionGuids = "[" + string.Join(",", ids.Select(id => $"'{id}'")) + "]";
+            cmd.CommandText = @"DELETE FROM Notes WHERE RevisionGuid IN (SELECT value FROM json_each(@revisionGuids));";
+            cmd.Parameters.AddWithValue("@revisionGuids", revisionGuids);
+            cmd.ExecuteNonQuery();
         }
 
         public DateTime GetLastWriteTime()

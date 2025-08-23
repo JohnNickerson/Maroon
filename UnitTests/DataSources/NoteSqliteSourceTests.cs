@@ -199,4 +199,44 @@ public class NoteSqliteSourceTests
         var foundNote = _source.FindRevision(note.RevisionGuid.Value);
         Assert.Null(foundNote); // The note should be purged and not found
     }
+
+    [Fact]
+    public void PurgeMultipleRevisions()
+    {
+        var note1 = new Note
+        {
+            ID = Guid.NewGuid(),
+            Text = "Purge Note 1",
+            Tags = new List<string> { "purge", "note1" },
+            Timestamp = DateTime.UtcNow,
+            ParentId = null,
+            RevisionGuid = Guid.NewGuid(),
+            LastModified = DateTime.UtcNow,
+            IsDeleted = false,
+            ImportHash = null
+        };
+
+        var note2 = new Note
+        {
+            ID = Guid.NewGuid(),
+            Text = "Purge Note 2",
+            Tags = new List<string> { "purge", "note2" },
+            Timestamp = DateTime.UtcNow,
+            ParentId = null,
+            RevisionGuid = Guid.NewGuid(),
+            LastModified = DateTime.UtcNow,
+            IsDeleted = false,
+            ImportHash = null
+        };
+
+        note1 = _source.Create(note1);
+        note2 = _source.Create(note2);
+
+        _source.Purge(note1.RevisionGuid.Value, note2.RevisionGuid.Value);
+
+        var foundNote1 = _source.FindRevision(note1.RevisionGuid.Value);
+        var foundNote2 = _source.FindRevision(note2.RevisionGuid.Value);
+        Assert.Null(foundNote1); // The note should be purged and not found
+        Assert.Null(foundNote2); // The note should be purged and not found
+    }
 }
