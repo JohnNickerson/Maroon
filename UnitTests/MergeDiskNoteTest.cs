@@ -14,38 +14,6 @@ namespace UnitTests
     
     public class MergeDiskNoteTest
     {
-        //[Fact]
-        public void Create_File_From_Scratch()
-        {
-            var mockFileSystem = new MockFileSystem();
-            mockFileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
-            var fileName = "LogFile.txt";
-            var repo = new MergeDiskRepository<Note>(new NoteDiskMapper(mockFileSystem), fileName);
-
-            repo.Create(new Note
-            {
-                ID = Guid.NewGuid(),
-                Timestamp = DateTime.Now,
-                RevisionGuid = Guid.NewGuid(),
-                LastModified = DateTime.Now,
-                Text = "This is a test entry",
-                ParentId = null,
-                Tags = new List<string> { "test" }
-            });
-            repo.SaveChanges();
-
-            Assert.Single(repo.Items);
-
-            var repo2 = new MergeDiskRepository<Note>(new NoteDiskMapper(mockFileSystem), fileName);
-            repo2.FindAll();
-
-            Assert.Single(repo2.Items);
-
-            repo.CommitChanges();
-
-            Assert.Single(repo2.Items);
-        }
-
         [Fact]
         public void Revert_Conflict()
         {

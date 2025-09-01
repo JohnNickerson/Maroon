@@ -8,7 +8,7 @@ using AssimilationSoftware.Maroon.Mappers.Csv;
 
 namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
-    public class MockDiskMapper : CsvDiskMapper<MockObj>
+    public class MockDiskMapper : CsvDiskMapper<MockObj>, IDataSource<MockObj>
     {
         private readonly Dictionary<string, List<MockObj>> _items = new Dictionary<string, List<MockObj>>();
 
@@ -36,6 +36,41 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public override string ToCsv(MockObj obj)
         {
             return $"{obj.ID},{obj.RevisionGuid},{obj.PrevRevision},{obj.LastModified}";
+        }
+
+        public IEnumerable<MockObj> FindAll()
+        {
+    return _items.Values.SelectMany(x => x);
+        }
+
+        public MockObj? FindRevision(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public MockObj Create(MockObj item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public MockObj Update(MockObj item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public MockObj Delete(MockObj item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Purge(params Guid[] ids)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DateTime GetLastWriteTime()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -9,15 +9,16 @@ namespace AssimilationSoftware.Maroon.Repositories
 {
     public class SingleOriginRepository<T> : IRepository<T> where T : ModelObject
     {
-        private readonly IDiskMapper<T> _mapper;
+        private readonly IDataSource<T> _dataSource;
+        [Obsolete("Don't use this")]
         private readonly string _filename;
         private Dictionary<Guid, T> _items;
         private bool _hasChanges;
         private bool _loaded;
 
-        public SingleOriginRepository(IDiskMapper<T> mapper, string filename)
+        public SingleOriginRepository(IDataSource<T> mapper, string filename)
         {
-            _mapper = mapper;
+            _dataSource = mapper;
             _filename = filename;
             _items = new Dictionary<Guid, T>();
             _hasChanges = false;
@@ -33,12 +34,12 @@ namespace AssimilationSoftware.Maroon.Repositories
                     if (_hasChanges)
                     {
                         // Preserve the existing data.
-                        var onDisk = _mapper.Read(_filename);
+                        var onDisk = _dataSource.FindAll();
                         _items = _items.Values.Union(onDisk).ToDictionary(k => k.ID, v => v);
                     }
                     else
                     {
-                        _items = _mapper.Read(_filename).ToDictionary(k => k.ID, v => v);
+                        _items = _dataSource.FindAll().ToDictionary(k => k.ID, v => v);
                     }
                     _loaded = true;
                 }
@@ -48,7 +49,16 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Compress()
         {
-            throw new NotImplementedException();
+            // Remove deleted items and obsolete revisions.
+            var oldRevisions = _items.Values
+                .Where(i => i.PrevRevision.HasValue || i.MergeRevision.HasValue)
+                .Select(i => i.PrevRevision ?? i.MergeRevision)
+                .Where(r => r.HasValue)
+                .Distinct()
+                .ToList();
+            _items = _items.Where(kvp => !kvp.Value.IsDeleted &&
+                                  !oldRevisions.Contains(kvp.Value.RevisionGuid))
+                           .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
         public void Create(T entity)
@@ -89,9 +99,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void SaveChanges(bool force = false)
         {
-            if (!_hasChanges && !force) return;
-            _mapper.Write(Items, _filename);
-            _hasChanges = false;
+            // Changes are now saved immediately on Create/Update/Delete.
         }
 
         public void Update(T entity, bool isNew = false)

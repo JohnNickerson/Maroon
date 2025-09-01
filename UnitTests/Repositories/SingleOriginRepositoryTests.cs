@@ -11,11 +11,13 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
     public class SingleOriginRepositoryTests
     {
+        private IDataSource<MockObj> mockMapper = new MockDiskMapper();
+
+
         [Fact]
         public void SingleOriginRepositoryTest()
         {
             var mockFile = nameof(SingleOriginRepositoryTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
         }
 
@@ -23,7 +25,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void CreateTest()
         {
             var mockFile = nameof(CreateTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             mdr.Create(new MockObj());
         }
@@ -32,7 +33,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void DeleteTest()
         {
             var mockFile = nameof(DeleteTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             var entity = new MockObj();
             mdr.Create(entity);
@@ -47,7 +47,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void SaveDeleteTest()
         {
             var mockFile = nameof(DeleteTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             var entity = new MockObj();
             mdr.Create(entity);
@@ -64,7 +63,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void FindTest()
         {
             var mockFile = nameof(FindTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             var entity = new MockObj();
             mdr.Create(entity);
@@ -76,7 +74,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void FindAllTest()
         {
             var mockFile = nameof(FindAllTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             var entity = new MockObj();
             var entity2 = new MockObj();
@@ -91,7 +88,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void SaveChangesTest()
         {
             var mockFile = nameof(SaveChangesTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             var entity = new MockObj();
             mdr.Create(entity);
@@ -110,7 +106,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void UpdateTest()
         {
             var mockFile = nameof(UpdateTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             var entity = new MockObj();
             mdr.Create(entity);
@@ -127,7 +122,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void UpdateBulkTest()
         {
             var mockFile = nameof(UpdateTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
+            IDataSource<MockObj> mockMapper = new MockDiskMapper();
             var mdr = new SingleOriginRepository<MockObj>(mockMapper, mockFile);
             for (var x = 0; x < 1000000; x++)
             {

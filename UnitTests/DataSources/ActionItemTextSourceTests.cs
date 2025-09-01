@@ -10,7 +10,7 @@ public class ActionItemTextSourceTests
     private MockFileSystem _fileSystem;
     private ActionItemTextSource _textSource;
 
-    public void Setup()
+    private void Setup()
     {
         _fileSystem = new MockFileSystem();
         TestFileName = _fileSystem.Path.Combine(".", "testfile.txt");//"D:\\Temp\\testfile.txt";

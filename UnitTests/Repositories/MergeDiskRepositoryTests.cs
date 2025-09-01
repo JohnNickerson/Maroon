@@ -105,27 +105,6 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             Assert.Single(mdr.GetPendingChanges());
         }
 
-        //[Fact]
-        public void CommitChangesTest()
-        {
-            var mockFile = nameof(CommitChangesTest);
-            IDiskMapper<MockObj> mockMapper = new MockDiskMapper();
-            var mdr = new MergeDiskRepository<MockObj>(mockMapper, mockFile);
-            var entity = new MockObj();
-            mdr.Create(entity);
-            var found = mdr.Find(entity.ID);
-            Assert.NotNull(found);
-            found.ImportHash = "changed";
-            mdr.Update(found);
-            mdr.SaveChanges();
-            mdr.CommitChanges();
-
-            var updated = mdr.Find(entity.ID);
-            Assert.NotNull(updated);
-            Assert.Equal("changed", updated.ImportHash);
-            Assert.Empty(mdr.GetPendingChanges());
-        }
-
         [Fact]
         public void FindConflictsTest()
         {
