@@ -128,24 +128,26 @@ namespace AssimilationSoftware.Maroon.DataSources.SQLite
 
         public Note Update(Note item)
         {
-            item.PrevRevision = item.RevisionGuid;
-            item.RevisionGuid = Guid.NewGuid();
-            item.LastModified = DateTime.Now;
+            var result = (Note)item.Clone();
+            result.PrevRevision = item.RevisionGuid;
+            result.RevisionGuid = Guid.NewGuid();
+            result.LastModified = DateTime.Now;
             // Merge revision ID is not set, in case this is a merge.
-            item.IsDeleted = false;
-            SaveAsync(item).Wait();
-            return item;
+            result.IsDeleted = false;
+            SaveAsync(result).Wait();
+            return result;
         }
 
         public Note Delete(Note item)
         {
-            item.PrevRevision = item.RevisionGuid;
-            item.RevisionGuid = Guid.NewGuid();
-            item.LastModified = DateTime.Now;
-            item.MergeRevision = null;
-            item.IsDeleted = true;
-            SaveAsync(item).Wait();
-            return item;
+            var result = (Note)item.Clone();
+            result.PrevRevision = item.RevisionGuid;
+            result.RevisionGuid = Guid.NewGuid();
+            result.LastModified = DateTime.Now;
+            result.MergeRevision = null;
+            result.IsDeleted = true;
+            SaveAsync(result).Wait();
+            return result;
         }
 
         public void Purge(params Guid[] ids)
@@ -163,10 +165,10 @@ namespace AssimilationSoftware.Maroon.DataSources.SQLite
             using var conn = _connectionFactory.GetConnection();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT MAX(LastModified) FROM Notes;";
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            var result = cmd.ExecuteScalar();
+            if (result != null && result != DBNull.Value)
             {
-                return DateTime.Parse(reader.GetString(0));
+                return DateTime.Parse((string)result);
             }
             return DateTime.MinValue; // or throw an exception if no notes exist
         }

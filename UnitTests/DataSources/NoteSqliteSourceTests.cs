@@ -68,6 +68,8 @@ public class NoteSqliteSourceTests
         Assert.NotNull(updatedNote);
         Assert.Equal("Updated Note", updatedNote.Text);
         Assert.Contains("updated", updatedNote.Tags);
+        Assert.NotEqual(note.RevisionGuid, updatedNote.RevisionGuid); // New revision GUID
+        Assert.Equal(note.ID, updatedNote.ID);
     }
 
     [Fact]
