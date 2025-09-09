@@ -29,7 +29,7 @@ public class AccountTransferSqliteTests
             ImportHash = "hash123"
         };
 
-        var createdTransfer = _source.Create(transfer);
+        var createdTransfer = _source.Insert(transfer);
         Assert.NotNull(createdTransfer);
         Assert.Equal(transfer.FromAccount, createdTransfer.FromAccount);
         Assert.Equal(transfer.ToAccount, createdTransfer.ToAccount);
@@ -60,20 +60,20 @@ public class AccountTransferSqliteTests
             Amount = 50.00m,
             ImportHash = "hash123"
         };
-        var createdTransfer = _source.Create(transfer);
+        var createdTransfer = _source.Insert(transfer);
         var firstRevisionGuid = createdTransfer.RevisionGuid;
 
         // Update some fields
         createdTransfer.Amount = 75.00m;
         createdTransfer.Description = "Updated Transfer";
-        var updatedTransfer = _source.Update(createdTransfer); // Create new revision
-        Assert.Equal(firstRevisionGuid, createdTransfer.RevisionGuid); // Original object unchanged
+        createdTransfer.UpdateRevision();
+        var updatedTransfer = _source.Insert(createdTransfer); // Create new revision
         Assert.NotNull(updatedTransfer);
+        Assert.Equal(firstRevisionGuid, updatedTransfer.PrevRevision);
         Assert.Equal(75.00m, updatedTransfer.Amount);
         Assert.Equal("Updated Transfer", updatedTransfer.Description);
         Assert.Equal(createdTransfer.ID, updatedTransfer.ID);
-        Assert.NotEqual(createdTransfer.RevisionGuid, updatedTransfer.RevisionGuid);
-        Assert.Equal(createdTransfer.RevisionGuid, updatedTransfer.PrevRevision);
+        Assert.NotEqual(firstRevisionGuid, updatedTransfer.RevisionGuid);
     }
 
     [Fact]
@@ -89,15 +89,17 @@ public class AccountTransferSqliteTests
             Amount = 30.00m,
             ImportHash = "hash123"
         };
-        var createdTransfer = _source.Create(transfer);
+        var createdTransfer = _source.Insert(transfer);
         var firstRevisionGuid = createdTransfer.RevisionGuid;
-        var deletedTransfer = _source.Delete(createdTransfer);
+        createdTransfer.IsDeleted = true;
+        createdTransfer.UpdateRevision();
+        var deletedTransfer = _source.Insert(createdTransfer);
 
         Assert.NotNull(deletedTransfer);
         Assert.True(deletedTransfer.IsDeleted);
         Assert.Equal(createdTransfer.ID, deletedTransfer.ID);
-        Assert.NotEqual(createdTransfer.RevisionGuid, deletedTransfer.RevisionGuid);
-        Assert.Equal(createdTransfer.RevisionGuid, deletedTransfer.PrevRevision);
+        Assert.NotEqual(firstRevisionGuid, deletedTransfer.RevisionGuid);
+        Assert.Equal(firstRevisionGuid, deletedTransfer.PrevRevision);
     }
 
     [Fact]
@@ -120,7 +122,7 @@ public class AccountTransferSqliteTests
             Amount = 200.00m,
             ImportHash = "hash123"
         };
-        var createdTransfer = _source.Create(transfer);
+        var createdTransfer = _source.Insert(transfer);
         var foundTransfer = _source.FindRevision(createdTransfer.RevisionGuid);
         Assert.NotNull(foundTransfer);
         Assert.Equal(createdTransfer.ID, foundTransfer.ID);
@@ -150,8 +152,8 @@ public class AccountTransferSqliteTests
             Amount = 20.00m,
             ImportHash = "hash456"
         };
-        var createdTransfer1 = _source.Create(transfer1);
-        var createdTransfer2 = _source.Create(transfer2);
+        var createdTransfer1 = _source.Insert(transfer1);
+        var createdTransfer2 = _source.Insert(transfer2);
         _source.Purge(createdTransfer1.RevisionGuid);
         var foundTransfer1 = _source.FindRevision(createdTransfer1.RevisionGuid);
         var foundTransfer2 = _source.FindRevision(createdTransfer2.RevisionGuid);
@@ -172,7 +174,7 @@ public class AccountTransferSqliteTests
             Amount = 150.00m,
             ImportHash = "hash789"
         };
-        var createdTransfer = _source.Create(transfer);
+        var createdTransfer = _source.Insert(transfer);
         var lastWriteTime = _source.GetLastWriteTime();
         Assert.Equal(createdTransfer.LastModified, lastWriteTime);
     }

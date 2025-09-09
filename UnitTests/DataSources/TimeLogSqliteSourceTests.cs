@@ -33,7 +33,7 @@ public class TimeLogSqliteSourceTests
             ImportHash = "importHash123"
         };
 
-        var createdEntry = _source.Create(entry);
+        var createdEntry = _source.Insert(entry);
         Assert.NotNull(createdEntry);
         Assert.Equal(entry.Billable, createdEntry.Billable);
         Assert.Equal(entry.Client, createdEntry.Client);
@@ -63,7 +63,7 @@ public class TimeLogSqliteSourceTests
             ImportHash = "importHash456"
         };
 
-        var createdEntry = _source.Create(entry);
+        var createdEntry = _source.Insert(entry);
         var fetchedEntry = _source.FindRevision(createdEntry.RevisionGuid);
 
         Assert.NotNull(fetchedEntry);
@@ -90,14 +90,17 @@ public class TimeLogSqliteSourceTests
             ImportHash = "importHash789"
         };
 
-        var createdEntry = _source.Create(entry);
-        var deletedEntry = _source.Delete(createdEntry);
+        var createdEntry = _source.Insert(entry);
+        var firstRevisionGuid = createdEntry.RevisionGuid;
+        entry.IsDeleted = true;
+        entry.UpdateRevision();
+        var deletedEntry = _source.Insert(createdEntry);
 
         Assert.NotNull(deletedEntry);
         Assert.True(deletedEntry.IsDeleted);
         Assert.Equal(createdEntry.ID, deletedEntry.ID);
-        Assert.NotEqual(createdEntry.RevisionGuid, deletedEntry.RevisionGuid);
-        Assert.Equal(createdEntry.RevisionGuid, deletedEntry.PrevRevision);
+        Assert.NotEqual(firstRevisionGuid, deletedEntry.RevisionGuid);
+        Assert.Equal(firstRevisionGuid, deletedEntry.PrevRevision);
     }
 
     [Fact]
@@ -119,7 +122,7 @@ public class TimeLogSqliteSourceTests
             ImportHash = "importHash101"
         };
 
-        _source.Create(entry);
+        _source.Insert(entry);
         var lastWriteTime = _source.GetLastWriteTime();
         var afterCreation = DateTime.Now;
 
@@ -157,8 +160,8 @@ public class TimeLogSqliteSourceTests
             RevisionGuid = Guid.NewGuid(),
             ImportHash = "importHash222"
         };
-        _source.Create(entry1);
-        _source.Create(entry2);
+        _source.Insert(entry1);
+        _source.Insert(entry2);
         var allEntries = _source.FindAll().ToList();
         Assert.True(allEntries.Count >= 2);
         Assert.Contains(allEntries, e => e.Note == "Find all test entry 1");
@@ -196,8 +199,8 @@ public class TimeLogSqliteSourceTests
             RevisionGuid = Guid.NewGuid(),
             ImportHash = "importHash444"
         };
-        var createdEntry1 = _source.Create(entry1);
-        var createdEntry2 = _source.Create(entry2);
+        var createdEntry1 = _source.Insert(entry1);
+        var createdEntry2 = _source.Insert(entry2);
         _source.Purge(createdEntry1.RevisionGuid, createdEntry2.RevisionGuid);
         var foundEntry1 = _source.FindRevision(createdEntry1.RevisionGuid);
         var foundEntry2 = _source.FindRevision(createdEntry2.RevisionGuid);
@@ -222,11 +225,13 @@ public class TimeLogSqliteSourceTests
             RevisionGuid = Guid.NewGuid(),
             ImportHash = "importHash555"
         };
-        var createdEntry = _source.Create(entry);
+        var createdEntry = _source.Insert(entry);
+        var firstRevisionGuid = createdEntry.RevisionGuid;
         createdEntry.Note = "Updated note";
-        var updatedEntry = _source.Update(createdEntry);
+        createdEntry.UpdateRevision();
+        var updatedEntry = _source.Insert(createdEntry);
         Assert.NotNull(updatedEntry);
         Assert.Equal(createdEntry.ID, updatedEntry.ID);
-        Assert.NotEqual(createdEntry.RevisionGuid, updatedEntry.RevisionGuid);
+        Assert.NotEqual(firstRevisionGuid, updatedEntry.RevisionGuid);
     }
 }

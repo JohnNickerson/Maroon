@@ -28,13 +28,9 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         return $"{obj.Date:yyyy-MM-dd},{obj.FromAccount},{obj.ToAccount},{obj.Description},{obj.Category},{obj.Amount},{obj.LastModified:O},{obj.ID},{obj.IsDeleted},{obj.RevisionGuid},{obj.PrevRevision},{obj.MergeRevision},{obj.ImportHash}";
     }
 
-    public AccountTransfer Create(AccountTransfer item)
+    public AccountTransfer Insert(AccountTransfer item)
     {
-        item.PrevRevision = null;
-        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = false;
         var csvLine = Stringify(item);
         EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
@@ -48,20 +44,6 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         {
             _fileSystem.File.WriteAllText(_fileName, ColumnHeaders + Environment.NewLine);
         }
-    }
-
-    public AccountTransfer Update(AccountTransfer item)
-    {
-        item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = Guid.NewGuid();
-        item.LastModified = DateTime.Now;
-        // Merge revision ID is not set, in case this is a merge
-        item.IsDeleted = false;
-        var csvLine = Stringify(item);
-        EnsureFileExists();
-        _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[item.RevisionGuid] = item;
-        return item;
     }
 
     public IEnumerable<AccountTransfer> FindAll()
@@ -122,22 +104,6 @@ public class AccountTransferCsvSource : IDataSource<AccountTransfer>
         }
         _index.TryGetValue(id, out var transfer);
         return transfer;
-    }
-
-    public AccountTransfer Delete(AccountTransfer item)
-    {
-        var deletedItem = item.With
-        (
-            IsDeleted: true,
-            PrevRevision: item.RevisionGuid,
-            RevisionGuid: Guid.NewGuid(),
-            MergeRevision: null
-        );
-        var csvLine = Stringify(deletedItem);
-        EnsureFileExists();
-        _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[deletedItem.RevisionGuid] = item;
-        return deletedItem;
     }
 
     public void Purge(params Guid[] ids)

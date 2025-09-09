@@ -115,39 +115,11 @@ namespace AssimilationSoftware.Maroon.DataSources.SQLite
             return null;
         }
 
-        public Note Create(Note item)
+        public Note Insert(Note item)
         {
-            item.PrevRevision = null;
-            item.RevisionGuid = Guid.NewGuid();
             item.LastModified = DateTime.Now;
-            item.MergeRevision = null;
-            item.IsDeleted = false;
             SaveAsync(item).Wait();
             return item;
-        }
-
-        public Note Update(Note item)
-        {
-            var result = (Note)item.Clone();
-            result.PrevRevision = item.RevisionGuid;
-            result.RevisionGuid = Guid.NewGuid();
-            result.LastModified = DateTime.Now;
-            // Merge revision ID is not set, in case this is a merge.
-            result.IsDeleted = false;
-            SaveAsync(result).Wait();
-            return result;
-        }
-
-        public Note Delete(Note item)
-        {
-            var result = (Note)item.Clone();
-            result.PrevRevision = item.RevisionGuid;
-            result.RevisionGuid = Guid.NewGuid();
-            result.LastModified = DateTime.Now;
-            result.MergeRevision = null;
-            result.IsDeleted = true;
-            SaveAsync(result).Wait();
-            return result;
         }
 
         public void Purge(params Guid[] ids)

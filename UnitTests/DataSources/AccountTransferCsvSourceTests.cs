@@ -21,7 +21,7 @@ public class AccountTransferCsvSourceTests
     public void Create_ShouldAppendToFile()
     {
         Setup();
-        var transfer = _source.Create(new AccountTransfer
+        var transfer = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -48,7 +48,7 @@ public class AccountTransferCsvSourceTests
     public void Update_Should_Append_To_File()
     {
         Setup();
-        var transfer = _source.Create(new AccountTransfer
+        var transfer = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -61,7 +61,7 @@ public class AccountTransferCsvSourceTests
 
         // Simulate an update
         transfer.Amount = 200.00m;
-        var revised = _source.Update(transfer);
+        var revised = _source.Insert(transfer);
 
         var content = _fileSystem.File.ReadAllText("D:\\Temp\\test.csv");
 
@@ -84,7 +84,7 @@ public class AccountTransferCsvSourceTests
     public void Delete_Should_Append_To_File()
     {
         Setup();
-        var transfer = _source.Create(new AccountTransfer
+        var transfer = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -96,7 +96,9 @@ public class AccountTransferCsvSourceTests
         });
 
         // Simulate a delete
-        var deletedTransfer = _source.Delete(transfer);
+        transfer.IsDeleted = true;
+        transfer.UpdateRevision();
+        var deletedTransfer = _source.Insert(transfer);
 
         var content = _fileSystem.File.ReadAllText("D:\\Temp\\test.csv");
 
@@ -122,7 +124,7 @@ public class AccountTransferCsvSourceTests
     public void FindAllNotes_ShouldReturnAllNotes()
     {
         Setup();
-        var transfer1 = _source.Create(new AccountTransfer
+        var transfer1 = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -133,7 +135,7 @@ public class AccountTransferCsvSourceTests
             ImportHash = "hash123"
         });
 
-        var transfer2 = _source.Create(new AccountTransfer
+        var transfer2 = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account3",
@@ -155,7 +157,7 @@ public class AccountTransferCsvSourceTests
     public void Can_Find_By_RevisionGuid()
     {
         Setup();
-        var transfer = _source.Create(new AccountTransfer
+        var transfer = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -175,7 +177,7 @@ public class AccountTransferCsvSourceTests
     public void FindRevision_ShouldReturnNullIfNotFound()
     {
         Setup();
-        var transfer = _source.Create(new AccountTransfer
+        var transfer = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -194,7 +196,7 @@ public class AccountTransferCsvSourceTests
     public void GetLastWriteTime_ShouldReturnLastWriteTime()
     {
         Setup();
-        var transfer = _source.Create(new AccountTransfer
+        var transfer = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -213,7 +215,7 @@ public class AccountTransferCsvSourceTests
     public void Purge_Should_Remove_Revision()
     {
         Setup();
-        var transfer = _source.Create(new AccountTransfer
+        var transfer = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -237,7 +239,7 @@ public class AccountTransferCsvSourceTests
     public void Purge_Should_Retain_Previous_Entries()
     {
         Setup();
-        var transfer1 = _source.Create(new AccountTransfer
+        var transfer1 = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now,
             FromAccount = "Account1",
@@ -248,7 +250,7 @@ public class AccountTransferCsvSourceTests
             ImportHash = "hash123"
         });
 
-        var transfer2 = _source.Create(new AccountTransfer
+        var transfer2 = _source.Insert(new AccountTransfer
         {
             Date = DateTime.Now.AddDays(1),
             FromAccount = "Account3",

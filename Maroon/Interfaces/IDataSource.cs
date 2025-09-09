@@ -15,21 +15,9 @@ public interface IDataSource<T> where T : ModelObject
     T? FindRevision(Guid id);
 
     /// <summary>
-    /// Create a whole new record with no previous revision.
+    /// Add a new revision.
     /// </summary>
-    T Create(T item);
-
-    /// <summary>
-    /// Edit a record by creating a new revision.
-    /// </summary>
-    /// <param name="item">The updated version of the record.</param>
-    /// <returns>The new revision, with bookkeeping properties set.</returns>
-    T Update(T item);
-
-    /// <summary>
-    /// Mark a record as deleted by creating a new revision with "IsDeleted" = true.
-    /// </summary>
-    T Delete(T item);
+    T Insert(T item);
 
     /// <summary>
     /// Remove a revision from the data source. This should only be used in the "compress" operation.

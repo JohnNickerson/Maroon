@@ -31,7 +31,7 @@ public class NoteSqliteSourceTests
             ImportHash = null
         };
 
-        var savedNote = _source.Create(note);
+        var savedNote = _source.Insert(note);
         Assert.NotNull(savedNote);
         Assert.Equal(note.Text, savedNote.Text);
         Assert.Equal(note.Tags, savedNote.Tags);
@@ -59,16 +59,17 @@ public class NoteSqliteSourceTests
             ImportHash = null
         };
 
-        _source.Create(note);
+        _source.Insert(note);
+        var firstRevisionGuid = note.RevisionGuid;
 
         note.Text = "Updated Note";
         note.Tags.Add("updated");
-
-        var updatedNote = _source.Update(note);
+        note.UpdateRevision();
+        var updatedNote = _source.Insert(note);
         Assert.NotNull(updatedNote);
         Assert.Equal("Updated Note", updatedNote.Text);
         Assert.Contains("updated", updatedNote.Tags);
-        Assert.NotEqual(note.RevisionGuid, updatedNote.RevisionGuid); // New revision GUID
+        Assert.NotEqual(firstRevisionGuid, updatedNote.RevisionGuid); // New revision GUID
         Assert.Equal(note.ID, updatedNote.ID);
     }
 
@@ -88,8 +89,10 @@ public class NoteSqliteSourceTests
             ImportHash = null
         };
 
-        note = _source.Create(note);
-        var deletedNote = _source.Delete(note);
+        note = _source.Insert(note);
+        note.IsDeleted = true;
+        note.UpdateRevision();
+        var deletedNote = _source.Insert(note);
         Assert.NotNull(deletedNote);
         Assert.True(deletedNote.IsDeleted);
         var foundNote = _source.FindRevision(deletedNote.RevisionGuid);
@@ -127,8 +130,8 @@ public class NoteSqliteSourceTests
             ImportHash = null
         };
 
-        _source.Create(note1);
-        _source.Create(note2);
+        _source.Insert(note1);
+        _source.Insert(note2);
 
         var allNotes = _source.FindAll().ToList();
         Assert.Contains(allNotes, n => n.Text == note1.Text);
@@ -151,7 +154,7 @@ public class NoteSqliteSourceTests
             ImportHash = null
         };
 
-        _source.Create(note);
+        _source.Insert(note);
 
         var foundNote = _source.FindRevision(note.RevisionGuid);
         Assert.NotNull(foundNote);
@@ -174,7 +177,7 @@ public class NoteSqliteSourceTests
             IsDeleted = false,
             ImportHash = null
         };
-        note = _source.Create(note);
+        note = _source.Insert(note);
         var lastWriteTime = _source.GetLastWriteTime();
         Assert.Equal(note.LastModified, lastWriteTime);
     }
@@ -195,7 +198,7 @@ public class NoteSqliteSourceTests
             ImportHash = null
         };
 
-        note = _source.Create(note);
+        note = _source.Insert(note);
         _source.Purge(note.RevisionGuid);
 
         var foundNote = _source.FindRevision(note.RevisionGuid);
@@ -231,8 +234,8 @@ public class NoteSqliteSourceTests
             ImportHash = null
         };
 
-        note1 = _source.Create(note1);
-        note2 = _source.Create(note2);
+        note1 = _source.Insert(note1);
+        note2 = _source.Insert(note2);
 
         _source.Purge(note1.RevisionGuid, note2.RevisionGuid);
 

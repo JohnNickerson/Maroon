@@ -83,26 +83,9 @@ public class ActionItemTextSource : IDataSource<ActionItem>
         return result.ToString();
     }
 
-    public ActionItem Create(ActionItem item)
+    public ActionItem Insert(ActionItem item)
     {
-        item.PrevRevision = null;
-        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = false;
-        var itemString = Stringify(item);
-        _fileSystem.File.AppendAllText(_fileName, itemString);
-        _index[item.RevisionGuid] = item;
-        return item;
-    }
-
-    public ActionItem Delete(ActionItem item)
-    {
-        item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = Guid.NewGuid();
-        item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = true;
         var itemString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, itemString);
         _index[item.RevisionGuid] = item;
@@ -326,17 +309,5 @@ public class ActionItemTextSource : IDataSource<ActionItem>
             context = item.Context;
             _fileSystem.File.AppendAllText(_fileName, noteString);
         }
-    }
-
-    public ActionItem Update(ActionItem item)
-    {
-        item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = Guid.NewGuid();
-        item.LastModified = DateTime.Now;
-        item.IsDeleted = false;
-        var itemString = Stringify(item);
-        _fileSystem.File.AppendAllText(_fileName, itemString);
-        _index[item.RevisionGuid] = item;
-        return item;
     }
 }

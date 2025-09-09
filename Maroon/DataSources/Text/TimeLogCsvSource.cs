@@ -26,9 +26,8 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         return $"{obj.StartTime:O},{obj.EndTime:O},{obj.Client},{obj.Project},{obj.Note},{obj.Billable},{obj.LastModified:O},{obj.IsDeleted},{obj.ID},{obj.RevisionGuid},{obj.PrevRevision}";
     }
 
-    public TimeLogEntry Create(TimeLogEntry item)
+    public TimeLogEntry Insert(TimeLogEntry item)
     {
-        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
         var csvLine = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
@@ -91,32 +90,6 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         }
         _index.TryGetValue(id, out var transfer);
         return transfer;
-    }
-
-    public TimeLogEntry Update(TimeLogEntry item)
-    {
-        var updatedLog = item.With(
-            RevisionGuid: Guid.NewGuid(),
-            LastModified: DateTime.Now,
-            PrevRevision: item.RevisionGuid,
-            IsDeleted: false
-        );
-        var csvLine = Stringify(updatedLog);
-        _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[updatedLog.RevisionGuid] = updatedLog;
-        return updatedLog;
-    }
-
-    public TimeLogEntry Delete(TimeLogEntry item)
-    {
-        item.IsDeleted = true;
-        item.LastModified = DateTime.Now;
-        item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = Guid.NewGuid();
-        var csvLine = Stringify(item);
-        _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
-        _index[item.RevisionGuid] = item;
-        return item;
     }
 
     public void Purge(params Guid[] ids)

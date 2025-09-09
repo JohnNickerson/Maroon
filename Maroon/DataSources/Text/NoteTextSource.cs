@@ -52,39 +52,9 @@ public class NoteTextSource : IDataSource<Note>
         return result.ToString();
     }
 
-    public Note Create(Note item)
+    public Note Insert(Note item)
     {
-        item.PrevRevision = null;
-        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = false;
-        var noteString = Stringify(item);
-        _fileSystem.File.AppendAllText(_fileName, noteString);
-        _index[item.RevisionGuid] = item;
-        return item;
-    }
-
-    public Note Update(Note item)
-    {
-        item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = Guid.NewGuid();
-        item.LastModified = DateTime.Now;
-        // Merge revision ID is not set, in case this is a merge.
-        item.IsDeleted = false;
-        var noteString = Stringify(item);
-        _fileSystem.File.AppendAllText(_fileName, noteString);
-        _index[item.RevisionGuid] = item;
-        return item;
-    }
-
-    public Note Delete(Note item)
-    {
-        item.PrevRevision = item.RevisionGuid;
-        item.RevisionGuid = Guid.NewGuid();
-        item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = true;
         var noteString = Stringify(item);
         _fileSystem.File.AppendAllText(_fileName, noteString);
         _index[item.RevisionGuid] = item;

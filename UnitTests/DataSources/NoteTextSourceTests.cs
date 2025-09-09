@@ -123,7 +123,7 @@ public class NoteTextSourceTests
         MockFileSystem fileSystem = new();
         var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
-        var note = noteTextSource.Create(new Model.Note()
+        var note = noteTextSource.Insert(new Model.Note()
         {
             Text = "This is a test note",
             Tags = new List<string> { "test", "note" },
@@ -147,14 +147,14 @@ public class NoteTextSourceTests
         MockFileSystem fileSystem = new();
         var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
-        var note = noteTextSource.Create(new Model.Note()
+        var note = noteTextSource.Insert(new Model.Note()
         {
             Text = "This is a test note",
             Tags = new List<string> { "test", "note" },
         });
         note.Text = "This is an updated test note";
         note.Tags = new List<string> { "updated", "note" };
-        var updatedNote = noteTextSource.Update(note);
+        var updatedNote = noteTextSource.Insert(note);
         Assert.NotNull(updatedNote);
         Assert.Equal("This is an updated test note", updatedNote.Text);
         Assert.Contains("updated", updatedNote.Tags);
@@ -181,12 +181,14 @@ public class NoteTextSourceTests
         MockFileSystem fileSystem = new();
         var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
-        var note = noteTextSource.Create(new Model.Note()
+        var note = noteTextSource.Insert(new Model.Note()
         {
             Text = "This is a test note",
             Tags = new List<string> { "test", "note" },
         });
-        var deletedNote = noteTextSource.Delete(note);
+        note.IsDeleted = true;
+        note.UpdateRevision();
+        var deletedNote = noteTextSource.Insert(note);
         Assert.NotNull(deletedNote);
         Assert.True(deletedNote.IsDeleted);
         Assert.True(fileSystem.FileExists("D:\\Temp\\dummy.txt"));
@@ -205,12 +207,12 @@ public class NoteTextSourceTests
         MockFileSystem fileSystem = new();
         var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
-        noteTextSource.Create(new Model.Note()
+        noteTextSource.Insert(new Model.Note()
         {
             Text = "First note",
             Tags = new List<string> { "first" },
         });
-        noteTextSource.Create(new Model.Note()
+        noteTextSource.Insert(new Model.Note()
         {
             Text = "Second note",
             Tags = new List<string> { "second" },
@@ -227,7 +229,7 @@ public class NoteTextSourceTests
         MockFileSystem fileSystem = new();
         var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
-        var note = noteTextSource.Create(new Model.Note()
+        var note = noteTextSource.Insert(new Model.Note()
         {
             Text = "This is a test note",
             Tags = new List<string> { "test", "note" },
@@ -259,7 +261,7 @@ This is a test note
         MockFileSystem fileSystem = new();
         var noteTextSource = new NoteTextSource("D:\\Temp\\dummy.txt", fileSystem);
         fileSystem.AddDirectory("D:\\Temp");
-        var note = noteTextSource.Create(new Model.Note()
+        var note = noteTextSource.Insert(new Model.Note()
         {
             Text = "This is a test note",
             Tags = new List<string> { "test", "note" },

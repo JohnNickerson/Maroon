@@ -35,7 +35,7 @@ public class ActionItemTextSourceTests
         };
 
         // Act
-        _textSource.Create(actionItem);
+        _textSource.Insert(actionItem);
 
         // Assert
         var fileContent = _fileSystem.File.ReadAllText(TestFileName);
@@ -63,11 +63,11 @@ public class ActionItemTextSourceTests
             LastModified = DateTime.Now,
             RevisionGuid = Guid.NewGuid()
         };
-        _textSource.Create(actionItem);
+        _textSource.Insert(actionItem);
 
         // Act
         actionItem.Notes.Add("Updated note");
-        var updatedItem = _textSource.Update(actionItem);
+        var updatedItem = _textSource.Insert(actionItem);
 
         // Assert
         var fileContent = _fileSystem.File.ReadAllText(TestFileName);
@@ -92,10 +92,12 @@ public class ActionItemTextSourceTests
             LastModified = DateTime.Now,
             RevisionGuid = Guid.NewGuid()
         };
-        _textSource.Create(actionItem);
+        _textSource.Insert(actionItem);
 
         // Act
-        var deletedItem = _textSource.Delete(actionItem);
+        actionItem.IsDeleted = true;
+        actionItem.UpdateRevision();
+        var deletedItem = _textSource.Insert(actionItem);
 
         // Assert
         var fileContent = _fileSystem.File.ReadAllText(TestFileName);
@@ -129,8 +131,8 @@ public class ActionItemTextSourceTests
             LastModified = DateTime.Now,
             RevisionGuid = Guid.NewGuid()
         };
-        _textSource.Create(actionItem1);
-        _textSource.Create(actionItem2);
+        _textSource.Insert(actionItem1);
+        _textSource.Insert(actionItem2);
 
         // Act
         var allItems = _textSource.FindAll();
@@ -156,7 +158,7 @@ public class ActionItemTextSourceTests
             LastModified = DateTime.Now,
             RevisionGuid = Guid.NewGuid()
         };
-        _textSource.Create(actionItem);
+        _textSource.Insert(actionItem);
         // Act
         var foundItem = _textSource.FindRevision(actionItem.RevisionGuid);
         // Assert
@@ -190,7 +192,7 @@ public class ActionItemTextSourceTests
             LastModified = DateTime.Now,
             RevisionGuid = Guid.NewGuid()
         };
-        _textSource.Create(actionItem);
+        _textSource.Insert(actionItem);
         // Act
         var lastWriteTime = _textSource.GetLastWriteTime();
         // Assert
@@ -213,7 +215,7 @@ public class ActionItemTextSourceTests
             LastModified = DateTime.Now,
             RevisionGuid = Guid.NewGuid()
         };
-        _textSource.Create(actionItem);
+        _textSource.Insert(actionItem);
         // Act
         _textSource.Purge(actionItem.RevisionGuid);
         // Assert

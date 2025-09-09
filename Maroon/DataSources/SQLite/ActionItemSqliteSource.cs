@@ -80,26 +80,11 @@ public class ActionItemSqliteSource : IDataSource<ActionItem>
         return Task.CompletedTask;
     }
 
-    public ActionItem Create(ActionItem item)
+    public ActionItem Insert(ActionItem item)
     {
-        item.PrevRevision = null;
-        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = false;
         SaveAsync(item).Wait();
         return item;
-    }
-
-    public ActionItem Delete(ActionItem item)
-    {
-        var result = (ActionItem)item.Clone();
-        result.PrevRevision = item.RevisionGuid;
-        result.RevisionGuid = Guid.NewGuid();
-        result.LastModified = DateTime.Now;
-        result.IsDeleted = true;
-        SaveAsync(result).Wait();
-        return result;
     }
 
     public IEnumerable<ActionItem> FindAll()
@@ -215,16 +200,5 @@ public class ActionItemSqliteSource : IDataSource<ActionItem>
         cmd2.CommandText = $"DELETE FROM ActionItemTags WHERE RevisionGuid IN (SELECT value FROM json_each(@revisionGuids));";
         cmd2.Parameters.AddWithValue("@revisionGuids", revisionGuids);
         cmd2.ExecuteNonQuery();
-    }
-
-    public ActionItem Update(ActionItem item)
-    {
-        var result = (ActionItem)item.Clone();
-        result.PrevRevision = item.RevisionGuid;
-        result.RevisionGuid = Guid.NewGuid();
-        result.LastModified = DateTime.Now;
-        result.IsDeleted = false;
-        SaveAsync(result).Wait();
-        return result;
     }
 }

@@ -20,7 +20,7 @@ public class TimeLogCsvSourceTests
     public void Create_ShouldAppendToFile()
     {
         Setup();
-        var timeLog = _source.Create(new TimeLogEntry
+        var timeLog = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -43,7 +43,7 @@ public class TimeLogCsvSourceTests
     public void Update_Should_Append_To_File()
     {
         Setup();
-        var timeLog = _source.Create(new TimeLogEntry
+        var timeLog = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -54,7 +54,7 @@ public class TimeLogCsvSourceTests
         });
 
         timeLog.Note = "Updated Log";
-        var updatedLog = _source.Update(timeLog);
+        var updatedLog = _source.Insert(timeLog);
         Assert.NotNull(updatedLog);
         Assert.True(_fileSystem.FileExists("D:\\Temp\\timelog.csv"));
         var content = _fileSystem.File.ReadAllText("D:\\Temp\\timelog.csv");
@@ -67,7 +67,7 @@ public class TimeLogCsvSourceTests
     public void Delete_Should_Append_To_File()
     {
         Setup();
-        var timeLog = _source.Create(new TimeLogEntry
+        var timeLog = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -78,7 +78,8 @@ public class TimeLogCsvSourceTests
         });
 
         // Simulate deletion
-        var deletedLog = _source.Delete(timeLog);
+        timeLog.IsDeleted = true;
+        var deletedLog = _source.Insert(timeLog);
         Assert.NotNull(deletedLog);
         Assert.True(_fileSystem.FileExists("D:\\Temp\\timelog.csv"));
         var content = _fileSystem.File.ReadAllText("D:\\Temp\\timelog.csv");
@@ -91,7 +92,7 @@ public class TimeLogCsvSourceTests
     public void FindAll_Should_Return_AllEntries()
     {
         Setup();
-        var timeLog1 = _source.Create(new TimeLogEntry
+        var timeLog1 = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -100,7 +101,7 @@ public class TimeLogCsvSourceTests
             Project = "Project A",
             Note = "Log A",
         });
-        var timeLog2 = _source.Create(new TimeLogEntry
+        var timeLog2 = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now.AddHours(2),
             EndTime = DateTime.Now.AddHours(3),
@@ -119,7 +120,7 @@ public class TimeLogCsvSourceTests
     public void FindRevision_Should_Return_CorrectEntry()
     {
         Setup();
-        var timeLog = _source.Create(new TimeLogEntry
+        var timeLog = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -146,7 +147,7 @@ public class TimeLogCsvSourceTests
     public void GetLastWriteTime_Should_Return_LastModifiedTime()
     {
         Setup();
-        var timeLog = _source.Create(new TimeLogEntry
+        var timeLog = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -163,7 +164,7 @@ public class TimeLogCsvSourceTests
     public void Purge_Should_RemoveEntry()
     {
         Setup();
-        var timeLog = _source.Create(new TimeLogEntry
+        var timeLog = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -182,7 +183,7 @@ public class TimeLogCsvSourceTests
     public void Purge_Should_Retain_Previous_Entries()
     {
         Setup();
-        var timeLog1 = _source.Create(new TimeLogEntry
+        var timeLog1 = _source.Insert(new TimeLogEntry
         {
             StartTime = DateTime.Now,
             EndTime = DateTime.Now.AddHours(1),
@@ -191,14 +192,16 @@ public class TimeLogCsvSourceTests
             Project = "Project A",
             Note = "Log A",
         });
+        var firstRevisionGuid = timeLog1.RevisionGuid;
         timeLog1.Project = "Updated Project A";
-        var timeLog2 = _source.Update(timeLog1);
+        timeLog1.UpdateRevision();
+        var timeLog2 = _source.Insert(timeLog1);
 
-        _source.Purge(timeLog1.RevisionGuid);
+        _source.Purge(firstRevisionGuid);
         var allEntries = _source.FindAll().ToList();
         Assert.Single(allEntries);
         Assert.Contains(allEntries, e => e.ID == timeLog2.ID);
         Assert.Contains(allEntries, e => e.RevisionGuid == timeLog2.RevisionGuid);
-        Assert.Contains(allEntries, e => e.PrevRevision == timeLog1.RevisionGuid);
+        Assert.Contains(allEntries, e => e.PrevRevision == firstRevisionGuid);
     }
 }

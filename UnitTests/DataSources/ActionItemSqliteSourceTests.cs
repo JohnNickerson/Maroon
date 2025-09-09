@@ -35,7 +35,7 @@ public class ActionItemSqliteSourceTests
             Upvotes = 1
         };
 
-        var createdItem = _source.Create(actionItem);
+        var createdItem = _source.Insert(actionItem);
         Assert.NotNull(createdItem);
         Assert.Equal(actionItem.Title, createdItem.Title);
         Assert.Equal(actionItem.Context, createdItem.Context);
@@ -67,7 +67,7 @@ public class ActionItemSqliteSourceTests
             Tags = new Dictionary<string, string> { { "Priority", "High" }, { "Category", "Work" } },
             Upvotes = 1
         };
-        var createdItem = _source.Create(actionItem);
+        var createdItem = _source.Insert(actionItem);
         var foundItem = _source.FindRevision(createdItem.RevisionGuid);
         Assert.NotNull(foundItem);
         Assert.Equal(createdItem.ID, foundItem.ID);
@@ -99,20 +99,22 @@ public class ActionItemSqliteSourceTests
             Upvotes = 1
         };
 
-        var createdItem = _source.Create(actionItem);
+        var createdItem = _source.Insert(actionItem);
+        var firstRevisionGuid = createdItem.RevisionGuid;
         createdItem.Title = "Updated title";
         createdItem.Context = "inbox";
         createdItem.Notes.Add("Note3");
         createdItem.Tags["Priority"] = "Low";
         createdItem.Upvotes = 2;
-        var updatedItem = _source.Update(createdItem);
+        createdItem.UpdateRevision();
+        var updatedItem = _source.Insert(createdItem);
         Assert.Equal(createdItem.Title, updatedItem.Title);
         Assert.Equal(createdItem.Context, updatedItem.Context);
         Assert.Equal(3, updatedItem.Notes.Count);
         Assert.Contains("Note3", updatedItem.Notes);
         Assert.Equal(createdItem.Tags["Priority"], updatedItem.Tags["Priority"]);
         Assert.Equal(createdItem.Upvotes, updatedItem.Upvotes);
-        Assert.NotEqual(createdItem.RevisionGuid, updatedItem.RevisionGuid);
+        Assert.NotEqual(firstRevisionGuid, updatedItem.RevisionGuid);
     }
 
     [Fact]
@@ -135,9 +137,12 @@ public class ActionItemSqliteSourceTests
             Upvotes = 1
         };
 
-        var createdItem = _source.Create(actionItem);
-        var deletedItem = _source.Delete(createdItem);
-        Assert.NotEqual(createdItem.RevisionGuid, deletedItem.RevisionGuid);
+        var createdItem = _source.Insert(actionItem);
+        var firstRevisionGuid = createdItem.RevisionGuid;
+        createdItem.IsDeleted = true;
+        createdItem.UpdateRevision();
+        var deletedItem = _source.Insert(createdItem);
+        Assert.NotEqual(firstRevisionGuid, deletedItem.RevisionGuid);
         Assert.Equal(createdItem.ID, deletedItem.ID);
         Assert.True(deletedItem.IsDeleted);
     }
@@ -163,8 +168,8 @@ public class ActionItemSqliteSourceTests
             LastModified = DateTime.UtcNow,
             IsDeleted = false
         };
-        _source.Create(item1);
-        _source.Create(item2);
+        _source.Insert(item1);
+        _source.Insert(item2);
         var allItems = _source.FindAll().ToList();
         Assert.True(allItems.Count >= 2);
         Assert.Contains(allItems, i => i.Title == "Item 1");
@@ -192,8 +197,8 @@ public class ActionItemSqliteSourceTests
             LastModified = DateTime.UtcNow,
             IsDeleted = false
         };
-        var createdItem1 = _source.Create(item1);
-        var createdItem2 = _source.Create(item2);
+        var createdItem1 = _source.Insert(item1);
+        var createdItem2 = _source.Insert(item2);
         _source.Purge(createdItem1.RevisionGuid, createdItem2.RevisionGuid);
         var foundItem1 = _source.FindRevision(createdItem1.RevisionGuid);
         var foundItem2 = _source.FindRevision(createdItem2.RevisionGuid);
@@ -212,7 +217,7 @@ public class ActionItemSqliteSourceTests
             Notes = new List<string> { "Note" },
             IsDeleted = false
         };
-        _source.Create(actionItem);
+        _source.Insert(actionItem);
         var lastWriteTime = _source.GetLastWriteTime();
         var afterCreation = DateTime.Now;
         Assert.True(beforeCreation <= lastWriteTime);

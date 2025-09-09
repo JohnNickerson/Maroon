@@ -37,50 +37,34 @@ public class AccountTransferSqliteSource : IDataSource<AccountTransfer>
         command.ExecuteNonQuery();
     }
 
-        public Task SaveAsync(AccountTransfer item)
-        {
-            using var conn = _connectionFactory.GetConnection();
-            using var cmd = conn.CreateCommand();
-            // The only way we update records is by inserting a new revision with a unique RevisionGuid.
-            cmd.CommandText = "INSERT INTO AccountTransfers (ID, Date, Category, Amount, Description, FromAccount, ToAccount, RevisionGuid, PrevRevision, MergeRevision, LastModified, IsDeleted, ImportHash) VALUES (@id, @date, @category, @amount, @description, @fromAccount, @toAccount, @revisionGuid, @prevRevision, @mergeRevision, @lastModified, @isDeleted, @importHash);";
-            cmd.Parameters.AddWithValue("@id", item.ID.ToString());
-            cmd.Parameters.AddWithValue("@date", item.Date.ToString("o"));
-            cmd.Parameters.AddWithValue("@category", item.Category ?? "");
-            cmd.Parameters.AddWithValue("@amount", item.Amount);
-            cmd.Parameters.AddWithValue("@description", item.Description ?? "");
-            cmd.Parameters.AddWithValue("@fromAccount", item.FromAccount ?? "");
-            cmd.Parameters.AddWithValue("@toAccount", item.ToAccount ?? "");
-            cmd.Parameters.AddWithValue("@revisionGuid", item.RevisionGuid.ToString());
-            cmd.Parameters.AddWithValue("@prevRevision", item.PrevRevision?.ToString() ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@mergeRevision", item.MergeRevision?.ToString() ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@lastModified", item.LastModified.ToString("O"));
-            cmd.Parameters.AddWithValue("@isDeleted", item.IsDeleted.ToString());
-            cmd.Parameters.AddWithValue("@importHash", item.ImportHash?.ToString() ?? "");
-            cmd.ExecuteNonQuery();
-            return Task.CompletedTask;
-        }
-
-    public AccountTransfer Create(AccountTransfer item)
+    public Task SaveAsync(AccountTransfer item)
     {
-        item.PrevRevision = null;
-        item.RevisionGuid = Guid.NewGuid();
-        item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = false;
-        SaveAsync(item).Wait();
-        return item;
+        using var conn = _connectionFactory.GetConnection();
+        using var cmd = conn.CreateCommand();
+        // The only way we update records is by inserting a new revision with a unique RevisionGuid.
+        cmd.CommandText = "INSERT INTO AccountTransfers (ID, Date, Category, Amount, Description, FromAccount, ToAccount, RevisionGuid, PrevRevision, MergeRevision, LastModified, IsDeleted, ImportHash) VALUES (@id, @date, @category, @amount, @description, @fromAccount, @toAccount, @revisionGuid, @prevRevision, @mergeRevision, @lastModified, @isDeleted, @importHash);";
+        cmd.Parameters.AddWithValue("@id", item.ID.ToString());
+        cmd.Parameters.AddWithValue("@date", item.Date.ToString("o"));
+        cmd.Parameters.AddWithValue("@category", item.Category ?? "");
+        cmd.Parameters.AddWithValue("@amount", item.Amount);
+        cmd.Parameters.AddWithValue("@description", item.Description ?? "");
+        cmd.Parameters.AddWithValue("@fromAccount", item.FromAccount ?? "");
+        cmd.Parameters.AddWithValue("@toAccount", item.ToAccount ?? "");
+        cmd.Parameters.AddWithValue("@revisionGuid", item.RevisionGuid.ToString());
+        cmd.Parameters.AddWithValue("@prevRevision", item.PrevRevision?.ToString() ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@mergeRevision", item.MergeRevision?.ToString() ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@lastModified", item.LastModified.ToString("O"));
+        cmd.Parameters.AddWithValue("@isDeleted", item.IsDeleted.ToString());
+        cmd.Parameters.AddWithValue("@importHash", item.ImportHash?.ToString() ?? "");
+        cmd.ExecuteNonQuery();
+        return Task.CompletedTask;
     }
 
-    public AccountTransfer Delete(AccountTransfer item)
+    public AccountTransfer Insert(AccountTransfer item)
     {
-        var result = (AccountTransfer)item.Clone();
-        result.PrevRevision = item.RevisionGuid;
-        result.RevisionGuid = Guid.NewGuid();
-        result.LastModified = DateTime.Now;
-        result.MergeRevision = null;
-        result.IsDeleted = true;
-        SaveAsync(result).Wait();
-        return result;
+        item.LastModified = DateTime.Now;
+        SaveAsync(item).Wait();
+        return item;
     }
 
     public IEnumerable<AccountTransfer> FindAll()
@@ -160,16 +144,5 @@ public class AccountTransferSqliteSource : IDataSource<AccountTransfer>
         cmd.CommandText = $"DELETE FROM AccountTransfers WHERE RevisionGuid IN (SELECT value FROM json_each(@revisionGuids));";
         cmd.Parameters.AddWithValue("@revisionGuids", revisionGuids);
         cmd.ExecuteNonQuery();
-    }
-
-    public AccountTransfer Update(AccountTransfer item)
-    {
-        var result = (AccountTransfer)item.Clone();
-        result.PrevRevision = item.RevisionGuid;
-        result.RevisionGuid = Guid.NewGuid();
-        result.LastModified = DateTime.Now;
-        result.IsDeleted = false;
-        SaveAsync(result).Wait();
-        return result;
     }
 }

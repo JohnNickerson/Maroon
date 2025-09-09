@@ -117,39 +117,11 @@ public class TimeLogSqliteSource : IDataSource<TimeLogEntry>
         return null;
     }
 
-    public TimeLogEntry Create(TimeLogEntry item)
+    public TimeLogEntry Insert(TimeLogEntry item)
     {
-        item.PrevRevision = null;
-        item.RevisionGuid = Guid.NewGuid();
         item.LastModified = DateTime.Now;
-        item.MergeRevision = null;
-        item.IsDeleted = false;
         SaveAsync(item).Wait();
         return item;
-    }
-
-    public TimeLogEntry Update(TimeLogEntry item)
-    {
-        var result = (TimeLogEntry)item.Clone();
-        result.PrevRevision = item.RevisionGuid;
-        result.RevisionGuid = Guid.NewGuid();
-        result.LastModified = DateTime.Now;
-        result.MergeRevision = null;
-        result.IsDeleted = false;
-        SaveAsync(result).Wait();
-        return result;
-    }
-
-    public TimeLogEntry Delete(TimeLogEntry item)
-    {
-        var result = (TimeLogEntry)item.Clone();
-        result.PrevRevision = item.RevisionGuid;
-        result.RevisionGuid = Guid.NewGuid();
-        result.LastModified = DateTime.Now;
-        result.MergeRevision = null;
-        result.IsDeleted = true;
-        SaveAsync(result).Wait();
-        return result;
     }
 
     public void Purge(params Guid[] ids)
