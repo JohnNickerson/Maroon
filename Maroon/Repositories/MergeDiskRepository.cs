@@ -36,6 +36,11 @@ namespace AssimilationSoftware.Maroon.Repositories
             _unsavedUpdates = new Dictionary<Guid, T>();
         }
 
+        public MergeDiskRepository(IDataSource<T> mapper, string primaryFileName)
+        {
+            // Placeholder constructor.
+        }
+
         #endregion
 
         #region Methods
@@ -139,8 +144,9 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
         }
 
-        public void Update(T entity, bool isNew = false)
+        public void Update(T entity)
         {
+            bool isNew = false;
             if (!isNew || entity.PrevRevision.HasValue)
             {
                 var updated = (T)entity.Clone();
@@ -263,7 +269,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             ApplyChangesFromDisk(e.FullPath);
         }
 
-        IEnumerable<HashSet<T>> IRepository<T>.FindConflicts()
+        IEnumerable<List<T>> IRepository<T>.FindConflicts()
         {
             throw new NotImplementedException();
         }

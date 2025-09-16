@@ -12,13 +12,13 @@ namespace AssimilationSoftware.Maroon.Interfaces
 
         IEnumerable<T> FindAll();
 
-        IEnumerable<HashSet<T>> FindConflicts();
+        IEnumerable<List<T>> FindConflicts();
 
         void Create(T entity);
 
         void Delete(T entity);
 
-        void Update(T entity, bool isNew = false);
+        void Update(T entity);
 
         void Merge(T entity, Guid mergeId);
 

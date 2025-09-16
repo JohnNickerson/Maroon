@@ -96,6 +96,7 @@ public class AccountTransferCsvSourceTests
         });
 
         // Simulate a delete
+        var originalRevision = transfer.RevisionGuid;
         transfer.IsDeleted = true;
         transfer.UpdateRevision();
         var deletedTransfer = _source.Insert(transfer);
@@ -116,7 +117,7 @@ public class AccountTransferCsvSourceTests
 
         Assert.Contains(deletedTransfer.RevisionGuid.ToString(), content);
         Assert.True(deletedTransfer.IsDeleted);
-        Assert.Equal(deletedTransfer.PrevRevision, transfer.RevisionGuid);
+        Assert.Equal(deletedTransfer.PrevRevision, originalRevision);
         Assert.Contains("True", content); // Assuming IsDeleted is represented as "true" in the CSV
     }
 

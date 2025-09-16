@@ -8,59 +8,34 @@ using AssimilationSoftware.Maroon.Mappers.Csv;
 
 namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
-    public class MockDiskMapper : CsvDiskMapper<MockObj>, IDataSource<MockObj>
+    public class MockDiskMapper : IDataSource<MockObj>
     {
-        private readonly Dictionary<string, List<MockObj>> _items = new Dictionary<string, List<MockObj>>();
-
-        public override string FieldsHeader => "ID,RevisionGuid,PrevRevision,LastModified";
-
-        public override IFileSystem FileSystem { get; protected set; }
+        private readonly Dictionary<Guid, MockObj> _items = new Dictionary<Guid, MockObj>();
 
         public MockDiskMapper()
         {
-            FileSystem = new MockFileSystem();
-            FileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
-        }
-
-        public override MockObj FromTokens(string[] tokens)
-        {
-            return new MockObj
-            {
-                ID = Guid.Parse(tokens[0]),
-                RevisionGuid = Guid.Parse(tokens[1]),
-                PrevRevision = Guid.Parse(tokens[2]),
-                LastModified = DateTime.Parse(tokens[3])
-            };
-        }
-
-        public override string ToCsv(MockObj obj)
-        {
-            return $"{obj.ID},{obj.RevisionGuid},{obj.PrevRevision},{obj.LastModified}";
+            _items = new Dictionary<Guid, MockObj>();
         }
 
         public IEnumerable<MockObj> FindAll()
         {
-    return _items.Values.SelectMany(x => x);
+            return _items.Values;
         }
 
         public MockObj? FindRevision(Guid id)
         {
-            throw new NotImplementedException();
+            if (_items.ContainsKey(id))
+            {
+                return _items[id];
+            }
+            return null;
         }
 
-        public MockObj Create(MockObj item)
+        public MockObj Insert(MockObj item)
         {
-            throw new NotImplementedException();
-        }
-
-        public MockObj Update(MockObj item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public MockObj Delete(MockObj item)
-        {
-            throw new NotImplementedException();
+            item.LastModified = DateTime.Now;
+            _items[item.RevisionGuid] = item;
+            return item;
         }
 
         public void Purge(params Guid[] ids)

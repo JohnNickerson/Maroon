@@ -106,8 +106,9 @@ namespace AssimilationSoftware.Maroon.Repositories
             _unsavedChanges = true;
         }
 
-        public void Update(T entity, bool isNew = false)
+        public void Update(T entity)
         {
+            bool isNew = false;
             if (!isNew || entity.PrevRevision.HasValue)
             {
                 var updated = (T)entity.Clone();
@@ -245,7 +246,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             _unsavedChanges = _localUpdates.Any();
         }
 
-        IEnumerable<HashSet<T>> IRepository<T>.FindConflicts()
+        IEnumerable<List<T>> IRepository<T>.FindConflicts()
         {
             throw new NotImplementedException();
         }

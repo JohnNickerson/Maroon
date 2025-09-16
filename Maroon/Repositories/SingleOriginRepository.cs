@@ -10,16 +10,13 @@ namespace AssimilationSoftware.Maroon.Repositories
     public class SingleOriginRepository<T> : IRepository<T> where T : ModelObject
     {
         private readonly IDataSource<T> _dataSource;
-        [Obsolete("Don't use this")]
-        private readonly string _filename;
         private Dictionary<Guid, T> _items;
         private bool _hasChanges;
         private bool _loaded;
 
-        public SingleOriginRepository(IDataSource<T> mapper, string filename)
+        public SingleOriginRepository(IDataSource<T> mapper)
         {
             _dataSource = mapper;
-            _filename = filename;
             _items = new Dictionary<Guid, T>();
             _hasChanges = false;
             _loaded = false;
@@ -63,8 +60,7 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Create(T entity)
         {
-            entity.UpdateRevision(true);
-            _items[entity.ID] = entity;
+            _items[entity.ID] = _dataSource.Insert(entity);
             _hasChanges = true;
         }
 
@@ -87,14 +83,41 @@ namespace AssimilationSoftware.Maroon.Repositories
             return Items;
         }
 
-        public IEnumerable<HashSet<T>> FindConflicts()
+        public IEnumerable<List<T>> FindConflicts()
         {
-            throw new NotImplementedException();
+            // There really shouldn't be any conflicts in a single-origin repository.
+            // But if there are, return them.
+            // A conflict is defined as multiple revisions with the same PrevRevision, and not deleted, and not later merged.
+            // Find all revisions that are not used as another's previous revision or merge revision.
+            // Group by ID and return if each set has more than one item.
+            // We need to work from the full set of revisions, not just the ones in Items.
+            var allRevisions = _dataSource.FindAll().ToDictionary(k => k.RevisionGuid, v => v);
+
+            // Find all revision IDs that are used as PrevRevision or MergeRevision.
+            var usedRevisions = new HashSet<Guid>(
+                allRevisions.Values
+                      .Where(i => i.PrevRevision.HasValue || i.MergeRevision.HasValue)
+                      .SelectMany(i => new[] { i.PrevRevision, i.MergeRevision })
+                      .Distinct()
+                      .Where(r => r.HasValue)
+                      .Select(r => r.Value)
+            );
+            // The result: return groups of items with the same ID, and more than one revision, that are not deleted and not used as a previous or merge revision.
+            var conflicts = allRevisions.Values
+                                .Where(i => !i.IsDeleted && !usedRevisions.Contains(i.RevisionGuid))
+                                .GroupBy(i => i.ID)
+                                .Where(g => g.Count() > 1)
+                                .Select(g => new List<T>(g))
+                                .ToList();
+            return conflicts;
         }
 
         public void Merge(T entity, Guid mergeId)
         {
-            throw new NotImplementedException();
+            entity.UpdateRevision();
+            entity.MergeRevision = mergeId;
+            _items[entity.ID] = _dataSource.Insert(entity);
+            _hasChanges = true;
         }
 
         public void SaveChanges(bool force = false)
@@ -102,18 +125,11 @@ namespace AssimilationSoftware.Maroon.Repositories
             // Changes are now saved immediately on Create/Update/Delete.
         }
 
-        public void Update(T entity, bool isNew = false)
+        public void Update(T entity)
         {
-            if (!isNew || _items[entity.ID].PrevRevision.HasValue)
-            {
-                _items[entity.ID].UpdateRevision();
-                _items[entity.ID] = entity;
-                _hasChanges = true;
-            }
-            else
-            {
-                Create(entity);
-            }
+            entity.UpdateRevision();
+            _items[entity.ID] = _dataSource.Insert(entity);
+            _hasChanges = true;
         }
     }
 }
