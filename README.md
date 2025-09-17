@@ -13,7 +13,7 @@ the cloud or even on servers, it is opposite that. Two, I'm from Queensland, whe
 
 ## Why use it?
 
-Because sometimes the internet isn't available, or sometimes the servers are down. If your data is local, you're still able to work, and synchronisation can happen later.
+Because sometimes the internet isn't available, or sometimes the servers are down. If your data is local, you're still able to work, and synchronisation can happen later. If you use a monolithic database for storage, and you (or your team) make any changes while offline, then try to sync later, you'll get conflicts at the whole-file level. With Maroon, your changes stay in your own shard of the database, and are aggregated when read later. Conflicting edits may still happen at the record level, but you can keep using and updating the data either way.
 
 ## History
 
