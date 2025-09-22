@@ -47,12 +47,14 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Compress()
         {
             // Remove deleted items and obsolete revisions.
-            var oldRevisions = _items.Values
+            var oldRevisions = _dataSource.FindAll()
                 .Where(i => i.PrevRevision.HasValue || i.MergeRevision.HasValue)
-                .Select(i => i.PrevRevision ?? i.MergeRevision)
+                .SelectMany(i => new [] { i.PrevRevision , i.MergeRevision})
                 .Where(r => r.HasValue)
+                .Select(r => r.Value)
                 .Distinct()
                 .ToList();
+            _dataSource.Purge(oldRevisions.ToArray());
             _items = _items.Where(kvp => !kvp.Value.IsDeleted &&
                                   !oldRevisions.Contains(kvp.Value.RevisionGuid))
                            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

@@ -170,7 +170,10 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void MergeTest()
         {
             var mdr = new SingleOriginRepository<MockObj>(mockMapper);
-            var entity = new MockObj();
+            var entity = new MockObj()
+            {
+                ImportHash = "original"
+            };
             mdr.Create(entity);
             // Create two new revisions with the same prev revision
             // I don't like having to clone the objects like this. If that's how repositories have to be used, work on a better way.
@@ -190,6 +193,11 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             Assert.Equal(4, mockMapper.FindAll().Count(t => t.ID == entity.ID));
             var conflicts = mdr.FindConflicts();
             Assert.Empty(conflicts);
+
+            // While we're here, check that compressing will remove old revisions
+            mdr.Compress();
+            Assert.Single(mdr.Items);
+            Assert.Single(mockMapper.FindAll().Where(i => i.ID == entity.ID));
         }
 
         [Fact]
@@ -214,6 +222,32 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             Assert.Equal(3, mockMapper.FindAll().Count(t => t.ID == entity.ID));
             var conflicts = mdr.FindConflicts();
             Assert.Empty(conflicts);
+
+            // While we're here, check that compressing will remove old revisions
+            mdr.Compress();
+            Assert.Single(mdr.Items);
+            Assert.Single(mockMapper.FindAll().Where(i => i.ID == entity.ID));
+        }
+
+        [Fact]
+        public void Compress_Old_Revisions()
+        {
+            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var entity = new MockObj();
+            mdr.Create(entity);
+            var found = mdr.Find(entity.ID);
+            Assert.NotNull(found);
+            found.ImportHash = "changed";
+            mdr.Update(found);
+            var updated = mdr.Find(entity.ID);
+            Assert.NotNull(updated);
+            Assert.Equal("changed", updated.ImportHash);
+            mdr.Compress();
+            var compressed = mdr.Find(entity.ID);
+            Assert.NotNull(compressed);
+            Assert.Equal("changed", compressed.ImportHash);
+            Assert.Single(mdr.Items);
+            Assert.Single(mockMapper.FindAll().Where(i => i.ID == entity.ID));
         }
     }
 }

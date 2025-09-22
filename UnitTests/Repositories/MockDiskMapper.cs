@@ -40,7 +40,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
 
         public void Purge(params Guid[] ids)
         {
-            throw new NotImplementedException();
+            ids.ToList().ForEach(id => _items.Remove(id));
         }
 
         public DateTime GetLastWriteTime()
