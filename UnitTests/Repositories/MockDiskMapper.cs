@@ -45,7 +45,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
 
         public DateTime GetLastWriteTime()
         {
-            throw new NotImplementedException();
+            return _items.Values.Count > 0 ? _items.Values.Max(i => i.LastModified) : DateTime.MinValue;
         }
     }
 }

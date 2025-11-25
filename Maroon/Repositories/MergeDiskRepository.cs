@@ -11,7 +11,7 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Repositories
 {
-    public class MergeDiskRepository<T> : IMergeRepository<T> where T : ModelObject
+    public class RevisionShardRepository<T> : IMergeRepository<T> where T : ModelObject
     {
         #region Fields
 
@@ -26,7 +26,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         #endregion
 
         #region Constructors
-        public MergeDiskRepository(IDiskMapper<T> mapper, string primaryFileName)
+        public RevisionShardRepository(IDiskMapper<T> mapper, string primaryFileName)
         {
             _mapper = mapper;
             _primaryFileName = primaryFileName;
@@ -36,7 +36,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             _unsavedUpdates = new Dictionary<Guid, T>();
         }
 
-        public MergeDiskRepository(IDataSource<T> mapper, string primaryFileName)
+        public RevisionShardRepository(IDataSource<T> mapper, string primaryFileName)
         {
             // Placeholder constructor.
         }

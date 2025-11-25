@@ -70,6 +70,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         {
             _items[entity.ID].IsDeleted = true;
             _items[entity.ID].UpdateRevision();
+            _dataSource.Insert(_items[entity.ID]);
             _hasChanges = true;
         }
 

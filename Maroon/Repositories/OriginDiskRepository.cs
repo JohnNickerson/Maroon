@@ -8,92 +8,75 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Repositories
 {
-    public class OriginDiskRepository<T> : IMergeRepository<T> where T : ModelObject
+    public class OriginShardRepository<T> : IRepository<T> where T : ModelObject
     {
         #region Fields
 
-        private readonly IDiskMapper<T> _mapper;
-        private readonly string _primaryFileName;
-        private readonly string _thisMachineName;
-        private const string MachineFileNameSearch = "updates-*.txt";
-        private IFileSystem _fileSystem;
+        private readonly IDataSource<T> _dataSource;
+        private readonly IDataSource<T>[] _otherDataSources;
 
-        private List<T> _localUpdates;
-        private List<T> _allUpdates;
-        private List<T> _items;
+        private Dictionary<Guid, T> _itemIndex;
 
-        private bool _unsavedChanges;
+        private bool _loaded;
 
         #endregion
 
         #region Constructors
-        public OriginDiskRepository(IDiskMapper<T> primaryMapper, string primaryFileName, string thisMachineName, IFileSystem? fileSystem = null)
+        public OriginShardRepository(IDataSource<T> dataSource, params IDataSource<T>[] otherDataSources)
         {
-            _fileSystem = fileSystem ?? new FileSystem();
-            _mapper = primaryMapper;
-            _primaryFileName = primaryFileName;
-            _thisMachineName = thisMachineName;
-            _items = new List<T>();
-            _allUpdates = new List<T>();
-
-            _localUpdates = (List<T>)_mapper.Read(ThisMachineFile);
+            _dataSource = dataSource;
+            _otherDataSources = otherDataSources;
+            _loaded = false;
+            _itemIndex = new Dictionary<Guid, T>();
         }
         #endregion
 
         #region Methods
         public T Find(Guid id)
         {
-            if (Items.Any(v => v.ID == id))
+            if (!_loaded)
             {
-                return Items.First(t => t.ID == id);
+                FindAll();
             }
-            var i = _mapper.Read(_primaryFileName);
-            if (i != null)
+            if (_itemIndex.TryGetValue(id, out var item) && !item.IsDeleted)
             {
-                _items.AddRange(i);
+                return item;
             }
-            else
-            {
-                // Reload pending changes.
-                LoadChanges();
-            }
-            if (Items.Any(v => v.ID == id))
-            {
-                return Items.First(t => t.ID == id);
-            }
-
             return null;
         }
 
         public IEnumerable<T> FindAll()
         {
-            _items = _mapper.Read(_primaryFileName).ToList();
-            LoadChanges();
-            return Items;
-        }
-
-        private void LoadChanges()
-        {
-            // Load changes from disk without needing to save from memory first.
-            foreach (var updateFileName in UpdateFileNames)
+            if (!_loaded)
             {
-                foreach (var u in _mapper.Read(updateFileName))
+                // Load from all data sources.
+                var allItems = new Dictionary<Guid, T>();
+                foreach (var item in _dataSource.FindAll())
                 {
-                    if (_allUpdates.All(p => p.RevisionGuid != u.RevisionGuid))
+                    if (!allItems.ContainsKey(item.ID) || allItems[item.ID].LastModified < item.LastModified)
                     {
-                        _allUpdates.Add(u);
+                        allItems[item.ID] = item;
                     }
                 }
+                foreach (var ds in _otherDataSources ?? Array.Empty<IDataSource<T>>())
+                {
+                    foreach (var item in ds.FindAll())
+                    {
+                        if (!allItems.ContainsKey(item.ID) || allItems[item.ID].LastModified < item.LastModified)
+                        {
+                            allItems[item.ID] = item;
+                        }
+                    }
+                }
+                _itemIndex = allItems;
+                _loaded = true;
             }
+            return _itemIndex.Values.Where(d => !d.IsDeleted);
         }
 
         public void Create(T entity)
         {
-            entity.UpdateRevision();
-            entity.PrevRevision = null;
-            _allUpdates.Add((T)entity.Clone());
-            _localUpdates.Add((T)entity.Clone());
-            _unsavedChanges = true;
+            _itemIndex[entity.ID] = _dataSource.Insert(entity);
         }
 
         public void Delete(T entity)
@@ -101,21 +84,18 @@ namespace AssimilationSoftware.Maroon.Repositories
             var gone = (T)entity.Clone();
             gone.IsDeleted = true;
             gone.UpdateRevision();
-            _allUpdates.Add(gone);
-            _localUpdates.Add(gone);
-            _unsavedChanges = true;
+            _dataSource.Insert(gone);
+            _itemIndex[entity.ID] = gone;
         }
 
         public void Update(T entity)
         {
-            bool isNew = false;
-            if (!isNew || entity.PrevRevision.HasValue)
+            if (entity.PrevRevision.HasValue)
             {
                 var updated = (T)entity.Clone();
                 updated.UpdateRevision();
-                _allUpdates.Add(updated);
-                _localUpdates.Add(updated);
-                _unsavedChanges = true;
+                _dataSource.Insert(updated);
+                _itemIndex[entity.ID] = updated;
             }
             else
             {
@@ -125,152 +105,88 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void SaveChanges(bool force = false)
         {
-            lock (_mapper)
+            // Changes are saved automatically.
+        }
+
+        public IEnumerable<List<T>> FindConflicts()
+        {
+            // Load all revisions into a dictionary by revision ID.
+            var allRevisions = new Dictionary<Guid, T>();
+            foreach (var item in _dataSource.FindAll())
             {
-                // Only write changes if there are any to write.
-                if (force || _localUpdates.Count > 0 && _unsavedChanges)
+                allRevisions[item.RevisionGuid] = item;
+            }
+            foreach (var ds in _otherDataSources ?? Array.Empty<IDataSource<T>>())
+            {
+                foreach (var item in ds.FindAll())
                 {
-                    _mapper.Write(_localUpdates, ThisMachineFile);
-                    _unsavedChanges = false;
+                    allRevisions[item.RevisionGuid] = item;
                 }
             }
-        }
-
-        public int CommitChanges()
-        {
-            lock (_mapper)
-            {
-                // Make sure we've got the latest in memory.
-                FindAll();
-
-                var pendingCount = _allUpdates.Count;
-
-                // Only write changes if there are any to write.
-                if (pendingCount > 0)
-                {
-                    // Verify no conflicts first. Caller must check and resolve conflicts if they exist.
-                    if (FindConflicts().Count > 0) return 0;
-
-                    // Apply changes (encapsulated in the Items property).
-                    // Save all.
-                    _mapper.Write(Items.ToList(), _primaryFileName);
-
-                    // Clear the lists.
-                    _items = Items.ToList();
-                    _allUpdates = new List<T>();
-                    _localUpdates = new List<T>();
-                    _unsavedChanges = false;
-
-                    // Clear pending lists on disk (delete files).
-                    foreach (var updateFileName in UpdateFileNames)
-                    {
-                        _fileSystem.File.Delete(updateFileName);
-                    }
-                }
-                return pendingCount;
-            }
-        }
-
-        /// <summary>
-        /// Gets a list containing sets of conflicting edits.
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>A conflict here is defined as two or more updates or deletes to the same version (ie revision number) of the same object.</remarks>
-        public List<PendingChange<T>> FindConflicts()
-        {
-            return GetPendingChanges().Where(c => c.IsConflict).ToList();
-        }
-
-        public List<PendingChange<T>> GetPendingChanges()
-        {
-            var result = new List<PendingChange<T>>();
-
-            // A set of pending edits comprises a conflict if:
-            // 1. Any two (or more) updates have the same source revision ID.
-            // 2. Any update has a dangling previous revision ID.
-            var knownRevs = new HashSet<Guid>();
-            var seenRevs = new HashSet<Guid>();
-            foreach (var i in _items)
-            {
-                knownRevs.Add(i.RevisionGuid);
-            }
-            foreach (var u in _allUpdates)
-            {
-                knownRevs.Add(u.RevisionGuid);
-            }
-
-            // Get the list of IDs to check.
-            var checkIds = _allUpdates.Select(u => u.ID).Distinct().ToArray();
-            foreach (var id in checkIds)
-            {
-                var c = new PendingChange<T>
-                {
-                    Id = id,
-                };
-                // If two or more updates branched from the same revision, that's a conflict.
-                result.Add(c);
-            }
-
-            return result;
-        }
-
-        public void ResolveConflict(T item)
-        {
-            Revert(item.ID);
-            item.PrevRevision = Find(item.ID).RevisionGuid;
-            _allUpdates.Add(item);
-            _localUpdates.Add(item);
-            _unsavedChanges = true;
-        }
-
-        public void ResolveByDelete(Guid id)
-        {
-            Revert(id);
-            Delete(Find(id));
-        }
-
-        public void Revert(Guid id)
-        {
-            // Only remove updates. Newly-created items are in this set, too, with null previous revision IDs.
-            foreach (var change in _allUpdates.Where(u => u.ID == id && u.PrevRevision.HasValue).ToList())
-            {
-                // Remove from memory.
-                _allUpdates.Remove(change);
-                // Remove from disk, if present.
-                foreach (var updateFileName in UpdateFileNames)
-                {
-                    File.Delete(updateFileName);
-                }
-            }
-            _localUpdates.RemoveAll(u => u.ID == id);
-            _unsavedChanges = _localUpdates.Any();
-        }
-
-        IEnumerable<List<T>> IRepository<T>.FindConflicts()
-        {
-            throw new NotImplementedException();
+            // Find all revision IDs that are used as PrevRevision or MergeRevision.
+            var usedRevisions = new HashSet<Guid>(
+                allRevisions.Values
+                      .Where(i => i.PrevRevision.HasValue || i.MergeRevision.HasValue)
+                      .SelectMany(i => new[] { i.PrevRevision, i.MergeRevision })
+                      .Distinct()
+                      .Where(r => r.HasValue)
+                      .Select(r => r.Value)
+            );
+            // The result: return groups of items with the same ID, and more than one revision, that are not deleted and not used as a previous or merge revision.
+            var conflicts = allRevisions.Values
+                                .Where(i => !i.IsDeleted && !usedRevisions.Contains(i.RevisionGuid))
+                                .GroupBy(i => i.ID)
+                                .Where(g => g.Count() > 1)
+                                .Select(g => new List<T>(g))
+                                .ToList();
+            return conflicts;
         }
 
         public void Merge(T entity, Guid mergeId)
         {
-            throw new NotImplementedException();
+            entity.UpdateRevision();
+            entity.MergeRevision = mergeId;
+            _dataSource.Insert(entity);
+            _itemIndex[entity.ID] = entity;
         }
 
         public void Compress()
         {
-            throw new NotImplementedException();
+            // For each revision in the local data source, remove it if there is a newer revision somewhere and if all other data sources have been written to after that newer revision.
+            // Gather the latest revision for each ID across all non-local data sources.
+            foreach (var ds in _otherDataSources ?? Array.Empty<IDataSource<T>>())
+            {
+                foreach (var item in ds.FindAll())
+                {
+                    if (!_itemIndex.ContainsKey(item.ID) || _itemIndex[item.ID].LastModified < item.LastModified)
+                    {
+                        _itemIndex[item.ID] = item;
+                    }
+                }
+            }
+            var oldestDataSource = _otherDataSources?.Min(ds => ds.GetLastWriteTime()) ?? DateTime.MinValue;
+            var purgeRevisions = new List<Guid>();
+            foreach (var item in _dataSource.FindAll().ToList())
+            {
+                // Check if this revision is the latest for its ID.
+                if (_itemIndex.TryGetValue(item.ID, out var latest) && latest.RevisionGuid != item.RevisionGuid)
+                {
+                    // There is a newer revision. Check if the latest revision's LastModified is older than the oldest data source write time.
+                    if (latest.LastModified <= oldestDataSource)
+                    {
+                        // Safe to delete this revision.
+                        purgeRevisions.Add(item.RevisionGuid);
+                    }
+                }
+            }
+                        _dataSource.Purge(purgeRevisions.ToArray());
+
         }
         #endregion
 
         #region Properties
 
-        public IEnumerable<T> Items => _allUpdates.Where(u => !_allUpdates.Any(q => q.ID == u.ID && q.LastModified > u.LastModified)).Union(_items).Where(d => !d.IsDeleted);
-
-        private string ThisMachineFile => _fileSystem.Path.Combine(PrimaryPath, $"updates-{_thisMachineName}.txt");
-
-        private string[] UpdateFileNames => _fileSystem.Directory.GetFiles(PrimaryPath, MachineFileNameSearch, SearchOption.TopDirectoryOnly);
-
-        private string? PrimaryPath => _fileSystem.Path.GetDirectoryName(_fileSystem.Path.GetFullPath(_primaryFileName));
+        public IEnumerable<T> Items => _itemIndex.Values.Where(d => !d.IsDeleted);
 
         #endregion
     }

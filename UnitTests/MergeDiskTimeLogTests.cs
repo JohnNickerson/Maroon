@@ -9,7 +9,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    
+
     public class MergeDiskTimeLogTests
     {
         //[Fact]
@@ -21,18 +21,18 @@ namespace UnitTests
             var filename = Path.Combine(path, "TimeLogRepoBase.csv");
 
             var mapper = new TimeLogCsvMapper(mockFileSystem);
-            var repo = new MergeDiskRepository<TimeLogEntry>(mapper, filename);
+            var repo = new RevisionShardRepository<TimeLogEntry>(mapper, filename);
 
             var log = new TimeLogEntry
-                {
-                    ID = Guid.NewGuid(),
-                    RevisionGuid = Guid.NewGuid(),
-                    StartTime = DateTime.Now,
-                    Note = "Test note",
-                    Billable = true,
-                    Project = "The Project",
-                    Client = "A Client",
-                    EndTime = DateTime.Now.AddHours(1)
+            {
+                ID = Guid.NewGuid(),
+                RevisionGuid = Guid.NewGuid(),
+                StartTime = DateTime.Now,
+                Note = "Test note",
+                Billable = true,
+                Project = "The Project",
+                Client = "A Client",
+                EndTime = DateTime.Now.AddHours(1)
             };
             repo.Create(log);
             repo.SaveChanges();
