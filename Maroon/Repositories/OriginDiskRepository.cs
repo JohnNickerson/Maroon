@@ -179,8 +179,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                     }
                 }
             }
-                        _dataSource.Purge(purgeRevisions.ToArray());
-
+            _dataSource.Purge(purgeRevisions.ToArray());
         }
         #endregion
 
