@@ -17,14 +17,14 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void Construct_SingleOriginRepositoryTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             Assert.NotNull(mdr);
         }
 
         [Fact]
         public void CreateTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             mdr.Create(new MockObj());
             Assert.Single(mdr.Items);
         }
@@ -32,7 +32,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void DeleteTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
@@ -45,7 +45,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void SaveDeleteTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
@@ -60,7 +60,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void FindTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
@@ -70,7 +70,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void FindAllTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             var entity2 = new MockObj();
             mdr.Create(entity);
@@ -83,7 +83,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void SaveChangesTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
@@ -100,7 +100,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void UpdateTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);
@@ -116,7 +116,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         public void UpdateBulkTest()
         {
             IDataSource<MockObj> mockMapper = new MockDiskMapper();
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             for (var x = 0; x < 1000000; x++)
             {
                 var entity = new MockObj();
@@ -128,7 +128,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void FindConflictsTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             // Create two new revisions with the same prev revision
@@ -152,7 +152,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void FindNoConflictsTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             // Create a new revision properly
@@ -169,7 +169,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void MergeTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj()
             {
                 ImportHash = "original"
@@ -203,7 +203,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void MergeNonExistentRevisionTest()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             // Create a new revision properly
@@ -232,7 +232,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         [Fact]
         public void Compress_Old_Revisions()
         {
-            var mdr = new SingleOriginRepository<MockObj>(mockMapper);
+            var mdr = new SingleShardRepository<MockObj>(mockMapper);
             var entity = new MockObj();
             mdr.Create(entity);
             var found = mdr.Find(entity.ID);

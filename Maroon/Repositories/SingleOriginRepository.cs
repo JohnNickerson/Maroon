@@ -7,14 +7,14 @@ using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.Repositories
 {
-    public class SingleOriginRepository<T> : IRepository<T> where T : ModelObject
+    public class SingleShardRepository<T> : IRepository<T> where T : ModelObject
     {
         private readonly IDataSource<T> _dataSource;
         private Dictionary<Guid, T> _items;
         private bool _hasChanges;
         private bool _loaded;
 
-        public SingleOriginRepository(IDataSource<T> mapper)
+        public SingleShardRepository(IDataSource<T> mapper)
         {
             _dataSource = mapper;
             _items = new Dictionary<Guid, T>();
@@ -49,7 +49,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             // Remove deleted items and obsolete revisions.
             var oldRevisions = _dataSource.FindAll()
                 .Where(i => i.PrevRevision.HasValue || i.MergeRevision.HasValue)
-                .SelectMany(i => new [] { i.PrevRevision , i.MergeRevision})
+                .SelectMany(i => new[] { i.PrevRevision, i.MergeRevision })
                 .Where(r => r.HasValue)
                 .Select(r => r.Value)
                 .Distinct()
