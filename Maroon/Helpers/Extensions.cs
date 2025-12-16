@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace AssimilationSoftware.Maroon.Mappers.Csv
+namespace AssimilationSoftware.Maroon.Helpers
 {
     public static class Extensions
     {

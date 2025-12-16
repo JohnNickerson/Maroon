@@ -1,7 +1,7 @@
 using System.IO.Abstractions;
 using System.Text;
 using AssimilationSoftware.Maroon.Interfaces;
-using AssimilationSoftware.Maroon.Mappers.Csv;
+using AssimilationSoftware.Maroon.Helpers;
 using AssimilationSoftware.Maroon.Model;
 
 namespace AssimilationSoftware.Maroon.DataSources.Text;
