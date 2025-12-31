@@ -4,7 +4,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text;
 using AssimilationSoftware.Maroon.Interfaces;
-using AssimilationSoftware.Maroon.Mappers.Csv;
+using AssimilationSoftware.Maroon.Helpers;
 
 namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
