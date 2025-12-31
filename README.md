@@ -42,3 +42,5 @@ Because sometimes the internet isn't available, or sometimes the servers are dow
 	- Updated MergeDiskRepository and OriginDiskRepository to use one IDiskMapper instance for main and change storage.
 - 2021-09-09: Build 0.4.3
 	- Fixed lazy-load in SingleOriginRepository.
+- 2025-12-31: Build 0.5.0.0
+	- Update to .NET 10 and new repository/data store code.

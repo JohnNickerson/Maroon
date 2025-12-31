@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -10,6 +10,10 @@
     <AssemblyCopyright>Copyright © Assimilation Software 2025</AssemblyCopyright>
     <AssemblyVersion>0.5.0.0</AssemblyVersion>
     <AssemblyFileVersion>0.5.0.0</AssemblyFileVersion>
+    <Version>0.5.0.0</Version>
+    <FileVersion>0.5.0.0</FileVersion>
+    <InformationalVersion>0.5.0.0</InformationalVersion>
+    <PackageVersion>0.5.0.0</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LiteDB" Version="5.0.21" />
