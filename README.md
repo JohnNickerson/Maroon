@@ -44,3 +44,5 @@ Because sometimes the internet isn't available, or sometimes the servers are dow
 	- Fixed lazy-load in SingleOriginRepository.
 - 2025-12-31: Build 0.5.0.0
 	- Update to .NET 10 and new repository/data store code.
+- 2026-01-28: Build 0.5.1.0
+	- Add an affected items count return to the Compress operation.
