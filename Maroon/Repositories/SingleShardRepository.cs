@@ -44,20 +44,27 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
         }
 
-        public void Compress()
+        public IEnumerable<Guid> FindObsoleteRevisionIds()
         {
-            // Remove deleted items and obsolete revisions.
-            var oldRevisions = _dataSource.FindAll()
+            var oldRevisionIds = _dataSource.FindAll()
                 .Where(i => i.PrevRevision.HasValue || i.MergeRevision.HasValue)
                 .SelectMany(i => new[] { i.PrevRevision, i.MergeRevision })
                 .Where(r => r.HasValue)
                 .Select(r => r.Value)
-                .Distinct()
-                .ToList();
+                .Distinct();
+            return oldRevisionIds;
+        }
+
+        public int Compress()
+        {
+            // Remove deleted items and obsolete revisions.
+            var oldRevisions = FindObsoleteRevisionIds().ToList();
+            int purgedCount = oldRevisions.Count + _dataSource.FindAll().Count(i => i.IsDeleted);
             _dataSource.Purge(oldRevisions.ToArray());
             _items = _items.Where(kvp => !kvp.Value.IsDeleted &&
                                   !oldRevisions.Contains(kvp.Value.RevisionGuid))
                            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return purgedCount;
         }
 
         public void Create(T entity)

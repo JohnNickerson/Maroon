@@ -243,5 +243,22 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             Assert.Empty(mockMapper.FindAll());
             Assert.Single(secondMapper.FindAll());
         }
+
+        [Fact]
+        public void Get_Obsolete_Revisions_Returns_Local_Revisions()
+        {
+            var secondMapper = new MockDiskMapper();
+            var mdr = new OriginShardRepository<MockObj>(mockMapper, secondMapper);
+            var obj = new MockObj() { ID = Guid.NewGuid(), ImportHash = "ToCompress", IsDeleted = false, LastModified = DateTime.UtcNow, RevisionGuid = Guid.NewGuid() };
+            mockMapper.Insert(obj);
+            // Create a local edit
+            var edit1 = (MockObj)obj.Clone();
+            edit1.ImportHash = "Edit1";
+            edit1.UpdateRevision();
+            secondMapper.Insert(edit1);
+            var obsoleteRevisions = mdr.FindObsoleteRevisionIds().ToList();
+            Assert.Single(obsoleteRevisions);
+            Assert.Equal(edit1.RevisionGuid, obsoleteRevisions[0]);
+        }
     }
 }

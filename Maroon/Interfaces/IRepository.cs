@@ -24,15 +24,18 @@ namespace AssimilationSoftware.Maroon.Interfaces
 
         [Obsolete("Save should be done automatically now.")]
         void SaveChanges(bool force = false);
+        
+        public IEnumerable<Guid> FindObsoleteRevisionIds();
 
         /// <summary>
         /// Shrink the size of the repository appropriately by storage pattern.
         /// </summary>
+        /// <returns>The number of items purged.</returns>
         /// <remarks>
         /// For single-origin repositories, purge obsolete revisions.
         /// For origin-shard repositories, purge obsolete revisions known to all other sources.
         /// For revision-shard repositories, rewrite the main file to contain only current revisions and purge individual revision files.
         /// </remarks>
-        void Compress();
+        int Compress();
     }
 }

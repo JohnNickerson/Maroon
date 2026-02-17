@@ -150,7 +150,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             _itemIndex[entity.ID] = entity;
         }
 
-        public void Compress()
+        public IEnumerable<Guid> FindObsoleteRevisionIds()
         {
             // For each revision in the local data source, remove it if there is a newer revision somewhere and if all other data sources have been written to after that newer revision.
             // Gather the latest revision for each ID across all non-local data sources.
@@ -165,7 +165,6 @@ namespace AssimilationSoftware.Maroon.Repositories
                 }
             }
             var oldestDataSource = _otherDataSources?.Min(ds => ds.GetLastWriteTime()) ?? DateTime.MinValue;
-            var purgeRevisions = new List<Guid>();
             foreach (var item in _dataSource.FindAll().ToList())
             {
                 // Check if this revision is the latest for its ID.
@@ -175,11 +174,17 @@ namespace AssimilationSoftware.Maroon.Repositories
                     if (latest.LastModified <= oldestDataSource)
                     {
                         // Safe to delete this revision.
-                        purgeRevisions.Add(item.RevisionGuid);
+                        yield return item.RevisionGuid;
                     }
                 }
             }
+        }
+
+        public int Compress()
+        {
+            var purgeRevisions = FindObsoleteRevisionIds().ToList();
             _dataSource.Purge(purgeRevisions.ToArray());
+            return purgeRevisions.Count;
         }
         #endregion
 

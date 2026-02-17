@@ -113,8 +113,21 @@ namespace AssimilationSoftware.Maroon.Repositories
             // Obsolete.
         }
 
-        // This may be useful for the Compress operation.
-        public void Compress()
+        public IEnumerable<Guid> FindObsoleteRevisionIds()
+        {
+            // In this case, approximately all revisions outside the main data source.
+            // Most of them will be cleaned up by the compress operation.
+            // This could be improved, but not sure if it's worth the complexity.
+            foreach (var ds in _dataSourceFactory.LoadAllSources())
+            {
+                foreach (var item in ds.FindAll())
+                {
+                    yield return item.RevisionGuid;
+                }
+            }
+        }
+
+        public int Compress()
         {
             // Purge all revisions from other sources if they are superseded by newer revisions and have no conflicts.
             EnsureLoaded();
@@ -165,6 +178,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                     }
                 }
             }
+            return committedCount;
         }
 
         /// <summary>
