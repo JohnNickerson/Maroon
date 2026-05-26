@@ -9,7 +9,7 @@ mechanism for merging conflicting revisions together into a new revision.
 ## Why is it called "Maroon"?
 
 Two reasons. One, on the colour wheel, maroon is opposite sky blue, also known as "azure". Since Maroon is meant to be a data storage option that doesn't rely on
-the cloud or even on servers, it is opposite that. Two, I'm from Queensland, where maroon is our state colour. :)
+the cloud or even on servers, it is opposite that. Two, I'm from Queensland, where maroon is our state colour. :) #73182C
 
 ## Why use it?
 
@@ -46,3 +46,5 @@ Because sometimes the internet isn't available, or sometimes the servers are dow
 	- Update to .NET 10 and new repository/data store code.
 - 2026-01-28: Build 0.5.1.0
 	- Add an affected items count return to the Compress operation.
+- 2026-02-18: Build 0.5.2.0
+	- Add method to get compressible revision IDs to see when compression might save space.
