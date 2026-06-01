@@ -258,7 +258,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             secondMapper.Insert(edit1);
             var obsoleteRevisions = mdr.FindObsoleteRevisionIds().ToList();
             Assert.Single(obsoleteRevisions);
-            Assert.Equal(edit1.RevisionGuid, obsoleteRevisions[0]);
+            Assert.Equal(obj.RevisionGuid, obsoleteRevisions[0]);
         }
     }
 }
