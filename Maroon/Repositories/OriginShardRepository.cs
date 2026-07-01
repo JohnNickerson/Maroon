@@ -18,6 +18,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         private Dictionary<Guid, T> _itemIndex;
 
         private bool _loaded;
+        private DateTime _lastLoadedWriteTime;
 
         #endregion
 
@@ -27,6 +28,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             _dataSource = dataSource;
             _otherDataSources = otherDataSources;
             _loaded = false;
+            _lastLoadedWriteTime = DateTime.MinValue;
             _itemIndex = new Dictionary<Guid, T>();
         }
         #endregion
@@ -34,10 +36,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         #region Methods
         public T Find(Guid id)
         {
-            if (!_loaded)
-            {
-                FindAll();
-            }
+            FindAll();
             if (_itemIndex.TryGetValue(id, out var item) && !item.IsDeleted)
             {
                 return item;
@@ -47,29 +46,9 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public IEnumerable<T> FindAll()
         {
-            if (!_loaded)
+            if (ShouldReload())
             {
-                // Load from all data sources.
-                var allItems = new Dictionary<Guid, T>();
-                foreach (var item in _dataSource.FindAll())
-                {
-                    if (!allItems.ContainsKey(item.ID) || allItems[item.ID].LastModified < item.LastModified)
-                    {
-                        allItems[item.ID] = item;
-                    }
-                }
-                foreach (var ds in _otherDataSources ?? Array.Empty<IDataSource<T>>())
-                {
-                    foreach (var item in ds.FindAll())
-                    {
-                        if (!allItems.ContainsKey(item.ID) || allItems[item.ID].LastModified < item.LastModified)
-                        {
-                            allItems[item.ID] = item;
-                        }
-                    }
-                }
-                _itemIndex = allItems;
-                _loaded = true;
+                ReloadIndex();
             }
             return _itemIndex.Values.Where(d => !d.IsDeleted);
         }
@@ -77,6 +56,7 @@ namespace AssimilationSoftware.Maroon.Repositories
         public void Create(T entity)
         {
             _itemIndex[entity.ID] = _dataSource.Insert(entity);
+            MarkAsLoaded();
         }
 
         public void Delete(T entity)
@@ -86,6 +66,7 @@ namespace AssimilationSoftware.Maroon.Repositories
             gone.UpdateRevision();
             _dataSource.Insert(gone);
             _itemIndex[entity.ID] = gone;
+            MarkAsLoaded();
         }
 
         public void Update(T entity)
@@ -96,6 +77,7 @@ namespace AssimilationSoftware.Maroon.Repositories
                 updated.UpdateRevision();
                 _dataSource.Insert(updated);
                 _itemIndex[entity.ID] = updated;
+                MarkAsLoaded();
             }
             else
             {
@@ -148,22 +130,17 @@ namespace AssimilationSoftware.Maroon.Repositories
             entity.MergeRevision = mergeId;
             _dataSource.Insert(entity);
             _itemIndex[entity.ID] = entity;
+            MarkAsLoaded();
         }
 
         public IEnumerable<Guid> FindObsoleteRevisionIds()
         {
-            // For each revision in the local data source, remove it if there is a newer revision somewhere and if all other data sources have been written to after that newer revision.
-            // Gather the latest revision for each ID across all non-local data sources.
-            foreach (var ds in _otherDataSources ?? Array.Empty<IDataSource<T>>())
+            if (ShouldReload())
             {
-                foreach (var item in ds.FindAll())
-                {
-                    if (!_itemIndex.ContainsKey(item.ID) || _itemIndex[item.ID].LastModified < item.LastModified)
-                    {
-                        _itemIndex[item.ID] = item;
-                    }
-                }
+                ReloadIndex();
             }
+
+            // For each revision in the local data source, remove it if there is a newer revision somewhere and if all other data sources have been written to after that newer revision.
             var oldestDataSource = _otherDataSources?.Min(ds => ds.GetLastWriteTime()) ?? DateTime.MinValue;
             foreach (var item in _dataSource.FindAll().ToList())
             {
@@ -186,11 +163,57 @@ namespace AssimilationSoftware.Maroon.Repositories
             _dataSource.Purge(purgeRevisions.ToArray());
             return purgeRevisions.Count;
         }
+
+        private bool ShouldReload()
+        {
+            return !_loaded || GetLatestWriteTime() > _lastLoadedWriteTime;
+        }
+
+        private void ReloadIndex()
+        {
+            var allItems = new Dictionary<Guid, T>();
+            foreach (var item in _dataSource.FindAll())
+            {
+                if (!allItems.ContainsKey(item.ID) || allItems[item.ID].LastModified < item.LastModified)
+                {
+                    allItems[item.ID] = item;
+                }
+            }
+            foreach (var ds in _otherDataSources ?? Array.Empty<IDataSource<T>>())
+            {
+                foreach (var item in ds.FindAll())
+                {
+                    if (!allItems.ContainsKey(item.ID) || allItems[item.ID].LastModified < item.LastModified)
+                    {
+                        allItems[item.ID] = item;
+                    }
+                }
+            }
+            _itemIndex = allItems;
+            _loaded = true;
+            _lastLoadedWriteTime = GetLatestWriteTime();
+        }
+
+        private void MarkAsLoaded()
+        {
+            _loaded = true;
+            _lastLoadedWriteTime = GetLatestWriteTime();
+        }
+
+        private DateTime GetLatestWriteTime()
+        {
+            var latest = _dataSource.GetLastWriteTime();
+            foreach (var ds in _otherDataSources ?? Array.Empty<IDataSource<T>>())
+            {
+                latest = latest > ds.GetLastWriteTime() ? latest : ds.GetLastWriteTime();
+            }
+            return latest;
+        }
         #endregion
 
         #region Properties
 
-        public IEnumerable<T> Items => _itemIndex.Values.Where(d => !d.IsDeleted);
+        public IEnumerable<T> Items => FindAll();
 
         #endregion
     }

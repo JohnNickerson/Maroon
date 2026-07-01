@@ -120,6 +120,40 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
         }
 
         [Fact]
+        public void FindAll_Refreshes_When_New_Data_Appears_After_Initial_Load()
+        {
+            var secondMapper = new MockDiskMapper();
+            var mdr = new OriginShardRepository<MockObj>(mockMapper, secondMapper);
+            var initial = new MockObj() { ID = Guid.NewGuid(), ImportHash = "Initial", IsDeleted = false, LastModified = DateTime.UtcNow, RevisionGuid = Guid.NewGuid() };
+            mockMapper.Insert(initial);
+
+            var initialItems = mdr.FindAll().ToList();
+            Assert.Single(initialItems);
+
+            var remote = new MockObj() { ID = Guid.NewGuid(), ImportHash = "Remote", IsDeleted = false, LastModified = DateTime.UtcNow.AddMinutes(1), RevisionGuid = Guid.NewGuid() };
+            secondMapper.Insert(remote);
+
+            var refreshedItems = mdr.FindAll().ToList();
+            Assert.Equal(2, refreshedItems.Count);
+            Assert.Contains(refreshedItems, item => item.ID == remote.ID);
+        }
+
+        [Fact]
+        public void FindAll_Does_Not_Reload_When_No_Shared_Data_Has_Changed()
+        {
+            var secondMapper = new CountingMockDiskMapper();
+            var mdr = new OriginShardRepository<MockObj>(mockMapper, secondMapper);
+            var obj = new MockObj() { ID = Guid.NewGuid(), ImportHash = "Stable", IsDeleted = false, LastModified = DateTime.UtcNow, RevisionGuid = Guid.NewGuid() };
+            mockMapper.Insert(obj);
+
+            mdr.FindAll().ToList();
+            mdr.FindAll().ToList();
+            mdr.Items.ToList();
+
+            Assert.Equal(1, secondMapper.FindAllCallCount);
+        }
+
+        [Fact]
         public void Find_Returns_Null_For_Deleted_Items()
         {
             var secondMapper = new MockDiskMapper();
@@ -258,7 +292,18 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             secondMapper.Insert(edit1);
             var obsoleteRevisions = mdr.FindObsoleteRevisionIds().ToList();
             Assert.Single(obsoleteRevisions);
-            Assert.Equal(edit1.RevisionGuid, obsoleteRevisions[0]);
+            Assert.Equal(obj.RevisionGuid, obsoleteRevisions[0]);
+        }
+    }
+
+    public class CountingMockDiskMapper : MockDiskMapper
+    {
+        public int FindAllCallCount { get; private set; }
+
+        public override IEnumerable<MockObj> FindAll()
+        {
+            FindAllCallCount++;
+            return base.FindAll();
         }
     }
 }

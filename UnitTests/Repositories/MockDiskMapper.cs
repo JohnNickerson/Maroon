@@ -17,7 +17,7 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             _items = new Dictionary<Guid, MockObj>();
         }
 
-        public IEnumerable<MockObj> FindAll()
+        public virtual IEnumerable<MockObj> FindAll()
         {
             return _items.Values;
         }
