@@ -50,3 +50,5 @@ Because sometimes the internet isn't available, or sometimes the servers are dow
 	- Add method to get compressible revision IDs to see when compression might save space.
 - 2026-07-02: Build 0.5.3.0
 	- Update OriginShardRepository reload logic.
+- 2026-07-31: Build 0.5.4.0
+	- Fix exception on obsolete revision search.

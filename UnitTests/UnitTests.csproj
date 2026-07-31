@@ -7,13 +7,13 @@
     <IsTestProject>true</IsTestProject>
     <RootNamespace>AssimilationSoftware.Maroon.UnitTests</RootNamespace>
     <AssemblyName>Maroon.UnitTests</AssemblyName>
-    <AssemblyCompany>Assimilation Software</AssemblyCompany>
+    <Company>Assimilation Software</Company>
     <AssemblyProduct>Maroon</AssemblyProduct>
-    <AssemblyCopyright>Copyright © Assimilation Software 2025</AssemblyCopyright>
-    <Version>0.5.3.0</Version>
-    <FileVersion>0.5.3.0</FileVersion>
-    <InformationalVersion>0.5.3.0</InformationalVersion>
-    <PackageVersion>0.5.3.0</PackageVersion>
+    <Copyright>Copyright © Assimilation Software 2026</Copyright>
+    <Version>0.5.4.0</Version>
+    <FileVersion>0.5.4.0</FileVersion>
+    <InformationalVersion>0.5.4.0</InformationalVersion>
+    <PackageVersion>0.5.4.0</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
