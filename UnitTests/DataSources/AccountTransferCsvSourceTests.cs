@@ -8,7 +8,7 @@ namespace AssimilationSoftware.Maroon.UnitTests.DataSources;
 public class AccountTransferCsvSourceTests
 {
     private AccountTransferCsvSource _source;
-    private MockFileSystem _fileSystem;
+    private MockFileSystem _fileSystem = new MockFileSystem();
 
     private void Setup()
     {

@@ -141,7 +141,11 @@ namespace AssimilationSoftware.Maroon.Repositories
             }
 
             // For each revision in the local data source, remove it if there is a newer revision somewhere and if all other data sources have been written to after that newer revision.
-            var oldestDataSource = _otherDataSources?.Min(ds => ds.GetLastWriteTime()) ?? DateTime.MinValue;
+            var oldestDataSource = DateTime.MinValue;
+            if (_otherDataSources != null && _otherDataSources.Length > 0)
+            {
+                oldestDataSource = _otherDataSources.Min(ds => ds.GetLastWriteTime());
+            }
             foreach (var item in _dataSource.FindAll().ToList())
             {
                 // Check if this revision is the latest for its ID.

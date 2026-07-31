@@ -294,6 +294,24 @@ namespace AssimilationSoftware.Maroon.Repositories.Tests
             Assert.Single(obsoleteRevisions);
             Assert.Equal(obj.RevisionGuid, obsoleteRevisions[0]);
         }
+
+        [Fact]
+        public void Compress_Empty_List_Does_Not_Throw()
+        {
+            var secondMapper = new MockDiskMapper();
+            var mdr = new OriginShardRepository<MockObj>(mockMapper, secondMapper);
+            mdr.Compress();
+            // No exception should be thrown
+        }
+
+        [Fact]
+        public void FindObsoleteRevisionIds_Empty_List_Returns_Empty()
+        {
+            var secondMapper = new MockDiskMapper();
+            var mdr = new OriginShardRepository<MockObj>(mockMapper);
+            var obsoleteRevisions = mdr.FindObsoleteRevisionIds().ToList();
+            Assert.Empty(obsoleteRevisions);
+        }
     }
 
     public class CountingMockDiskMapper : MockDiskMapper
