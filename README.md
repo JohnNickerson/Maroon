@@ -48,3 +48,5 @@ Because sometimes the internet isn't available, or sometimes the servers are dow
 	- Add an affected items count return to the Compress operation.
 - 2026-02-18: Build 0.5.2.0
 	- Add method to get compressible revision IDs to see when compression might save space.
+- 2026-07-02: Build 0.5.3.0
+	- Update OriginShardRepository reload logic.
