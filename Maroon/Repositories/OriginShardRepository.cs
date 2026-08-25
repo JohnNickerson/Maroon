@@ -71,18 +71,11 @@ namespace AssimilationSoftware.Maroon.Repositories
 
         public void Update(T entity)
         {
-            if (entity.PrevRevision.HasValue)
-            {
-                var updated = (T)entity.Clone();
-                updated.UpdateRevision();
-                _dataSource.Insert(updated);
-                _itemIndex[entity.ID] = updated;
-                MarkAsLoaded();
-            }
-            else
-            {
-                Create(entity);
-            }
+            var updated = (T)entity.Clone();
+            updated.UpdateRevision();
+            _dataSource.Insert(updated);
+            _itemIndex[entity.ID] = updated;
+            MarkAsLoaded();
         }
 
         public void SaveChanges(bool force = false)
