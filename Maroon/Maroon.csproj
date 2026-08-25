@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -8,10 +8,10 @@
     <Company>Assimilation Software</Company>
     <AssemblyProduct>Maroon</AssemblyProduct>
     <Copyright>Copyright © Assimilation Software 2026</Copyright>
-    <Version>0.5.4.0</Version>
-    <FileVersion>0.5.4.0</FileVersion>
-    <InformationalVersion>0.5.4.0</InformationalVersion>
-    <PackageVersion>0.5.4.0</PackageVersion>
+    <Version>0.5.5.0</Version>
+    <FileVersion>0.5.5.0</FileVersion>
+    <InformationalVersion>0.5.5.0</InformationalVersion>
+    <PackageVersion>0.5.5.0</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LiteDB" Version="5.0.21" />

@@ -10,10 +10,10 @@
     <Company>Assimilation Software</Company>
     <AssemblyProduct>Maroon</AssemblyProduct>
     <Copyright>Copyright © Assimilation Software 2026</Copyright>
-    <Version>0.5.4.0</Version>
-    <FileVersion>0.5.4.0</FileVersion>
-    <InformationalVersion>0.5.4.0</InformationalVersion>
-    <PackageVersion>0.5.4.0</PackageVersion>
+    <Version>0.5.5.0</Version>
+    <FileVersion>0.5.5.0</FileVersion>
+    <InformationalVersion>0.5.5.0</InformationalVersion>
+    <PackageVersion>0.5.5.0</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />

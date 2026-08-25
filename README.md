@@ -52,3 +52,5 @@ Because sometimes the internet isn't available, or sometimes the servers are dow
 	- Update OriginShardRepository reload logic.
 - 2026-07-31: Build 0.5.4.0
 	- Fix exception on obsolete revision search.
+- 2026-08-10: Build 0.5.5.0
+	- Fix Update methods to always bump the version IDs.
