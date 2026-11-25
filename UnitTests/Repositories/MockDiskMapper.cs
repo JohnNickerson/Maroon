@@ -4,38 +4,48 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text;
 using AssimilationSoftware.Maroon.Interfaces;
-using AssimilationSoftware.Maroon.Mappers.Csv;
+using AssimilationSoftware.Maroon.Helpers;
 
 namespace AssimilationSoftware.Maroon.Repositories.Tests
 {
-    public class MockDiskMapper : CsvDiskMapper<MockObj>
+    public class MockDiskMapper : IDataSource<MockObj>
     {
-        private readonly Dictionary<string, List<MockObj>> _items = new Dictionary<string, List<MockObj>>();
-
-        public override string FieldsHeader => "ID,RevisionGuid,PrevRevision,LastModified";
-
-        public override IFileSystem FileSystem { get; protected set; }
+        private readonly Dictionary<Guid, MockObj> _items = new Dictionary<Guid, MockObj>();
 
         public MockDiskMapper()
         {
-            FileSystem = new MockFileSystem();
-            FileSystem.Directory.CreateDirectory(Environment.CurrentDirectory);
+            _items = new Dictionary<Guid, MockObj>();
         }
 
-        public override MockObj FromTokens(string[] tokens)
+        public virtual IEnumerable<MockObj> FindAll()
         {
-            return new MockObj
+            return _items.Values;
+        }
+
+        public MockObj? FindRevision(Guid id)
+        {
+            if (_items.ContainsKey(id))
             {
-                ID = Guid.Parse(tokens[0]),
-                RevisionGuid = Guid.Parse(tokens[1]),
-                PrevRevision = Guid.Parse(tokens[2]),
-                LastModified = DateTime.Parse(tokens[3])
-            };
+                return _items[id];
+            }
+            return null;
         }
 
-        public override string ToCsv(MockObj obj)
+        public MockObj Insert(MockObj item)
         {
-            return $"{obj.ID},{obj.RevisionGuid},{obj.PrevRevision},{obj.LastModified}";
+            item.LastModified = DateTime.Now;
+            _items[item.RevisionGuid] = item;
+            return item;
+        }
+
+        public void Purge(params Guid[] ids)
+        {
+            ids.ToList().ForEach(id => _items.Remove(id));
+        }
+
+        public DateTime GetLastWriteTime()
+        {
+            return _items.Values.Count > 0 ? _items.Values.Max(i => i.LastModified) : DateTime.MinValue;
         }
     }
 }

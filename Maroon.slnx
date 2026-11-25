@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Maroon/Maroon.csproj" />
+  <Project Path="UnitTests/UnitTests.csproj" />
+</Solution>

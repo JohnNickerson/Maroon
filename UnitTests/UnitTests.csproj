@@ -1,21 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>AssimilationSoftware.Maroon.UnitTests</RootNamespace>
     <AssemblyName>Maroon.UnitTests</AssemblyName>
-    <AssemblyCompany>Assimilation Software</AssemblyCompany>
+    <Company>Assimilation Software</Company>
     <AssemblyProduct>Maroon</AssemblyProduct>
-    <AssemblyCopyright>Copyright © Assimilation Software 2025</AssemblyCopyright>
-    <AssemblyVersion>0.5.0.0</AssemblyVersion>
-    <AssemblyFileVersion>0.5.0.0</AssemblyFileVersion>
+    <Copyright>Copyright © Assimilation Software 2026</Copyright>
+    <Version>0.5.5.0</Version>
+    <FileVersion>0.5.5.0</FileVersion>
+    <InformationalVersion>0.5.5.0</InformationalVersion>
+    <PackageVersion>0.5.5.0</PackageVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
@@ -23,13 +22,10 @@
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
   </ItemGroup>
-
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Maroon\Maroon.csproj" />
   </ItemGroup>
-
 </Project>
