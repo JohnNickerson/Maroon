@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Abstractions;
 using AssimilationSoftware.Maroon.Interfaces;
 using AssimilationSoftware.Maroon.Model;
@@ -7,6 +8,7 @@ namespace AssimilationSoftware.Maroon.DataSources.Text;
 
 public class TimeLogCsvSource : IDataSource<TimeLogEntry>
 {
+    private const string ColumnHeaders = "StartTime,EndTime,Client,Project,Note,Billable,LastModified,IsDeleted,ID,RevisionGuid,PrevRevision,MergeRevision";
     private IFileSystem _fileSystem;
     private string _fileName;
     private Dictionary<Guid, TimeLogEntry> _index;
@@ -23,16 +25,35 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
 
     private string Stringify(TimeLogEntry obj)
     {
-        return $"{obj.StartTime:O},{obj.EndTime:O},{obj.Client},{obj.Project},{obj.Note},{obj.Billable},{obj.LastModified:O},{obj.IsDeleted},{obj.ID},{obj.RevisionGuid},{obj.PrevRevision}";
+        return $"{obj.StartTime:O},{obj.EndTime:O},{obj.Client},{obj.Project},{obj.Note},{obj.Billable},{obj.LastModified:O},{obj.IsDeleted},{obj.ID},{obj.RevisionGuid},{obj.PrevRevision},{obj.MergeRevision}";
     }
 
     public TimeLogEntry Insert(TimeLogEntry item)
     {
         item.LastModified = DateTime.Now;
+        return Append(item);
+    }
+
+    public TimeLogEntry InsertMigrated(TimeLogEntry item)
+    {
+        return Append(item);
+    }
+
+    private TimeLogEntry Append(TimeLogEntry item)
+    {
         var csvLine = Stringify(item);
+        EnsureFileExists();
         _fileSystem.File.AppendAllText(_fileName, csvLine + Environment.NewLine);
         _index[item.RevisionGuid] = item;
         return item;
+    }
+
+    private void EnsureFileExists()
+    {
+        if (!_fileSystem.File.Exists(_fileName))
+        {
+            _fileSystem.File.WriteAllText(_fileName, ColumnHeaders + Environment.NewLine);
+        }
     }
 
     public IEnumerable<TimeLogEntry> FindAll()
@@ -56,6 +77,7 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         var lines = _fileSystem.File.ReadAllLines(_fileName);
         foreach (var line in lines)
         {
+            if (line == ColumnHeaders) continue;
             var parts = line.Tokenise();
             if (parts.Count < 11) continue; // Skip invalid lines
             var entry = new TimeLogEntry
@@ -66,11 +88,12 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
                 Project = parts[3],
                 Note = parts[4],
                 Billable = bool.Parse(parts[5]),
-                LastModified = DateTime.Parse(parts[6]),
+                LastModified = DateTime.Parse(parts[6], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                 IsDeleted = bool.Parse(parts[7]),
                 ID = Guid.Parse(parts[8]),
                 RevisionGuid = Guid.Parse(parts[9]),
-                PrevRevision = String.IsNullOrEmpty(parts[10]) ? null : Guid.Parse(parts[10])
+                PrevRevision = String.IsNullOrEmpty(parts[10]) ? null : Guid.Parse(parts[10]),
+                MergeRevision = parts.Count > 11 && Guid.TryParse(parts[11], out var mergeRevision) ? mergeRevision : null
             };
             _index[entry.RevisionGuid] = entry;
             if (_lastWriteTime < entry.LastModified)
@@ -109,7 +132,11 @@ public class TimeLogCsvSource : IDataSource<TimeLogEntry>
         else
         {
             // Rewrite the file without the purged item
-            var lines = _index.Values.Select(Stringify).ToList();
+            var lines = new List<string>
+            {
+                ColumnHeaders
+            };
+            lines.AddRange(_index.Values.Select(Stringify));
             _fileSystem.File.WriteAllLines(_fileName, lines);
         }
     }
